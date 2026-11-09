@@ -228,8 +228,14 @@ jobs:
 
             Welcome to **SavingGoalPlus v${{ env.RELEASE_VERSION }}**!
 
-            ### 📦 Download Release APK
-            - **`SavingGoalPlus-v${{ env.RELEASE_VERSION }}.apk`**: Ready to install on Android 7.0 (API 24) through Android 16 (API 36).
+            ### 📦 Downloads & Packages
+
+            #### 🤖 Android
+            - **`SavingGoalPlus-v${{ env.RELEASE_VERSION }}.apk`**: Direct install for Android 7.0 (API 24) through Android 16 (API 36).
+
+            #### 🍏 iOS (iPhone & iPad)
+            - **`SavingGoalPlus-v${{ env.RELEASE_VERSION }}-unsigned.ipa`**: Install via AltStore, SideStore, Sideloadly, or TrollStore (iOS 16.0+).
+            - **`SavingGoalPlus-v${{ env.RELEASE_VERSION }}-iOS.xcarchive.zip`**: Full Xcode Archive for developers.
 
             ---
 
