@@ -34,7 +34,7 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 0001 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 4001;
+			remoteGlobalIDString = 7001;
 			remoteInfo = SavingGoalPlus;
 		};
 /* End PBXContainerItemProxy section */
