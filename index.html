@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SavingGoalPlus — Testing iOS Without an iPhone & Live Simulator</title>
+  <meta name="description" content="Guide on how to test iOS apps on Windows without an iPhone or Mac, featuring an interactive live web simulator for SavingGoalPlus.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --primary-light: #d1fae5;
+      --stage-amber: #f59e0b;
+      --stage-cyan: #06b6d4;
+      --stage-red: #ef4444;
+      --bg-dark: #090d16;
+      --bg-card: #111827;
+      --bg-card-hover: #1f2937;
+      --border: rgba(255, 255, 255, 0.1);
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
+      --phone-bg: #030712;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: radial-gradient(circle at 50% -20%, #1e293b 0%, var(--bg-dark) 70%);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    /* Navbar */
+    header {
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(9, 13, 22, 0.8);
+    }
+    .nav-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.5px;
+    }
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      font-size: 1.2rem;
+    }
+    .nav-links {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: #042f2e;
+    }
+    .btn-primary:hover {
+      background: #34d399;
+      transform: translateY(-1px);
+    }
+    .btn-outline {
+      border-color: var(--border);
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 14px;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      font-size: 0.85rem;
+      font-weight: 700;
+      border-radius: 9999px;
+      margin-bottom: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #ffffff 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin: 0 auto 28px;
+    }
+
+    /* Dual Column Layout: Simulator & Guide */
+    .dual-grid {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+    @media (max-width: 1024px) {
+      .dual-grid {
+        grid-template-columns: 1fr;
+        justify-items: center;
+      }
+    }
+
+    /* iOS Phone Frame */
+    .iphone-mockup {
+      width: 380px;
+      height: 780px;
+      background: #1e1e24;
+      border-radius: 54px;
+      padding: 12px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.15);
+      position: relative;
+    }
+    .iphone-screen {
+      width: 100%;
+      height: 100%;
+      background: var(--phone-bg);
+      border-radius: 44px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .dynamic-island {
+      width: 110px;
+      height: 28px;
+      background: #000;
+      border-radius: 20px;
+      margin: 10px auto 0;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 10px;
+    }
+    .camera-lens {
+      width: 10px;
+      height: 10px;
+      background: #111827;
+      border-radius: 50%;
+      border: 1px solid #1f2937;
+    }
+    .sensor-lens {
+      width: 8px;
+      height: 8px;
+      background: #064e3b;
+      border-radius: 50%;
+    }
+
+    /* Simulator App Content */
+    .app-screen-content {
+      flex: 1;
+      padding: 12px 18px 24px;
+      overflow-y: auto;
+      scrollbar-width: none;
+      position: relative;
+    }
+    .app-screen-content::-webkit-scrollbar {
+      display: none;
+    }
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-top: 6px;
+    }
+    .app-header h2 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    /* 260° Gauge in Simulator */
+    .gauge-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 20px 16px;
+      text-align: center;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .gauge-wrapper {
+      width: 180px;
+      height: 180px;
+      margin: 0 auto 10px;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+    .gauge-svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(0deg);
+    }
+    .gauge-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.1);
+      stroke-width: 14;
+      stroke-linecap: round;
+    }
+    .gauge-fill {
+      fill: none;
+      stroke: var(--primary);
+      stroke-width: 14;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.3s;
+    }
+    .gauge-text {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .gauge-pct {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+    }
+    .gauge-saved {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-top: 4px;
+      color: #fff;
+    }
+    .gauge-target {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Rate Breakdown Grid */
+    .rate-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .rate-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      padding: 10px;
+    }
+    .rate-label {
+      font-size: 0.65rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+    }
+    .rate-val {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Action Buttons inside Simulator */
+    .sim-actions {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .sim-btn {
+      flex: 1;
+      padding: 10px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .sim-btn-deposit {
+      background: var(--primary);
+      color: #042f2e;
+    }
+    .sim-btn-deposit:hover {
+      background: #34d399;
+      transform: scale(0.98);
+    }
+    .sim-btn-withdraw {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .sim-btn-withdraw:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+
+    /* Simulator Transactions List */
+    .sim-tx-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 0.8px;
+      margin-bottom: 8px;
+    }
+    .sim-tx-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      margin-bottom: 6px;
+      font-size: 0.85rem;
+    }
+    .tx-note {
+      font-weight: 600;
+    }
+    .tx-date {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+    .tx-amount-plus {
+      font-weight: 700;
+      color: var(--primary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .tx-amount-minus {
+      font-weight: 700;
+      color: var(--stage-red);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Confetti Canvas */
+    #confetti-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    /* Instructions Column */
+    .guide-column {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-highlight {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, var(--bg-card) 100%);
+    }
+    .card-badge {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #34d399;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      display: inline-block;
+    }
+    .card h3 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+    .card p {
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      font-size: 0.95rem;
+    }
+
+    /* Method Steps */
+    .steps-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    .step-item {
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+    .step-num {
+      width: 28px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-size: 0.8rem;
+      font-weight: 800;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .step-content strong {
+      color: #fff;
+      display: block;
+      margin-bottom: 2px;
+      font-size: 0.95rem;
+    }
+    .step-content p {
+      margin-bottom: 0;
+      font-size: 0.88rem;
+    }
+
+    /* Code Snippet */
+    pre {
+      background: #030712;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: #a7f3d0;
+      overflow-x: auto;
+      margin: 10px 0;
+    }
+
+    /* Comparison Table */
+    .table-container {
+      overflow-x: auto;
+      margin-top: 16px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    th, td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.5px;
+    }
+    td strong {
+      color: #fff;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .status-free {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+    }
+    .status-instant {
+      background: rgba(6, 182, 212, 0.2);
+      color: #67e8f9;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 60px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      border-top: 1px solid var(--border);
+      padding-top: 32px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="nav-container">
+      <div class="logo">
+        <div class="logo-icon">🎯</div>
+        <span>SavingGoalPlus</span>
+      </div>
+      <div class="nav-links">
+        <a href="https://github.com/Minta1234/SavingGoalPlus" class="btn btn-outline" target="_blank">GitHub Repo</a>
+        <a href="https://github.com/Minta1234/SavingGoalPlus/releases" class="btn btn-primary" target="_blank">Download Releases</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Container -->
+  <main class="container">
+
+    <!-- Hero -->
+    <section class="hero">
+      <span class="hero-badge">Cross-Platform Testing Handbook</span>
+      <h1>How to Test iOS Apps on Windows<br>Without an iPhone or Mac</h1>
+      <p>
+        Don't have an iPhone or Mac? No problem. Learn the 5 best techniques to test, preview, and run
+        the native SwiftUI <strong>SavingGoalPlus</strong> app on Windows or in your browser right now!
+      </p>
+    </section>
+
+    <!-- Dual Grid: Live Simulator + Testing Guide -->
+    <div class="dual-grid">
+
+      <!-- LEFT: Interactive iPhone 16 Pro Simulator -->
+      <aside class="iphone-mockup" aria-label="Interactive iOS Simulator">
+        <div class="iphone-screen">
+          <canvas id="confetti-canvas"></canvas>
+
+          <!-- Dynamic Island -->
+          <div class="dynamic-island">
+            <div class="sensor-lens"></div>
+            <div class="camera-lens"></div>
+          </div>
+
+          <!-- App Screen Body -->
+          <div class="app-screen-content">
+            <div class="app-header">
+              <h2>SavingGoalPlus</h2>
+              <span style="font-size: 0.8rem; font-weight: 700; color: var(--primary); background: rgba(16,185,129,0.15); padding: 4px 8px; border-radius: 8px;">iOS 17</span>
+            </div>
+
+            <!-- 260° Arc Gauge -->
+            <div class="gauge-card">
+              <div class="gauge-wrapper">
+                <svg class="gauge-svg" viewBox="0 0 200 200">
+                  <!-- Background Track Arc (260° sweep, 140° to 400°) -->
+                  <path class="gauge-bg" d="M 43.4 151.4 A 74 74 0 1 1 156.6 151.4" />
+                  <!-- Dynamic Progress Fill Arc -->
+                  <path id="gauge-fill-path" class="gauge-fill" d="M 43.4 151.4 A 74 74 0 1 1 156.6 151.4" stroke-dasharray="335" stroke-dashoffset="134" />
+                </svg>
+                <div class="gauge-text">
+                  <span id="ui-percentage" class="gauge-pct">60%</span>
+                  <span id="ui-saved" class="gauge-saved">$3,000.00</span>
+                  <span id="ui-target" class="gauge-target">of $5,000.00</span>
+                </div>
+              </div>
+              <div style="font-size: 0.8rem; font-weight: 600; color: #94a3b8;">
+                🎯 Emergency Fund • <span id="ui-days-left">60 days left</span>
+              </div>
+            </div>
+
+            <!-- Rate Projections -->
+            <div class="rate-grid">
+              <div class="rate-box">
+                <div class="rate-label">DAILY SAVINGS</div>
+                <div id="ui-rate-daily" class="rate-val">$33.33</div>
+              </div>
+              <div class="rate-box">
+                <div class="rate-label">WEEKLY SAVINGS</div>
+                <div id="ui-rate-weekly" class="rate-val">$233.33</div>
+              </div>
+              <div class="rate-box">
+                <div class="rate-label">BI-WEEKLY</div>
+                <div id="ui-rate-biweekly" class="rate-val">$466.67</div>
+              </div>
+              <div class="rate-box">
+                <div class="rate-label">MONTHLY</div>
+                <div id="ui-rate-monthly" class="rate-val">$1,000.00</div>
+              </div>
+            </div>
+
+            <!-- Deposit / Withdraw Live Actions -->
+            <div class="sim-actions">
+              <button id="btn-deposit" class="sim-btn sim-btn-deposit">
+                <span>➕</span> Deposit ($500)
+              </button>
+              <button id="btn-withdraw" class="sim-btn sim-btn-withdraw">
+                <span>➖</span> Withdraw ($250)
+              </button>
+            </div>
+
+            <!-- Recent Ledger -->
+            <div>
+              <div class="sim-tx-title">RECENT TRANSACTIONS</div>
+              <div id="tx-list">
+                <div class="sim-tx-item">
+                  <div>
+                    <div class="tx-note">Salary Savings</div>
+                    <div class="tx-date">Today • 14:30</div>
+                  </div>
+                  <div class="tx-amount-plus">+$500.00</div>
+                </div>
+                <div class="sim-tx-item">
+                  <div>
+                    <div class="tx-note">Freelance Project</div>
+                    <div class="tx-date">Yesterday</div>
+                  </div>
+                  <div class="tx-amount-plus">+$1,000.00</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </aside>
+
+      <!-- RIGHT: Comprehensive Testing Guide -->
+      <section class="guide-column">
+
+        <!-- Method 1: Appetize.io (Best Free Cloud Simulator) -->
+        <article class="card card-highlight">
+          <span class="card-badge">Method 1 • Recommended for Browser Testing</span>
+          <h3>1. Appetize.io (Cloud iOS Simulator in Chrome/Edge)</h3>
+          <p>
+            <strong>Appetize.io</strong> runs real iOS virtual devices directly in your web browser. You do not need a Mac or iPhone. You get free simulator streaming minutes every month!
+          </p>
+          <ol class="steps-list">
+            <li class="step-item">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <strong>Download the iOS Build Artifact from GitHub</strong>
+                <p>Go to our GitHub Actions workflow: download <code>SavingGoalPlus-iOS.xcarchive.zip</code> from <a href="https://github.com/Minta1234/SavingGoalPlus/releases" target="_blank" style="color: #34d399;">GitHub Releases</a>.</p>
+              </div>
+            </li>
+            <li class="step-item">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <strong>Upload to Appetize.io</strong>
+                <p>Visit <a href="https://appetize.io/upload" target="_blank" style="color: #34d399;">appetize.io/upload</a> and drag-and-drop the simulator <code>.app</code> or zipped build.</p>
+              </div>
+            </li>
+            <li class="step-item">
+              <div class="step-num">3</div>
+              <div class="step-content">
+                <strong>Interact in Your Browser</strong>
+                <p>Select iPhone 15 or 16, choose iOS 17+, and click <strong>Play</strong>. You can click, scroll, and test notifications inside your normal Windows desktop browser!</p>
+              </div>
+            </li>
+          </ol>
+        </article>
+
+        <!-- Method 2: BrowserStack & Sauce Labs -->
+        <article class="card">
+          <span class="card-badge">Method 2 • Real Device Cloud</span>
+          <h3>2. BrowserStack App Live & Sauce Labs</h3>
+          <p>
+            If you need to test on <em>physical real iPhones</em> (e.g. iPhone 15 Pro, iPhone 16) without purchasing hardware, use cloud device labs:
+          </p>
+          <ul class="steps-list">
+            <li class="step-item">
+              <div class="step-num">✦</div>
+              <div class="step-content">
+                <strong>BrowserStack App Live:</strong> Upload our <code>SavingGoalPlus-v1.0.0-unsigned.ipa</code> directly to BrowserStack. It streams video and touch controls from a real iPhone in a data center.
+              </div>
+            </li>
+            <li class="step-item">
+              <div class="step-num">✦</div>
+              <div class="step-content">
+                <strong>LambdaTest / Sauce Labs:</strong> Equivalent services offering free trial minutes to run and debug iOS IPA packages interactively.
+              </div>
+            </li>
+          </ul>
+        </article>
+
+        <!-- Method 3: GitHub Actions Cloud macOS (Zero Cost) -->
+        <article class="card">
+          <span class="card-badge">Method 3 • Automated Cloud CI</span>
+          <h3>3. Free Cloud macOS via GitHub Actions</h3>
+          <p>
+            You do <strong>not</strong> need to buy a \$1,000 Mac to build, verify, and unit-test iOS apps. Our automated CI workflow handles everything on Apple hardware in the cloud:
+          </p>
+          <pre><code># Trigger iOS Cloud Compilation on macOS runner:
+git tag v1.0.1
+git push origin v1.0.1</code></pre>
+          <p style="margin-top: 10px;">
+            GitHub Actions boots a real <code>macos-latest</code> runner with Xcode, compiles the entire SwiftUI code, executes all unit tests, verifies mathematical rate parity, and packages the <code>.xcarchive.zip</code> for download automatically.
+          </p>
+        </article>
+
+        <!-- Method 4: Sideloading onto a Friend or Family's iPhone -->
+        <article class="card">
+          <span class="card-badge">Method 4 • Physical Sideloading</span>
+          <h3>4. Install without App Store (AltStore / Sideloadly)</h3>
+          <p>
+            If a friend or colleague has an iPhone or iPad, you can install the build directly from Windows without paying $99/year for an Apple Developer Account:
+          </p>
+          <ol class="steps-list">
+            <li class="step-item">
+              <div class="step-num">1</div>
+              <div class="step-content">
+                <strong>Download Sideloadly on Windows:</strong> Install <a href="https://sideloadly.io" target="_blank" style="color: #34d399;">sideloadly.io</a> (free for Windows 10/11).
+              </div>
+            </li>
+            <li class="step-item">
+              <div class="step-num">2</div>
+              <div class="step-content">
+                <strong>Plug in iPhone via USB:</strong> Drag <code>SavingGoalPlus-v1.0.0-unsigned.ipa</code> into Sideloadly and enter a free personal Apple ID to sign and install it directly!
+              </div>
+            </li>
+          </ol>
+        </article>
+
+        <!-- Comparison Summary -->
+        <article class="card">
+          <h3>Testing Options Comparison</h3>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Method</th>
+                  <th>Hardware Needed</th>
+                  <th>Cost</th>
+                  <th>Best For</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Interactive Web Simulator</strong></td>
+                  <td>None (Windows PC)</td>
+                  <td><span class="status-badge status-free">100% Free</span></td>
+                  <td>Instant UI, logic & animation preview</td>
+                </tr>
+                <tr>
+                  <td><strong>Appetize.io</strong></td>
+                  <td>None (Web Browser)</td>
+                  <td><span class="status-badge status-free">Free Tier</span></td>
+                  <td>Real iOS Simulator streaming</td>
+                </tr>
+                <tr>
+                  <td><strong>GitHub Actions CI</strong></td>
+                  <td>None (Cloud Mac)</td>
+                  <td><span class="status-badge status-free">Free Tier</span></td>
+                  <td>Compilation, testing & packaging</td>
+                </tr>
+                <tr>
+                  <td><strong>BrowserStack</strong></td>
+                  <td>None (Cloud Real iPhone)</td>
+                  <td><span class="status-badge status-instant">Free Trial</span></td>
+                  <td>Physical device touch & gestures</td>
+                </tr>
+                <tr>
+                  <td><strong>Sideloadly / AltStore</strong></td>
+                  <td>Borrow an iPhone</td>
+                  <td><span class="status-badge status-free">100% Free</span></td>
+                  <td>On-device real-world usage</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+
+      </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <p>
+        <strong>SavingGoalPlus</strong> — Open-source native financial goals tracker.<br>
+        Developed by <a href="https://github.com/Minta1234" target="_blank" style="color: #34d399; text-decoration: none;">Minta1234</a> &amp; 
+        <a href="https://github.com/google-deepmind" target="_blank" style="color: #34d399; text-decoration: none;">Antigravity (Google DeepMind)</a>.
+        Released under the <strong>MIT License</strong>.
+      </p>
+    </footer>
+
+  </main>
+
+  <!-- Interactive Simulator Logic & Confetti Engine -->
+  <script>
+    // State
+    let targetAmount = 5000.0;
+    let savedAmount = 3000.0;
+    let daysRemaining = 60;
+    const circumference = 335; // length of 260° arc in SVG
+
+    const gaugeFill = document.getElementById('gauge-fill-path');
+    const uiPercentage = document.getElementById('ui-percentage');
+    const uiSaved = document.getElementById('ui-saved');
+    const uiTarget = document.getElementById('ui-target');
+    const uiRateDaily = document.getElementById('ui-rate-daily');
+    const uiRateWeekly = document.getElementById('ui-rate-weekly');
+    const uiRateBiweekly = document.getElementById('ui-rate-biweekly');
+    const uiRateMonthly = document.getElementById('ui-rate-monthly');
+    const txList = document.getElementById('tx-list');
+
+    function formatMoney(amount) {
+      return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function updateUI() {
+      const pct = Math.min(100, Math.round((savedAmount / targetAmount) * 100));
+      const remaining = Math.max(0, targetAmount - savedAmount);
+
+      uiPercentage.textContent = pct + '%';
+      uiSaved.textContent = formatMoney(savedAmount);
+      uiTarget.textContent = 'of ' + formatMoney(targetAmount);
+
+      // Arc Dashoffset calculation (0% -> 335 offset, 100% -> 0 offset)
+      const offset = circumference - (circumference * (pct / 100));
+      gaugeFill.style.strokeDashoffset = offset;
+
+      // Color stage
+      let color = '#f59e0b'; // Amber <= 30%
+      if (pct > 60) {
+        color = '#10b981'; // Emerald > 60%
+      } else if (pct > 30) {
+        color = '#06b6d4'; // Cyan 31-60%
+      }
+      gaugeFill.style.stroke = color;
+      uiPercentage.style.color = color;
+
+      // Rates calculations (100% parity with Android & iOS engines)
+      if (remaining <= 0) {
+        uiRateDaily.textContent = '$0.00';
+        uiRateWeekly.textContent = '$0.00';
+        uiRateBiweekly.textContent = '$0.00';
+        uiRateMonthly.textContent = '$0.00';
+      } else {
+        const daily = remaining / daysRemaining;
+        const weekly = remaining / Math.max(1, daysRemaining / 7);
+        const biweekly = remaining / Math.max(1, daysRemaining / 14);
+        const monthly = remaining / Math.max(1, daysRemaining / 30);
+
+        uiRateDaily.textContent = formatMoney(daily);
+        uiRateWeekly.textContent = formatMoney(weekly);
+        uiRateBiweekly.textContent = formatMoney(biweekly);
+        uiRateMonthly.textContent = formatMoney(monthly);
+      }
+    }
+
+    // Add Transaction
+    function addTransaction(amount, note) {
+      savedAmount = Math.max(0, savedAmount + amount);
+      const isDeposit = amount >= 0;
+
+      const item = document.createElement('div');
+      item.className = 'sim-tx-item';
+      item.innerHTML = `
+        <div>
+          <div class="tx-note">${note}</div>
+          <div class="tx-date">Just now</div>
+        </div>
+        <div class="${isDeposit ? 'tx-amount-plus' : 'tx-amount-minus'}">
+          ${isDeposit ? '+' : '-'}${formatMoney(Math.abs(amount))}
+        </div>
+      `;
+      txList.prepend(item);
+
+      updateUI();
+
+      // Trigger Celebration Confetti when 100% is reached
+      if (savedAmount >= targetAmount) {
+        launchConfetti();
+      }
+    }
+
+    document.getElementById('btn-deposit').addEventListener('click', () => {
+      addTransaction(500.0, 'Manual Deposit');
+    });
+
+    document.getElementById('btn-withdraw').addEventListener('click', () => {
+      addTransaction(-250.0, 'Withdrawal');
+    });
+
+    // 2D Physics Confetti Animation Engine
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    let confettiParticles = [];
+    let animationFrameId = null;
+
+    function resizeCanvas() {
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function launchConfetti() {
+      resizeCanvas();
+      const colors = ['#10b981', '#06b6d4', '#f59e0b', '#ec4899', '#8b5cf6', '#3b82f6'];
+      confettiParticles = [];
+
+      for (let i = 0; i < 90; i++) {
+        confettiParticles.push({
+          x: canvas.width / 2 + (Math.random() * 80 - 40),
+          y: canvas.height * 0.4 + (Math.random() * 40 - 20),
+          vx: (Math.random() - 0.5) * 12,
+          vy: Math.random() * -14 - 4,
+          w: Math.random() * 8 + 6,
+          h: Math.random() * 12 + 6,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 14,
+          opacity: 1
+        });
+      }
+
+      if (!animationFrameId) {
+        animateConfetti();
+      }
+    }
+
+    function animateConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const gravity = 0.42;
+
+      for (let i = confettiParticles.length - 1; i >= 0; i--) {
+        const p = confettiParticles[i];
+        p.vy += gravity;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rotation += p.rotationSpeed;
+        p.opacity -= 0.007;
+
+        if (p.opacity <= 0 || p.y > canvas.height + 20) {
+          confettiParticles.splice(i, 1);
+          continue;
+        }
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate((p.rotation * Math.PI) / 180);
+        ctx.globalAlpha = Math.max(0, p.opacity);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      }
+
+      if (confettiParticles.length > 0) {
+        animationFrameId = requestAnimationFrame(animateConfetti);
+      } else {
+        animationFrameId = null;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+
+    // Initialize UI on load
+    updateUI();
+  </script>
+</body>
+</html>
