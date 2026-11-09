@@ -9,4 +9,5 @@ Thank you to everyone who made **SavingGoalPlus** possible!
 
 ### 🛠️ Key Contributions:
 - **Minta1234**: Project conception, requirements engineering, feature direction, release oversight, and project maintenance.
-- **Antigravity**: Complete system architecture, Kotlin + Jetpack Compose modernization, SQLite reactive data layer, 260° dynamic arc gauge, 2D particle physics confetti engine, daily notification scheduling with `AlarmManager`, home screen AppWidget, non-AI vector branding, and CI/CD automated build/release workflows.
+- **Antigravity**: Complete system architecture, Kotlin + Jetpack Compose Android app, Swift + SwiftUI iOS app, 260° dynamic arc gauge, 2D particle physics confetti engine, daily notification scheduling, cross-platform backup engine, home screen widgets, non-AI vector branding, and CI/CD automated build/release workflows.
+

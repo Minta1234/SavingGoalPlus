@@ -1,0 +1,143 @@
+name: Build & Release iOS (SavingGoalPlus)
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios-build-and-release.yml'
+    tags:
+      - 'v*'
+      - '[0-9]+.[0-9]+.[0-9]+'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'ios/**'
+      - '.github/workflows/ios-build-and-release.yml'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Target Version (e.g. 1.0.0, 1.0.1). Leave blank to auto-bump patch.'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Run iOS Unit Tests
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode Version
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer || sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Run Unit Tests via Swift Package Manager
+        run: |
+          cd ios
+          swift test
+
+  build:
+    name: Build iOS App
+    needs: test
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode Version
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer || sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Build iOS App for Simulator / Generic iOS
+        run: |
+          cd ios
+          xcodebuild build \
+            -project SavingGoalPlus.xcodeproj \
+            -scheme SavingGoalPlus \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
+
+      - name: Package App Bundle for Distribution
+        run: |
+          mkdir -p build_output
+          cd ios
+          xcodebuild archive \
+            -project SavingGoalPlus.xcodeproj \
+            -scheme SavingGoalPlus \
+            -destination 'generic/platform=iOS' \
+            -archivePath "../build_output/SavingGoalPlus.xcarchive" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
+          cd ..
+          cd build_output
+          zip -r SavingGoalPlus-iOS.xcarchive.zip SavingGoalPlus.xcarchive
+
+      - name: Archive Built Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SavingGoalPlus-iOS-Artifacts
+          path: build_output/*.zip
+
+  release:
+    name: Publish iOS Release Assets
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compute Target Version
+        id: compute_version
+        run: |
+          INPUT_VERSION="${{ inputs.version }}"
+          if [ -n "$INPUT_VERSION" ]; then
+            TARGET_VERSION=$(echo "$INPUT_VERSION" | sed 's/^v//')
+          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            TAG_RAW="${GITHUB_REF#refs/tags/}"
+            TARGET_VERSION=$(echo "$TAG_RAW" | sed 's/^v//')
+          else
+            TARGET_VERSION="1.0.0"
+          fi
+          echo "RELEASE_VERSION=${TARGET_VERSION}" >> $GITHUB_ENV
+          echo "RELEASE_TAG=v${TARGET_VERSION}" >> $GITHUB_ENV
+
+      - name: Select Xcode Version
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer || sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Build and Package Release Bundle
+        run: |
+          mkdir -p release_dist
+          cd ios
+          xcodebuild archive \
+            -project SavingGoalPlus.xcodeproj \
+            -scheme SavingGoalPlus \
+            -destination 'generic/platform=iOS' \
+            -archivePath "../release_dist/SavingGoalPlus-v${RELEASE_VERSION}.xcarchive" \
+            MARKETING_VERSION="${RELEASE_VERSION}" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
+          cd ../release_dist
+          zip -r "SavingGoalPlus-v${RELEASE_VERSION}-iOS.xcarchive.zip" "SavingGoalPlus-v${RELEASE_VERSION}.xcarchive"
+          rm -rf *.xcarchive
+
+      - name: Attach iOS Assets to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release_dist/*.zip
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: "SavingGoalPlus v${{ env.RELEASE_VERSION }}"
+          generate_release_notes: true
+          draft: false
+          prerelease: false

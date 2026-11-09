@@ -5,15 +5,17 @@
 </p>
 
 <p align="center">
-  <strong>A modern, privacy-focused, zero-ads savings goal manager for Android.</strong><br>
-  Built with 100% Kotlin, Jetpack Compose, and Material 3.
+  <strong>A modern, privacy-focused, zero-ads savings goal manager for Android & iOS.</strong><br>
+  Built natively with Kotlin & Jetpack Compose (Android) and Swift & SwiftUI (iOS).
 </p>
 
 <p align="center">
-  <a href="https://github.com/Minta1234/SavingGoalPlus/actions"><img src="https://img.shields.io/github/actions/workflow/status/Minta1234/SavingGoalPlus/build-and-release.yml?branch=main&label=Build%20%26%20Release&logo=githubactions" alt="Build Status"></a>
+  <a href="https://github.com/Minta1234/SavingGoalPlus/actions"><img src="https://img.shields.io/github/actions/workflow/status/Minta1234/SavingGoalPlus/build-and-release.yml?branch=main&label=Android%20CI&logo=android" alt="Android Build Status"></a>
+  <a href="https://github.com/Minta1234/SavingGoalPlus/actions"><img src="https://img.shields.io/github/actions/workflow/status/Minta1234/SavingGoalPlus/ios-build-and-release.yml?branch=main&label=iOS%20CI&logo=apple" alt="iOS Build Status"></a>
   <img src="https://img.shields.io/badge/Android-16%20(API%2036)-3DDC84?logo=android&logoColor=white" alt="Android 16">
+  <img src="https://img.shields.io/badge/iOS-16.0%2B-000000?logo=apple&logoColor=white" alt="iOS 16+">
   <img src="https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin 2.0">
-  <img src="https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white" alt="Compose">
+  <img src="https://img.shields.io/badge/Swift-5.9%20%2F%20SwiftUI-F05138?logo=swift&logoColor=white" alt="SwiftUI">
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License: MIT"></a>
   <img src="https://img.shields.io/badge/100%25-Free%20%26%20Ad--Free-brightgreen" alt="Free & Ad Free">
 </p>
@@ -130,20 +132,36 @@ The compiled APK will be located at:
 The signed release APK will be located at:
 `app/build/outputs/apk/release/app-release.apk`
 
-### Run Unit Tests
+### Run Android Unit Tests
 ```bash
 ./gradlew testDebugUnitTest
 ```
 
+### Build & Test iOS App
+```bash
+cd ios
+# Run unit tests
+swift test
+
+# Build for iOS Simulator via Xcode
+xcodebuild build -project SavingGoalPlus.xcodeproj -scheme SavingGoalPlus -destination 'generic/platform=iOS Simulator'
+```
+
 ---
 
-## 🔄 Automated CI/CD & Version Release Worker
+## 🔄 Automated CI/CD & Smart Change Detection
 
-This repository includes an automated GitHub Actions release workflow in [`.github/workflows/build-and-release.yml`](.github/workflows/build-and-release.yml):
-- **Automated Verification**: Runs on every pull request and push to `main` (runs all unit tests and builds test APKs).
+This repository includes automated GitHub Actions release workflows for both Android and iOS:
+- **Android Workflow**: [`.github/workflows/build-and-release.yml`](.github/workflows/build-and-release.yml)
+- **iOS Workflow**: [`.github/workflows/ios-build-and-release.yml`](.github/workflows/ios-build-and-release.yml)
+
+### ⚡ Smart Selective Compilation ("Don't Compile if Nothing Changed")
+- **Android builds only when Android code changes**: Modifying files in `app/**`, `gradle/**`, or Android configs triggers the Android build. Changes only affecting documentation or iOS code **will NOT compile Android**.
+- **iOS builds only when iOS code changes**: Modifying files in `ios/**` triggers the iOS build. Changes only affecting documentation or Android code **will NOT compile iOS**.
+- **Docs & Non-code Commits**: Commits touching only markdown, documentation, or assets skip CI compilation entirely, saving build minutes.
 - **Dynamic Semantic Versioning (`1.0.0` → `1.0.1` → `1.0.2` ...)**:
-  - **Git Tag Releases**: Pushing any tag (e.g., `v1.0.0`, `v1.0.1`, `1.0.1`) automatically derives `versionName` and Android `versionCode`, builds the release APK, and publishes a new GitHub Release.
-  - **One-Click Manual Release (`workflow_dispatch`)**: Triggered directly from the GitHub Actions UI. You can either type an explicit version (e.g. `1.0.1`) or let it auto-bump the patch/minor/major version, update `gradle.properties`, create the tag, build the APK, and publish the release automatically.
+  - Both Android and iOS workflows support automatic patch bumping and manual version targeting.
+  - Generates cross-platform release assets: `.apk` for Android and `.xcarchive.zip` for iOS.
 
 ---
 

@@ -1,0 +1,469 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		1001 /* SavingGoalPlusApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2001 /* SavingGoalPlusApp.swift */; };
+		1002 /* Goal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2002 /* Goal.swift */; };
+		1003 /* Payment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2003 /* Payment.swift */; };
+		1004 /* SavingsRatePlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2004 /* SavingsRatePlan.swift */; };
+		1005 /* SavingsCalculations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2005 /* SavingsCalculations.swift */; };
+		1006 /* SavingsStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2006 /* SavingsStorageService.swift */; };
+		1007 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2007 /* NotificationManager.swift */; };
+		1008 /* ColorTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2008 /* ColorTheme.swift */; };
+		1009 /* CircularGoalGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2009 /* CircularGoalGaugeView.swift */; };
+		1010 /* ConfettiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2010 /* ConfettiView.swift */; };
+		1011 /* TotalSummaryCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2011 /* TotalSummaryCardView.swift */; };
+		1012 /* GoalCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2012 /* GoalCardView.swift */; };
+		1013 /* GoalEditSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2013 /* GoalEditSheet.swift */; };
+		1014 /* PaymentSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2014 /* PaymentSheet.swift */; };
+		1015 /* MainDashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2015 /* MainDashboardView.swift */; };
+		1016 /* GoalDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2016 /* GoalDetailView.swift */; };
+		1017 /* ArchiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2017 /* ArchiveView.swift */; };
+		1018 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2018 /* SettingsView.swift */; };
+		1019 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 2019 /* Assets.xcassets */; };
+		1020 /* SavingsCalculationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2020 /* SavingsCalculationsTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4001;
+			remoteInfo = SavingGoalPlus;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		4001 /* SavingGoalPlus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SavingGoalPlus.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4002 /* SavingGoalPlusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SavingGoalPlusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2001 /* SavingGoalPlusApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingGoalPlusApp.swift; sourceTree = "<group>"; };
+		2002 /* Goal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Goal.swift; sourceTree = "<group>"; };
+		2003 /* Payment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Payment.swift; sourceTree = "<group>"; };
+		2004 /* SavingsRatePlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsRatePlan.swift; sourceTree = "<group>"; };
+		2005 /* SavingsCalculations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsCalculations.swift; sourceTree = "<group>"; };
+		2006 /* SavingsStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsStorageService.swift; sourceTree = "<group>"; };
+		2007 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		2008 /* ColorTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorTheme.swift; sourceTree = "<group>"; };
+		2009 /* CircularGoalGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularGoalGaugeView.swift; sourceTree = "<group>"; };
+		2010 /* ConfettiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiView.swift; sourceTree = "<group>"; };
+		2011 /* TotalSummaryCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TotalSummaryCardView.swift; sourceTree = "<group>"; };
+		2012 /* GoalCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalCardView.swift; sourceTree = "<group>"; };
+		2013 /* GoalEditSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalEditSheet.swift; sourceTree = "<group>"; };
+		2014 /* PaymentSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentSheet.swift; sourceTree = "<group>"; };
+		2015 /* MainDashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainDashboardView.swift; sourceTree = "<group>"; };
+		2016 /* GoalDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalDetailView.swift; sourceTree = "<group>"; };
+		2017 /* ArchiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveView.swift; sourceTree = "<group>"; };
+		2018 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		2019 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		2020 /* SavingsCalculationsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsCalculationsTests.swift; sourceTree = "<group>"; };
+		2021 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		5001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		6001 = {
+			isa = PBXGroup;
+			children = (
+				6002 /* SavingGoalPlus */,
+				6008 /* SavingGoalPlusTests */,
+				6009 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		6002 /* SavingGoalPlus */ = {
+			isa = PBXGroup;
+			children = (
+				6003 /* App */,
+				6004 /* Models */,
+				6005 /* Services */,
+				6006 /* Theme */,
+				6007 /* Components */,
+				6010 /* Views */,
+				2019 /* Assets.xcassets */,
+				2021 /* Info.plist */,
+			);
+			path = SavingGoalPlus;
+			sourceTree = "<group>";
+		};
+		6003 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				2001 /* SavingGoalPlusApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		6004 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				2002 /* Goal.swift */,
+				2003 /* Payment.swift */,
+				2004 /* SavingsRatePlan.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		6005 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				2005 /* SavingsCalculations.swift */,
+				2006 /* SavingsStorageService.swift */,
+				2007 /* NotificationManager.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		6006 /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				2008 /* ColorTheme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		6007 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				2009 /* CircularGoalGaugeView.swift */,
+				2010 /* ConfettiView.swift */,
+				2011 /* TotalSummaryCardView.swift */,
+				2012 /* GoalCardView.swift */,
+				2013 /* GoalEditSheet.swift */,
+				2014 /* PaymentSheet.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		6010 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				2015 /* MainDashboardView.swift */,
+				2016 /* GoalDetailView.swift */,
+				2017 /* ArchiveView.swift */,
+				2018 /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		6008 /* SavingGoalPlusTests */ = {
+			isa = PBXGroup;
+			children = (
+				2020 /* SavingsCalculationsTests.swift */,
+			);
+			path = SavingGoalPlusTests;
+			sourceTree = "<group>";
+		};
+		6009 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4001 /* SavingGoalPlus.app */,
+				4002 /* SavingGoalPlusTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7001 /* SavingGoalPlus */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8001 /* Build configuration list for PBXNativeTarget "SavingGoalPlus" */;
+			buildPhases = (
+				9001 /* Sources */,
+				5001 /* Frameworks */,
+				9002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SavingGoalPlus;
+			productName = SavingGoalPlus;
+			productReference = 4001 /* SavingGoalPlus.app */;
+			productType = "com.apple.product-type.application";
+		};
+		7002 /* SavingGoalPlusTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8002 /* Build configuration list for PBXNativeTarget "SavingGoalPlusTests" */;
+			buildPhases = (
+				9003 /* Sources */,
+				5002 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1021 /* PBXTargetDependency */,
+			);
+			name = SavingGoalPlusTests;
+			productName = SavingGoalPlusTests;
+			productReference = 4002 /* SavingGoalPlusTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					7001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					7002 = {
+						CreatedOnToolsVersion = 15.0;
+						TestTargetID = 7001;
+					};
+				};
+			};
+			buildConfigurationList = 8003 /* Build configuration list for PBXProject "SavingGoalPlus" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 6001;
+			productRefGroup = 6009 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7001 /* SavingGoalPlus */,
+				7002 /* SavingGoalPlusTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		9002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1019 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		9001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1001 /* SavingGoalPlusApp.swift in Sources */,
+				1002 /* Goal.swift in Sources */,
+				1003 /* Payment.swift in Sources */,
+				1004 /* SavingsRatePlan.swift in Sources */,
+				1005 /* SavingsCalculations.swift in Sources */,
+				1006 /* SavingsStorageService.swift in Sources */,
+				1007 /* NotificationManager.swift in Sources */,
+				1008 /* ColorTheme.swift in Sources */,
+				1009 /* CircularGoalGaugeView.swift in Sources */,
+				1010 /* ConfettiView.swift in Sources */,
+				1011 /* TotalSummaryCardView.swift in Sources */,
+				1012 /* GoalCardView.swift in Sources */,
+				1013 /* GoalEditSheet.swift in Sources */,
+				1014 /* PaymentSheet.swift in Sources */,
+				1015 /* MainDashboardView.swift in Sources */,
+				1016 /* GoalDetailView.swift in Sources */,
+				1017 /* ArchiveView.swift in Sources */,
+				1018 /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1020 /* SavingsCalculationsTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1021 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7001 /* SavingGoalPlus */;
+			targetProxy = 3001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		9101 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		9102 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		9201 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 10000;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SavingGoalPlus/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.savinggoalplus;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		9202 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 10000;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = SavingGoalPlus/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.savinggoalplus;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		9301 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 10000;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.savinggoalplus.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SavingGoalPlus.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SavingGoalPlus";
+			};
+			name = Debug;
+		};
+		9302 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 10000;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.savinggoalplus.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SavingGoalPlus.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SavingGoalPlus";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8001 /* Build configuration list for PBXNativeTarget "SavingGoalPlus" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9201 /* Debug */,
+				9202 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8002 /* Build configuration list for PBXNativeTarget "SavingGoalPlusTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9301 /* Debug */,
+				9302 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8003 /* Build configuration list for PBXProject "SavingGoalPlus" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9101 /* Debug */,
+				9102 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 0001 /* Project object */;
+}
