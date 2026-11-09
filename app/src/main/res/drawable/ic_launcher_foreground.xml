@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Glowing Progress Track Arc around center -->
+    <path
+        android:pathData="M 32,74 A 28,28 0 1,1 76,74"
+        android:strokeWidth="5"
+        android:strokeColor="#40FFFFFF"
+        android:strokeLineCap="round" />
+
+    <path
+        android:pathData="M 32,74 A 28,28 0 1,1 74,38"
+        android:strokeWidth="5"
+        android:strokeColor="#34D399"
+        android:strokeLineCap="round" />
+
+    <!-- Center Golden Coin -->
+    <path
+        android:pathData="M 54,34 A 20,20 0 1,0 54,74 A 20,20 0 1,0 54,34 Z"
+        android:fillColor="#F59E0B" />
+
+    <!-- Coin Bevel Ring -->
+    <path
+        android:pathData="M 54,38 A 16,16 0 1,0 54,70 A 16,16 0 1,0 54,38 Z"
+        android:fillColor="#FCD34D"
+        android:strokeWidth="1.5"
+        android:strokeColor="#F59E0B" />
+
+    <!-- Dollar Symbol on Coin -->
+    <!-- Vertical Spine -->
+    <path
+        android:pathData="M 54,43 L 54,65"
+        android:strokeWidth="2.5"
+        android:strokeColor="#B45309"
+        android:strokeLineCap="round" />
+
+    <!-- S curves -->
+    <path
+        android:pathData="M 59,48 C 59,44 49,44 49,51 C 49,58 59,56 59,61 C 59,66 48,66 48,61"
+        android:strokeWidth="2.5"
+        android:strokeColor="#B45309"
+        android:strokeLineCap="round" />
+
+    <!-- Growth Trend Arrow (Top-Right) -->
+    <path
+        android:pathData="M 66,42 L 78,30"
+        android:strokeWidth="3.5"
+        android:strokeColor="#34D399"
+        android:strokeLineCap="round" />
+
+    <path
+        android:pathData="M 72,30 L 78,30 L 78,36"
+        android:strokeWidth="3.5"
+        android:strokeColor="#34D399"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- Sparkle Star (Top-Left) -->
+    <path
+        android:pathData="M 36,36 L 36,44 M 32,40 L 40,40"
+        android:strokeWidth="2"
+        android:strokeColor="#FFFFFF"
+        android:strokeLineCap="round" />
+</vector>

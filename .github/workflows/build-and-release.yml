@@ -1,0 +1,110 @@
+name: Build & Release SavingGoalPlus
+
+on:
+  push:
+    branches: [ "main" ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build & Test APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant Execute Permission for Gradle Wrapper
+        run: chmod +x gradlew
+
+      - name: Run Unit Tests
+        run: ./gradlew testDebugUnitTest --stacktrace
+
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Archive Built APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: SavingGoalPlus-APKs
+          path: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/apk/debug/*.apk
+
+  release:
+    name: Publish GitHub Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant Execute Permission for Gradle Wrapper
+        run: chmod +x gradlew
+
+      - name: Build Release APK
+        run: ./gradlew assembleRelease
+
+      - name: Prepare Assets for Release
+        run: |
+          mkdir -p release_dist
+          cp app/build/outputs/apk/release/app-release.apk release_dist/SavingGoalPlus-${{ github.ref_name || 'latest' }}-release.apk
+
+      - name: Create GitHub Release & Upload APK
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release_dist/*.apk
+          name: SavingGoalPlus ${{ github.ref_name || 'v2.0.0' }}
+          tag_name: ${{ github.ref_name || 'v2.0.0' }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            # 🚀 SavingGoalPlus Release
+
+            Welcome to **SavingGoalPlus** — a modern, privacy-focused, zero-ads savings goal manager built with Jetpack Compose & Material 3.
+
+            ### 📦 Download
+            - **`SavingGoalPlus-release.apk`**: Ready to install on Android 7.0 (API 24) through Android 16 (API 36).
+
+            ---
+
+            ### 🌟 Key Improvements & Fixes over Legacy App:
+            1. **Modern Architecture**: Complete rewrite from ground up with Kotlin 2.0, Jetpack Compose, Material 3, and Kotlin Coroutines/Flow.
+            2. **100% Unlocked**: Removed all premium locks, ads, and in-app purchase blockers. Total Summary card and unlimited goals are available for free to everyone.
+            3. **Interactive Confetti Physics**: Beautiful celebratory particle explosion triggers when any goal reaches 100% completion.
+            4. **Smart Reminders**: Precise scheduled reminder notifications using Android's `AlarmManager` with boot persistence.
+            5. **Dynamic 260° Arc Gauge**: Visually intuitive target savings gauge with real-time amber, cyan, and emerald green stages.
+            6. **Custom Vector App Icon**: Hand-crafted non-AI vector branding and multi-density mipmap icons.
+            7. **Home Screen Widget**: Native AppWidget for at-a-glance financial tracking.
+            8. **Backup & Restore**: Full JSON payload export/import with backward-compatible SQLite database structure + CSV data export.
