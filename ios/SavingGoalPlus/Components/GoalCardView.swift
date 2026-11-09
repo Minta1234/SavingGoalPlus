@@ -118,3 +118,4 @@ public struct GoalCardView: View {
         .shadow(color: Color.black.opacity(0.03), radius: 6, x: 0, y: 2)
     }
 }
+

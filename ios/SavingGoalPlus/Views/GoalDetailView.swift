@@ -185,3 +185,4 @@ private struct RateCard: View {
         .cornerRadius(14)
     }
 }
+

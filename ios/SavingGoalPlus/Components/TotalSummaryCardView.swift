@@ -76,3 +76,4 @@ public struct TotalSummaryCardView: View {
         .shadow(color: Color.black.opacity(0.04), radius: 8, x: 0, y: 3)
     }
 }
+

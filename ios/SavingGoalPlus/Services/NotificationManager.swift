@@ -87,3 +87,4 @@ public final class NotificationManager: ObservableObject {
         defaults.set(reminderMinute, forKey: "reminder_minute")
     }
 }
+

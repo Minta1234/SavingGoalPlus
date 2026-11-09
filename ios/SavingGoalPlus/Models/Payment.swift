@@ -36,3 +36,4 @@ public struct Payment: Identifiable, Codable, Equatable, Hashable {
         return formatter.string(from: Date())
     }
 }
+

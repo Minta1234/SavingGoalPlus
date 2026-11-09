@@ -87,3 +87,4 @@ public struct SavingGoalPlusWidget: Widget {
         .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
+

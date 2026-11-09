@@ -53,3 +53,4 @@ public struct Goal: Identifiable, Codable, Equatable, Hashable {
         savedAmount >= targetAmount && targetAmount > 0
     }
 }
+

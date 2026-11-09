@@ -45,3 +45,4 @@ final class SavingsCalculationsTests: XCTestCase {
         XCTAssertEqual(formatted, "$1,234.56")
     }
 }
+
