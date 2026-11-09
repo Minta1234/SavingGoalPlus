@@ -25,25 +25,34 @@ android {
     versionName = appVersionName
   }
 
+  val keystoreFile = file("release.keystore")
+  val hasKeystore = keystoreFile.exists()
+
   signingConfigs {
     create("release") {
-      storeFile = file("release.keystore")
-      storePassword = "savinggoalplus"
-      keyAlias = "savinggoal"
-      keyPassword = "savinggoalplus"
-      enableV1Signing = true
-      enableV2Signing = true
+      if (hasKeystore) {
+        storeFile = keystoreFile
+        storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "savinggoalplus"
+        keyAlias = System.getenv("KEY_ALIAS") ?: "savinggoal"
+        keyPassword = System.getenv("KEY_PASSWORD") ?: "savinggoalplus"
+        enableV1Signing = true
+        enableV2Signing = true
+      }
     }
   }
 
   buildTypes {
     release {
       isMinifyEnabled = false
-      signingConfig = signingConfigs.getByName("release")
+      if (hasKeystore) {
+        signingConfig = signingConfigs.getByName("release")
+      }
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
     }
     debug {
-      signingConfig = signingConfigs.getByName("release")
+      if (hasKeystore) {
+        signingConfig = signingConfigs.getByName("release")
+      }
     }
   }
   compileOptions {

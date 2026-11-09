@@ -1,2 +1,4 @@
 /build
+*.keystore
+*.jks
 release.keystore

@@ -225,7 +225,7 @@ public struct SettingsView: View {
     }
 
     private func exportJson() {
-        let json = storage.exportBackup()
+        let json = storage.exportBackupJson()
         let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("SavingGoalPlus_Backup.json")
         try? json.write(to: tempURL, atomically: true, encoding: .utf8)
         exportItems = [tempURL]

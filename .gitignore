@@ -15,3 +15,12 @@
 local.properties
 .kotlin
 
+# Keystores & Signing Certificates (Keep Private!)
+*.keystore
+*.jks
+*.p8
+*.p12
+*.mobileprovision
+release.keystore
+app/release.keystore
+
