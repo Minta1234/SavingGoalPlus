@@ -432,12 +432,13 @@ fun SettingsScreen(
                     .clickable {
                         scope.launch {
                             val csv = viewModel.repository.exportToCsv()
-                            val sendIntent = Intent().apply {
-                                action = Intent.ACTION_SEND
-                                putExtra(Intent.EXTRA_TEXT, csv)
-                                type = "text/csv"
-                            }
-                            context.startActivity(Intent.createChooser(sendIntent, "Share Goals CSV"))
+                            com.example.savingsgoal.util.FileExportHelper.shareExportFile(
+                                context = context,
+                                content = csv,
+                                extension = "csv",
+                                mimeType = "text/csv",
+                                title = "Goals_Ledger"
+                            )
                         }
                     },
                 shape = RoundedCornerShape(16.dp),

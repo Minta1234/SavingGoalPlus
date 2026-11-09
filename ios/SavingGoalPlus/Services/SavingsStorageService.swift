@@ -111,6 +111,9 @@ public final class SavingsStorageService: ObservableObject {
         let newSaved = max(0.0, currentSaved + amount)
         let wasNotComplete = currentSaved < goals[goalIndex].targetAmount
         goals[goalIndex].savedAmount = newSaved
+        if amount > 0 {
+            SavingsStreakManager.shared.recordDeposit()
+        }
         saveData()
 
         let isNowComplete = newSaved >= goals[goalIndex].targetAmount

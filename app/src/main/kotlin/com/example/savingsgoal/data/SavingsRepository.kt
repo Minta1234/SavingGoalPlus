@@ -374,6 +374,9 @@ class SavingsRepository(private val context: Context) {
             put(SavingsGoalDbHelper.COL_PAY_NOTE, note)
         }
         val id = db.insertOrThrow(SavingsGoalDbHelper.TABLE_PAYMENTLIST, null, cv)
+        if (isSaving && amount > 0) {
+            SavingsStreakManager.recordDepositStreak(context)
+        }
         notifyChanged()
         id
     }

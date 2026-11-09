@@ -41,8 +41,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.savingsgoal.data.Goal
+import com.example.savingsgoal.data.SavingsStreakManager
 import com.example.savingsgoal.ui.components.GoalCard
 import com.example.savingsgoal.ui.components.GoalEditDialog
+import com.example.savingsgoal.ui.components.StreakBanner
 import com.example.savingsgoal.ui.components.TotalSummaryCard
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -54,6 +56,7 @@ fun MainScreen(
     viewModel: MainViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val streakInfo by SavingsStreakManager.streakState.collectAsState()
 
     var showAddDialog by remember { mutableStateOf(false) }
     var editingGoal by remember { mutableStateOf<Goal?>(null) }
@@ -144,8 +147,13 @@ fun MainScreen(
                             summary = uiState.summary,
                             currencySymbol = uiState.defaultCurrency
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                     }
+                }
+
+                // Daily Savings Streak Banner (Duolingo / TikTok style)
+                item {
+                    StreakBanner(streakInfo = streakInfo)
                 }
 
                 items(uiState.goals, key = { it.id }) { goal ->

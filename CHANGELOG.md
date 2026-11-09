@@ -7,7 +7,23 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ## [v1.0.2] — 2026-11-10
 
-### 🎨 Added
+### 🔥 Added
+- **Gamified Daily Savings Streak (Duolingo & TikTok Style)**:
+  - Daily streak tracking engine (`SavingsStreakManager`) with automatic deposit verification.
+  - Animated flame badge (`🔥`) with glowing pulse animation on both Android & iOS dashboards.
+  - 6 Motivational Milestones & Tiers:
+    - 👑 **Savings Titan** (100+ days)
+    - 💎 **Month Master** (30–99 days)
+    - 🏆 **Fortnight Legend** (14–29 days)
+    - ⚡ **Week Champion** (7–13 days)
+    - 🔥 **Warming Up** (3–6 days)
+    - 🌱 **Habit Spark** (1–2 days)
+  - Interactive "Streak Milestones" modal dialog and sheet detailing personal stats (Current Streak, Best Streak, Total Days Saved).
+  - Streak-aware daily push reminders via `SavingsNotificationManager`: *"🔥 Keep your 5-day streak alive! Don't let your streak break!"*
+- **Real File Export (.json & .csv) via Storage Access / FileProvider**:
+  - Implemented `FileExportHelper` with Android `FileProvider` (`content://`) replacing plain text sharing.
+  - Generates actual downloadable `.json` and `.csv` files that open directly in Google Drive, Gmail, Files, Excel, or Sheets.
+  - iOS Share Sheet writes temporary `.json` / `.csv` file URLs for native "Save to Files" support.
 - **8 iOS-Style Theme Accent Palettes**:
   - 🟢 **Apple Mint (Emerald)** (`#10B981`) — Clean energetic green
   - 🔵 **Cupertino Blue** (`#007AFF`) — Classic Apple iOS system blue
@@ -63,3 +79,4 @@ This project follows [Semantic Versioning](https://semver.org/).
   - SQLite relational database with JSON import/export and CSV export.
 - **Vector Branding**:
   - Non-AI custom adaptive vector vault and sprout branding.
+

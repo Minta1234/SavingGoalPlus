@@ -38,6 +38,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ThemeManager.init(this)
+        com.example.savingsgoal.data.SavingsStreakManager.init(this)
 
         enableEdgeToEdge()
         setContent {

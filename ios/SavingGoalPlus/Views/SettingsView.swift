@@ -17,7 +17,7 @@ public struct SettingsView: View {
     }()
 
     @State private var showingExportAlert = false
-    @State private var exportText = ""
+    @State private var exportItems: [Any] = []
     @State private var showingImportSheet = false
     @State private var importText = ""
     @State private var importErrorMessage = ""
@@ -163,7 +163,7 @@ public struct SettingsView: View {
             .navigationTitle("Settings")
             #if canImport(UIKit)
             .sheet(isPresented: $showingExportAlert) {
-                ShareSheet(activityItems: [exportText])
+                ShareSheet(activityItems: exportItems)
             }
             #endif
             .sheet(isPresented: $showingChangelogSheet) {
@@ -225,12 +225,18 @@ public struct SettingsView: View {
     }
 
     private func exportJson() {
-        exportText = storage.exportBackup()
+        let json = storage.exportBackup()
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("SavingGoalPlus_Backup.json")
+        try? json.write(to: tempURL, atomically: true, encoding: .utf8)
+        exportItems = [tempURL]
         showingExportAlert = true
     }
 
     private func exportCsv() {
-        exportText = storage.exportCsv()
+        let csv = storage.exportCsv()
+        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("SavingGoalPlus_Transactions.csv")
+        try? csv.write(to: tempURL, atomically: true, encoding: .utf8)
+        exportItems = [tempURL]
         showingExportAlert = true
     }
 }

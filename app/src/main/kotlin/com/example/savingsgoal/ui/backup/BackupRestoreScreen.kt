@@ -165,14 +165,15 @@ fun BackupRestoreScreen(
                                 isProcessing = true
                                 scope.launch {
                                     val json = repository.exportToJson()
-                                    val sendIntent = Intent().apply {
-                                        action = Intent.ACTION_SEND
-                                        putExtra(Intent.EXTRA_TEXT, json)
-                                        type = "application/json"
-                                    }
-                                    context.startActivity(Intent.createChooser(sendIntent, "Share Backup JSON"))
+                                    com.example.savingsgoal.util.FileExportHelper.shareExportFile(
+                                        context = context,
+                                        content = json,
+                                        extension = "json",
+                                        mimeType = "application/json",
+                                        title = "FullBackup"
+                                    )
                                     isProcessing = false
-                                    snackbarHostState.showSnackbar("Backup JSON generated successfully!")
+                                    snackbarHostState.showSnackbar("Backup JSON file exported successfully!")
                                 }
                             },
                             modifier = Modifier.weight(1f)
@@ -187,13 +188,15 @@ fun BackupRestoreScreen(
                                 isProcessing = true
                                 scope.launch {
                                     val csv = repository.exportToCsv()
-                                    val sendIntent = Intent().apply {
-                                        action = Intent.ACTION_SEND
-                                        putExtra(Intent.EXTRA_TEXT, csv)
-                                        type = "text/csv"
-                                    }
-                                    context.startActivity(Intent.createChooser(sendIntent, "Export CSV"))
+                                    com.example.savingsgoal.util.FileExportHelper.shareExportFile(
+                                        context = context,
+                                        content = csv,
+                                        extension = "csv",
+                                        mimeType = "text/csv",
+                                        title = "Goals_Ledger"
+                                    )
                                     isProcessing = false
+                                    snackbarHostState.showSnackbar("CSV file exported successfully!")
                                 }
                             },
                             modifier = Modifier.weight(1f)

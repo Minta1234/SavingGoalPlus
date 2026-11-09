@@ -842,8 +842,83 @@
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 20px;
       padding: 18px;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    .sim-streak-card {
+      background: linear-gradient(135deg, rgba(255, 87, 34, 0.12), rgba(255, 152, 0, 0.08));
+      border: 1px solid rgba(255, 152, 0, 0.25);
+      border-radius: 18px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .sim-streak-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(255, 87, 34, 0.2);
+    }
+    .streak-flame-box {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff5722, #ff9800);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      animation: flamePulse 1.8s infinite ease-in-out;
+      box-shadow: 0 2px 10px rgba(255, 87, 34, 0.4);
+      flex-shrink: 0;
+    }
+    @keyframes flamePulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    .streak-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .streak-title-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .streak-count-text {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .streak-badge-pill {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: rgba(34, 197, 94, 0.18);
+      color: #4ade80;
+    }
+    .streak-tier-text {
+      font-size: 0.72rem;
+      color: #cbd5e1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+    .streak-best-pill {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      background: rgba(255, 152, 0, 0.14);
+      padding: 4px 8px;
+      border-radius: 10px;
+      color: #fb923c;
+      font-size: 0.75rem;
+      font-weight: 800;
+      flex-shrink: 0;
     }
     .summary-row {
       display: flex;
@@ -1598,6 +1673,24 @@
                   </div>
                 </div>
 
+                <!-- Daily Savings Streak Card (Duolingo / TikTok style) -->
+                <div class="sim-streak-card" onclick="openStreakModal()" title="View Savings Streak Milestones">
+                  <div class="streak-flame-box">
+                    <span>🔥</span>
+                  </div>
+                  <div class="streak-info">
+                    <div class="streak-title-row">
+                      <span id="sim-streak-count" class="streak-count-text">7 Day Streak!</span>
+                      <span id="sim-streak-badge" class="streak-badge-pill">Active Today</span>
+                    </div>
+                    <div id="sim-streak-tier" class="streak-tier-text">⚡ Week Champion • Streak burning bright!</div>
+                  </div>
+                  <div class="streak-best-pill">
+                    <span>⭐</span>
+                    <span id="sim-streak-best">14d</span>
+                  </div>
+                </div>
+
                 <!-- Filter Chips -->
                 <div class="chip-bar">
                   <button class="filter-chip active" onclick="filterGoals('all', this)">All</button>
@@ -1949,8 +2042,10 @@
       <div class="changelog-item">
         <span class="changelog-tag">v1.0.2 • Latest Release</span>
         <ul>
+          <li><strong>🔥 Gamified Daily Savings Streak</strong>: Duolingo / TikTok style streak tracking with flame icons, motivational milestone tiers (Habit Spark to Savings Titan), and smart reminder notifications.</li>
+          <li><strong>📁 Real File Export (.json / .csv)</strong>: Direct file downloads and native Share Sheet via Android FileProvider &amp; iOS UIActivityViewController.</li>
           <li><strong>🎨 8 iOS-Style Theme Accent Palettes</strong>: Customize accent colors with Apple Mint, Cupertino Blue, Indigo Night, Rose Pink, Sunset Orange, Pacific Teal, Royal Purple, and Midnight Slate.</li>
-          <li><strong>🔄 Seamless In-Place Updates</strong>: Unified release keystore enables direct APK updates without uninstalling or losing data.</li>
+          <li><strong>🔄 Seamless In-Place Updates</strong>: Permanent release keystore signing ensures zero uninstalls needed on future updates.</li>
           <li><strong>📋 In-App Change Log &amp; Update Checker</strong>: One-click release notes viewer and GitHub Releases update checker in Settings.</li>
         </ul>
       </div>
@@ -1974,6 +2069,67 @@
           <li><strong>🎉 2D Confetti Particle Physics</strong>: Realistic celebration physics on 100% goal milestone.</li>
           <li><strong>🔒 100% Private Offline Storage</strong>: SQLite with JSON/CSV export and import.</li>
         </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Savings Streak Milestones Modal -->
+  <div id="streak-modal" class="changelog-modal" onclick="closeStreakModal(event)">
+    <div class="changelog-box">
+      <button class="lightbox-close" onclick="closeStreakModal(event)">✕</button>
+      <h3>🔥 Savings Streak Milestones</h3>
+      <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.9rem;">
+        Build a daily habit of saving! Deposit into any of your goals every day to keep your streak burning bright. If a full day is skipped, your streak resets.
+      </p>
+
+      <div style="display: flex; justify-content: space-around; background: rgba(255,255,255,0.04); border-radius: 16px; padding: 14px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.08);">
+        <div style="text-align: center;">
+          <div id="modal-streak-curr" style="font-size: 1.5rem; font-weight: 800; color: #ff5722;">7d</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Current Streak</div>
+        </div>
+        <div style="text-align: center;">
+          <div id="modal-streak-best" style="font-size: 1.5rem; font-weight: 800; color: #ff9800;">14d</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Best Streak</div>
+        </div>
+        <div style="text-align: center;">
+          <div id="modal-streak-total" style="font-size: 1.5rem; font-weight: 800; color: #10b981;">28d</div>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Total Days Saved</div>
+        </div>
+      </div>
+
+      <h4 style="color: #fff; font-size: 1rem; margin-bottom: 10px;">Motivational Tiers</h4>
+      <div class="changelog-item">
+        <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px;">
+          <li style="display: flex; justify-content: space-between; padding: 8px 12px; border-radius: 8px; background: rgba(255,255,255,0.02);">
+            <span>👑 <strong>Savings Titan</strong></span>
+            <span style="color: var(--text-muted);">100+ Days</span>
+          </li>
+          <li style="display: flex; justify-content: space-between; padding: 8px 12px; border-radius: 8px; background: rgba(255,255,255,0.02);">
+            <span>💎 <strong>Month Master</strong></span>
+            <span style="color: var(--text-muted);">30 - 99 Days</span>
+          </li>
+          <li style="display: flex; justify-content: space-between; padding: 8px 12px; border-radius: 8px; background: rgba(255,255,255,0.02);">
+            <span>🏆 <strong>Fortnight Legend</strong></span>
+            <span style="color: var(--text-muted);">14 - 29 Days</span>
+          </li>
+          <li style="display: flex; justify-content: space-between; padding: 8px 12px; border-radius: 8px; background: rgba(255, 152, 0, 0.12); border: 1px solid rgba(255, 152, 0, 0.3);">
+            <span style="color: #fb923c;">⚡ <strong>Week Champion (Current)</strong></span>
+            <span style="color: #fb923c; font-weight: 700;">7 - 13 Days</span>
+          </li>
+          <li style="display: flex; justify-content: space-between; padding: 8px 12px; border-radius: 8px; background: rgba(255,255,255,0.02);">
+            <span>🔥 <strong>Warming Up</strong></span>
+            <span style="color: var(--text-muted);">3 - 6 Days</span>
+          </li>
+          <li style="display: flex; justify-content: space-between; padding: 8px 12px; border-radius: 8px; background: rgba(255,255,255,0.02);">
+            <span>🌱 <strong>Habit Spark</strong></span>
+            <span style="color: var(--text-muted);">1 - 2 Days</span>
+          </li>
+        </ul>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 18px;">
+        <button class="btn btn-primary" style="flex: 1; padding: 10px;" onclick="testStreakIncrement()">🔥 Record Deposit (+1 Day Streak)</button>
+        <button class="btn btn-secondary" style="padding: 10px 16px;" onclick="closeStreakModal(event)">Close</button>
       </div>
     </div>
   </div>
@@ -2048,13 +2204,18 @@
     window.addEventListener('keydown', (e) => {
       const modal = document.getElementById('lightbox');
       const changelogModal = document.getElementById('changelog-modal');
+      const streakModal = document.getElementById('streak-modal');
       if (e.key === 'Escape') {
-        if (modal.classList.contains('active')) {
+        if (modal && modal.classList.contains('active')) {
           modal.classList.remove('active');
           document.body.style.overflow = '';
         }
         if (changelogModal && changelogModal.classList.contains('active')) {
           changelogModal.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+        if (streakModal && streakModal.classList.contains('active')) {
+          streakModal.classList.remove('active');
           document.body.style.overflow = '';
         }
       }
@@ -2078,6 +2239,71 @@
           modal.classList.remove('active');
           document.body.style.overflow = '';
         }
+      }
+    }
+
+    // Streak Simulator State & Handlers
+    let simStreak = 7;
+    let simBestStreak = 14;
+    let simTotalDays = 28;
+    let simStreakActiveToday = true;
+
+    function openStreakModal(e) {
+      if (e) e.preventDefault();
+      const modal = document.getElementById('streak-modal');
+      if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        playBeep(680, 'triangle', 0.1);
+      }
+    }
+
+    function closeStreakModal(e) {
+      if (!e || e.target.id === 'streak-modal' || e.target.classList.contains('lightbox-close') || e.target.tagName === 'BUTTON') {
+        const modal = document.getElementById('streak-modal');
+        if (modal) {
+          modal.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      }
+    }
+
+    function testStreakIncrement() {
+      simStreak += 1;
+      simTotalDays += 1;
+      if (simStreak > simBestStreak) simBestStreak = simStreak;
+      simStreakActiveToday = true;
+      updateStreakUI();
+      playBeep(780, 'sine', 0.15);
+    }
+
+    function updateStreakUI() {
+      const countEl = document.getElementById('sim-streak-count');
+      const badgeEl = document.getElementById('sim-streak-badge');
+      const tierEl = document.getElementById('sim-streak-tier');
+      const bestEl = document.getElementById('sim-streak-best');
+      const modalCurr = document.getElementById('modal-streak-curr');
+      const modalBest = document.getElementById('modal-streak-best');
+      const modalTotal = document.getElementById('modal-streak-total');
+
+      if (countEl) countEl.innerText = `${simStreak} Day Streak!`;
+      if (bestEl) bestEl.innerText = `${simBestStreak}d`;
+      if (modalCurr) modalCurr.innerText = `${simStreak}d`;
+      if (modalBest) modalBest.innerText = `${simBestStreak}d`;
+      if (modalTotal) modalTotal.innerText = `${simTotalDays}d`;
+
+      let tier = '🌱 Habit Spark';
+      if (simStreak >= 100) tier = '👑 Savings Titan';
+      else if (simStreak >= 30) tier = '💎 Month Master';
+      else if (simStreak >= 14) tier = '🏆 Fortnight Legend';
+      else if (simStreak >= 7) tier = '⚡ Week Champion';
+      else if (simStreak >= 3) tier = '🔥 Warming Up';
+
+      if (tierEl) tierEl.innerText = `${tier} • Streak burning bright! 🔥`;
+      if (badgeEl) {
+        badgeEl.innerText = simStreakActiveToday ? 'Active Today' : 'Needs Deposit';
+        badgeEl.style.background = simStreakActiveToday ? 'rgba(34, 197, 94, 0.18)' : 'rgba(249, 115, 22, 0.18)';
+        badgeEl.style.color = simStreakActiveToday ? '#4ade80' : '#fb923c';
       }
     }
 

@@ -102,3 +102,4 @@ enum class AppThemePalette(
         }
     }
 }
+

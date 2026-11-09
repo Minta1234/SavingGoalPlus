@@ -23,11 +23,24 @@ class SavingsReminderReceiver : BroadcastReceiver() {
             return
         }
 
-        // Show reminder notification
+        // Show reminder notification with streak encouragement
+        val streakInfo = com.example.savingsgoal.data.SavingsStreakManager.streakState.value
+        val (title, message) = if (streakInfo.currentStreak > 0) {
+            Pair(
+                "🔥 Keep your ${streakInfo.currentStreak}-day streak alive!",
+                "Don't let your ${streakInfo.levelTitle} streak break! Record your deposit today."
+            )
+        } else {
+            Pair(
+                "Time to save for your goals! 💰",
+                "Take a moment today to record your savings or review your progress."
+            )
+        }
+
         SavingsNotificationManager.showReminderNotification(
             context,
-            title = "Time to save for your goals! 💰",
-            message = "Take a moment today to record your savings or review your progress."
+            title = title,
+            message = message
         )
 
         // Reschedule for tomorrow
