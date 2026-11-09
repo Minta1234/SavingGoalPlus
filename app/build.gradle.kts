@@ -7,12 +7,22 @@ plugins {
 android {
   namespace = "com.example.savingsgoal"
   compileSdk = 36
+
+  val appVersionName: String = (project.findProperty("versionName") as? String)
+    ?.takeIf { it.isNotBlank() }
+    ?: (project.findProperty("VERSION_NAME") as? String)
+    ?: "1.0.0"
+
+  val appVersionCode: Int = (project.findProperty("versionCode") as? String)?.toIntOrNull()
+    ?: (project.findProperty("VERSION_CODE") as? String)?.toIntOrNull()
+    ?: 10000
+
   defaultConfig {
     applicationId = "com.example.savingsgoal"
     minSdk = 24
     targetSdk = 36
-    versionCode = 200
-    versionName = "2.0.0"
+    versionCode = appVersionCode
+    versionName = appVersionName
   }
 
   buildTypes {

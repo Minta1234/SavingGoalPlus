@@ -5,16 +5,34 @@ on:
     branches: [ "main" ]
     tags:
       - 'v*'
+      - '[0-9]+.[0-9]+.[0-9]+'
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Target Version (e.g. 1.0.0, 1.0.1, 1.0.2). Leave blank to auto-bump patch.'
+        required: false
+        default: ''
+      bump_type:
+        description: 'Auto-bump type if target version is blank'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+      commit_version_bump:
+        description: 'Commit updated version back to repository'
+        type: boolean
+        default: true
 
 permissions:
   contents: write
 
 jobs:
-  build:
-    name: Build & Test APK
+  test:
+    name: Run Unit Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -36,24 +54,9 @@ jobs:
       - name: Run Unit Tests
         run: ./gradlew testDebugUnitTest --stacktrace
 
-      - name: Build Release APK
-        run: ./gradlew assembleRelease --stacktrace
-
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
-
-      - name: Archive Built APKs
-        uses: actions/upload-artifact@v4
-        with:
-          name: SavingGoalPlus-APKs
-          path: |
-            app/build/outputs/apk/release/*.apk
-            app/build/outputs/apk/debug/*.apk
-
-  release:
-    name: Publish GitHub Release
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'workflow_dispatch'
+  build:
+    name: Build Debug & Release APKs
+    needs: test
     runs-on: ubuntu-latest
 
     steps:
@@ -72,39 +75,157 @@ jobs:
       - name: Grant Execute Permission for Gradle Wrapper
         run: chmod +x gradlew
 
-      - name: Build Release APK
-        run: ./gradlew assembleRelease
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
 
-      - name: Prepare Assets for Release
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --stacktrace
+
+      - name: Archive Built APKs
+        uses: actions/upload-artifact@v4
+        with:
+          name: SavingGoalPlus-APKs
+          path: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/apk/debug/*.apk
+
+  release:
+    name: Version Bump & Publish Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code (Full History for Tagging)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Java 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant Execute Permission for Gradle Wrapper
+        run: chmod +x gradlew
+
+      - name: Compute Next Release Version & VersionCode
+        id: compute_version
+        run: |
+          # Read current version from gradle.properties
+          CURRENT_VERSION=$(grep "^VERSION_NAME=" gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
+          if [ -z "$CURRENT_VERSION" ]; then
+            CURRENT_VERSION="1.0.0"
+          fi
+
+          INPUT_VERSION="${{ inputs.version }}"
+          BUMP_TYPE="${{ inputs.bump_type || 'patch' }}"
+
+          if [ -n "$INPUT_VERSION" ]; then
+            # Manually specified version
+            TARGET_VERSION=$(echo "$INPUT_VERSION" | sed 's/^v//')
+          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            # Triggered by tag push
+            TAG_RAW="${GITHUB_REF#refs/tags/}"
+            TARGET_VERSION=$(echo "$TAG_RAW" | sed 's/^v//')
+          else
+            # Auto-increment based on bump_type (1.0.0 -> 1.0.1 -> 1.0.2 etc.)
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+            MAJOR=${MAJOR:-1}
+            MINOR=${MINOR:-0}
+            PATCH=${PATCH:-0}
+
+            if [ "$BUMP_TYPE" = "major" ]; then
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+            elif [ "$BUMP_TYPE" = "minor" ]; then
+              MINOR=$((MINOR + 1))
+              PATCH=0
+            else
+              PATCH=$((PATCH + 1))
+            fi
+            TARGET_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          fi
+
+          # Compute Android integer versionCode: (MAJOR * 10000) + (MINOR * 100) + PATCH
+          IFS='.' read -r V_MAJ V_MIN V_PAT <<< "$TARGET_VERSION"
+          V_MAJ=${V_MAJ:-1}
+          V_MIN=${V_MIN:-0}
+          V_PAT=${V_PAT:-0}
+          TARGET_CODE=$(( (V_MAJ * 10000) + (V_MIN * 100) + V_PAT ))
+
+          echo "Target Version: ${TARGET_VERSION}"
+          echo "Target VersionCode: ${TARGET_CODE}"
+
+          echo "RELEASE_VERSION=${TARGET_VERSION}" >> $GITHUB_ENV
+          echo "RELEASE_TAG=v${TARGET_VERSION}" >> $GITHUB_ENV
+          echo "RELEASE_CODE=${TARGET_CODE}" >> $GITHUB_ENV
+
+      - name: Update Version in gradle.properties
+        run: |
+          sed -i "s/^VERSION_NAME=.*/VERSION_NAME=${RELEASE_VERSION}/" gradle.properties
+          sed -i "s/^VERSION_CODE=.*/VERSION_CODE=${RELEASE_CODE}/" gradle.properties
+          echo "Updated gradle.properties:"
+          grep "^VERSION_" gradle.properties
+
+      - name: Commit & Push Version Bump (if enabled)
+        if: github.event_name == 'workflow_dispatch' && inputs.commit_version_bump == true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add gradle.properties
+          git commit -m "chore(release): bump version to ${RELEASE_VERSION} [skip ci]" || echo "No changes to commit"
+          git push origin HEAD:${{ github.ref_name || 'main' }} || echo "Push skipped"
+
+      - name: Build Release APK with Target Version
+        run: |
+          ./gradlew assembleRelease -PversionName="${RELEASE_VERSION}" -PversionCode="${RELEASE_CODE}" --stacktrace
+
+      - name: Prepare Release APK Asset
         run: |
           mkdir -p release_dist
-          cp app/build/outputs/apk/release/app-release.apk release_dist/SavingGoalPlus-${{ github.ref_name || 'latest' }}-release.apk
+          cp app/build/outputs/apk/release/app-release.apk "release_dist/SavingGoalPlus-v${RELEASE_VERSION}.apk"
+          ls -la release_dist
 
-      - name: Create GitHub Release & Upload APK
+      - name: Push Git Tag (if not existing)
+        run: |
+          if ! git rev-parse "${RELEASE_TAG}" >/dev/null 2>&1; then
+            git tag "${RELEASE_TAG}"
+            git push origin "${RELEASE_TAG}" || echo "Tag already exists or push failed"
+          fi
+
+      - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: release_dist/*.apk
-          name: SavingGoalPlus ${{ github.ref_name || 'v2.0.0' }}
-          tag_name: ${{ github.ref_name || 'v2.0.0' }}
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: "SavingGoalPlus v${{ env.RELEASE_VERSION }}"
+          generate_release_notes: true
           draft: false
           prerelease: false
-          generate_release_notes: true
           body: |
-            # 🚀 SavingGoalPlus Release
+            # 🚀 SavingGoalPlus v${{ env.RELEASE_VERSION }}
 
-            Welcome to **SavingGoalPlus** — a modern, privacy-focused, zero-ads savings goal manager built with Jetpack Compose & Material 3.
+            Welcome to **SavingGoalPlus v${{ env.RELEASE_VERSION }}**!
 
-            ### 📦 Download
-            - **`SavingGoalPlus-release.apk`**: Ready to install on Android 7.0 (API 24) through Android 16 (API 36).
+            ### 📦 Download Release APK
+            - **`SavingGoalPlus-v${{ env.RELEASE_VERSION }}.apk`**: Ready to install on Android 7.0 (API 24) through Android 16 (API 36).
 
             ---
 
-            ### 🌟 Key Improvements & Fixes over Legacy App:
-            1. **Modern Architecture**: Complete rewrite from ground up with Kotlin 2.0, Jetpack Compose, Material 3, and Kotlin Coroutines/Flow.
-            2. **100% Unlocked**: Removed all premium locks, ads, and in-app purchase blockers. Total Summary card and unlimited goals are available for free to everyone.
-            3. **Interactive Confetti Physics**: Beautiful celebratory particle explosion triggers when any goal reaches 100% completion.
-            4. **Smart Reminders**: Precise scheduled reminder notifications using Android's `AlarmManager` with boot persistence.
-            5. **Dynamic 260° Arc Gauge**: Visually intuitive target savings gauge with real-time amber, cyan, and emerald green stages.
-            6. **Custom Vector App Icon**: Hand-crafted non-AI vector branding and multi-density mipmap icons.
-            7. **Home Screen Widget**: Native AppWidget for at-a-glance financial tracking.
-            8. **Backup & Restore**: Full JSON payload export/import with backward-compatible SQLite database structure + CSV data export.
+            ### 🌟 Highlights & Features
+            - **Modern Native Architecture**: 100% Kotlin 2.0 + Jetpack Compose + Material 3.
+            - **100% Free & Unlocked**: Zero ads, zero paywalls, zero trackers. Unlimited savings goals.
+            - **Dynamic 260° Arc Gauge**: Smooth animated visual progress gauge with multi-tier colors (Amber, Cyan, Emerald).
+            - **Projection Calculations**: Accurate Daily, Weekly, Bi-Weekly, and Monthly required savings rates.
+            - **Custom Scheduled Notifications**: Precise daily reminders via Android `AlarmManager` with device reboot support.
+            - **Celebratory Confetti**: Interactive 2D particle physics celebration when goals reach 100%.
+            - **Home Screen Widget**: Native AppWidget for at-a-glance balance and goals tracking.
+            - **Private Local Storage & Backup**: Offline SQLite database with JSON import/export and CSV export.
+            - **Vector App Icon**: Non-AI custom hand-crafted adaptive vector branding.

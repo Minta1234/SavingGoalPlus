@@ -137,11 +137,22 @@ The signed release APK will be located at:
 
 ---
 
-## 🔄 Automated CI/CD (GitHub Actions)
+## 🔄 Automated CI/CD & Version Release Worker
 
-This repository includes a fully automated GitHub Actions workflow in `.github/workflows/build-and-release.yml`:
-- **Automated Verification**: Runs on every pull request and push to `main` (checks compilation and runs all unit tests).
-- **Automated Releases**: Pushing a tag formatted as `v*` (e.g., `v2.0.0`) automatically builds the release APK and publishes a new GitHub Release with the installable APK attached.
+This repository includes an automated GitHub Actions release workflow in [`.github/workflows/build-and-release.yml`](.github/workflows/build-and-release.yml):
+- **Automated Verification**: Runs on every pull request and push to `main` (runs all unit tests and builds test APKs).
+- **Dynamic Semantic Versioning (`1.0.0` → `1.0.1` → `1.0.2` ...)**:
+  - **Git Tag Releases**: Pushing any tag (e.g., `v1.0.0`, `v1.0.1`, `1.0.1`) automatically derives `versionName` and Android `versionCode`, builds the release APK, and publishes a new GitHub Release.
+  - **One-Click Manual Release (`workflow_dispatch`)**: Triggered directly from the GitHub Actions UI. You can either type an explicit version (e.g. `1.0.1`) or let it auto-bump the patch/minor/major version, update `gradle.properties`, create the tag, build the APK, and publish the release automatically.
+
+---
+
+## 👥 Contributors
+
+* **[Minta1234](https://github.com/Minta1234)** — Project Creator, Lead Developer & Maintainer.
+* **[Antigravity](https://github.com/google-deepmind)** (Google DeepMind) — Advanced AI Pair Programmer & Systems Architect (system architecture, modern Kotlin & Jetpack Compose rewrite, SQLite data layer, 260° arc gauge, confetti physics engine, notification alarms, and CI/CD automation).
+
+See [CONTRIBUTORS.md](CONTRIBUTORS.md) for full project attribution.
 
 ---
 
@@ -152,3 +163,4 @@ This project is open-source and released under the terms of the **[MIT License](
 ```
 Copyright (c) 2026 Minta1234
 ```
+
