@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Minta1234/SavingGaolPlus/actions"><img src="https://img.shields.io/github/actions/workflow/status/Minta1234/SavingGaolPlus/build-and-release.yml?branch=main&label=Build%20%26%20Release&logo=githubactions" alt="Build Status"></a>
+  <a href="https://github.com/Minta1234/SavingGoalPlus/actions"><img src="https://img.shields.io/github/actions/workflow/status/Minta1234/SavingGoalPlus/build-and-release.yml?branch=main&label=Build%20%26%20Release&logo=githubactions" alt="Build Status"></a>
   <img src="https://img.shields.io/badge/Android-16%20(API%2036)-3DDC84?logo=android&logoColor=white" alt="Android 16">
   <img src="https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin 2.0">
   <img src="https://img.shields.io/badge/Jetpack%20Compose-Material%203-4285F4?logo=jetpackcompose&logoColor=white" alt="Compose">
@@ -116,8 +116,8 @@ Every feature from the original concept has been faithfully preserved with 100% 
 
 ### Build Debug APK
 ```bash
-git clone https://github.com/Minta1234/SavingGaolPlus.git
-cd SavingGaolPlus
+git clone https://github.com/Minta1234/SavingGoalPlus.git
+cd SavingGoalPlus
 ./gradlew assembleDebug
 ```
 The compiled APK will be located at:
