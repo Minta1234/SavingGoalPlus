@@ -1,5 +1,9 @@
 import SwiftUI
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 public struct SettingsView: View {
     @ObservedObject var notifications = NotificationManager.shared
     @ObservedObject var storage = SavingsStorageService.shared
@@ -89,9 +93,11 @@ public struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
+            #if canImport(UIKit)
             .sheet(isPresented: $showingExportAlert) {
                 ShareSheet(activityItems: [exportText])
             }
+            #endif
             .sheet(isPresented: $showingImportSheet) {
                 NavigationView {
                     VStack(spacing: 12) {
@@ -103,7 +109,7 @@ public struct SettingsView: View {
 
                         TextEditor(text: $importText)
                             .padding(8)
-                            .background(Color(UIColor.secondarySystemBackground))
+                            .background(Color.gray.opacity(0.15))
                             .cornerRadius(10)
                             .padding(.horizontal)
 
@@ -156,6 +162,7 @@ public struct SettingsView: View {
     }
 }
 
+#if canImport(UIKit)
 private struct ShareSheet: UIViewControllerRepresentable {
     let activityItems: [Any]
 
@@ -165,3 +172,4 @@ private struct ShareSheet: UIViewControllerRepresentable {
 
     func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
+#endif

@@ -1,13 +1,24 @@
 import SwiftUI
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
 public enum ColorTheme {
     public static let primaryEmerald = Color(red: 16/255, green: 185/255, blue: 129/255)
     public static let stageCyan = Color(red: 6/255, green: 182/255, blue: 212/255)
     public static let stageAmber = Color(red: 245/255, green: 158/255, blue: 11/255)
     public static let withdrawalRed = Color(red: 239/255, green: 68/255, blue: 68/255)
+
+    #if canImport(UIKit)
     public static let trackBackground = Color(UIColor.systemGray5)
     public static let cardBackground = Color(UIColor.secondarySystemGroupedBackground)
     public static let screenBackground = Color(UIColor.systemGroupedBackground)
+    #else
+    public static let trackBackground = Color.gray.opacity(0.2)
+    public static let cardBackground = Color.gray.opacity(0.1)
+    public static let screenBackground = Color.clear
+    #endif
 
     public static func stageColor(for percentage: Int) -> Color {
         if percentage <= 30 {
