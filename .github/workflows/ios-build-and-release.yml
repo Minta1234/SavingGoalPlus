@@ -26,7 +26,7 @@ permissions:
 
 jobs:
   test:
-    name: Run iOS Unit Tests
+    name: Run iOS Unit Tests & Build Verification
     runs-on: macos-latest
 
     steps:
@@ -40,13 +40,18 @@ jobs:
           fi
           xcodebuild -version
 
-      - name: Run Unit Tests via Swift Package Manager
+      - name: Verify iOS Build & Compile Unit Tests
         run: |
           cd ios
-          swift test
+          xcodebuild build-for-testing \
+            -project SavingGoalPlus.xcodeproj \
+            -scheme SavingGoalPlus \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
 
   build:
-    name: Build iOS App
+    name: Build iOS App & Archive
     needs: test
     runs-on: macos-latest
 
@@ -61,7 +66,7 @@ jobs:
           fi
           xcodebuild -version
 
-      - name: Build iOS App for Simulator / Generic iOS
+      - name: Build iOS App for Simulator
         run: |
           cd ios
           xcodebuild build \
