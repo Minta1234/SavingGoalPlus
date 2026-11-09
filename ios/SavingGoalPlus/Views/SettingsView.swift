@@ -1,8 +1,5 @@
 import SwiftUI
-
-#if canImport(UIKit)
-import UIKit
-#endif
+import UniformTypeIdentifiers
 
 public struct SettingsView: View {
     @ObservedObject var notifications = NotificationManager.shared
@@ -17,7 +14,10 @@ public struct SettingsView: View {
     }()
 
     @State private var showingExportAlert = false
-    @State private var exportItems: [Any] = []
+    @State private var exportDocument = ExportDocument(data: Data())
+    @State private var exportType: UTType = .json
+    @State private var exportName = ""
+    @State private var exportError: String?
     @State private var showingImportSheet = false
     @State private var importText = ""
     @State private var importErrorMessage = ""
@@ -161,11 +161,24 @@ public struct SettingsView: View {
                 }
             }
             .navigationTitle("Settings")
-            #if canImport(UIKit)
-            .sheet(isPresented: $showingExportAlert) {
-                ShareSheet(activityItems: exportItems)
+            .fileExporter(
+                isPresented: $showingExportAlert,
+                document: exportDocument,
+                contentType: exportType,
+                defaultFilename: exportName
+            ) { result in
+                if case .failure(let error) = result {
+                    exportError = error.localizedDescription
+                }
             }
-            #endif
+            .alert("Export Error", isPresented: Binding(
+                get: { exportError != nil },
+                set: { if !$0 { exportError = nil } }
+            )) {
+                Button("OK", role: .cancel) { exportError = nil }
+            } message: {
+                Text(exportError ?? "")
+            }
             .sheet(isPresented: $showingChangelogSheet) {
                 ChangelogSheetView()
             }
@@ -198,7 +211,7 @@ public struct SettingsView: View {
                         ToolbarItem(placement: .confirmationAction) {
                             Button("Restore") {
                                 do {
-                                    try storage.importBackup(jsonString: importText)
+                                    try storage.importBackupJson(importText)
                                     showingImportSheet = false
                                     showingSuccessAlert = true
                                 } catch {
@@ -225,19 +238,38 @@ public struct SettingsView: View {
     }
 
     private func exportJson() {
-        let json = storage.exportBackupJson()
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("SavingGoalPlus_Backup.json")
-        try? json.write(to: tempURL, atomically: true, encoding: .utf8)
-        exportItems = [tempURL]
-        showingExportAlert = true
+        prepareExport(storage.exportBackupJson(), type: .json, name: "SavingGoalPlus_Backup")
     }
 
     private func exportCsv() {
-        let csv = storage.exportCsv()
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("SavingGoalPlus_Transactions.csv")
-        try? csv.write(to: tempURL, atomically: true, encoding: .utf8)
-        exportItems = [tempURL]
+        prepareExport(storage.exportCsv(), type: .commaSeparatedText, name: "SavingGoalPlus_Transactions")
+    }
+
+    private func prepareExport(_ content: String, type: UTType, name: String) {
+        exportDocument = ExportDocument(data: Data(content.utf8))
+        exportType = type
+        exportName = name
         showingExportAlert = true
+    }
+}
+
+private struct ExportDocument: FileDocument {
+    static var readableContentTypes: [UTType] { [.json, .commaSeparatedText] }
+    let data: Data
+
+    init(data: Data) {
+        self.data = data
+    }
+
+    init(configuration: ReadConfiguration) throws {
+        guard let data = configuration.file.regularFileContents else {
+            throw CocoaError(.fileReadCorruptFile)
+        }
+        self.data = data
+    }
+
+    func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper {
+        FileWrapper(regularFileWithContents: data)
     }
 }
 
@@ -310,16 +342,3 @@ public struct ChangelogSheetView: View {
         }
     }
 }
-
-#if canImport(UIKit)
-struct ShareSheet: UIViewControllerRepresentable {
-    var activityItems: [Any]
-    var applicationActivities: [UIActivity]? = nil
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: applicationActivities)
-    }
-
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
-}
-#endif

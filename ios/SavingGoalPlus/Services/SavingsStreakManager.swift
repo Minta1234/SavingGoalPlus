@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 public struct StreakInfo {
     public let currentStreak: Int

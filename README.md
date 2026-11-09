@@ -164,9 +164,10 @@ This repository includes automated GitHub Actions release workflows for both And
 - **Android builds only when Android code changes**: Modifying files in `app/**`, `gradle/**`, or Android configs triggers the Android build. Changes only affecting documentation or iOS code **will NOT compile Android**.
 - **iOS builds only when iOS code changes**: Modifying files in `ios/**` triggers the iOS build. Changes only affecting documentation or Android code **will NOT compile iOS**.
 - **Docs & Non-code Commits**: Commits touching only markdown, documentation, or assets skip CI compilation entirely, saving build minutes.
-- **Dynamic Semantic Versioning (`1.0.0` → `1.0.1` → `1.0.2` ...)**:
-  - Both Android and iOS workflows support automatic patch bumping and manual version targeting.
-  - Generates cross-platform release assets: `.apk` for Android and `.xcarchive.zip` for iOS.
+- Successful builds from relevant pushes to `main` publish a release automatically. Pull requests validate the build.
+- Android publishes a signed APK to a `vX.Y.Z` release using the existing `RELEASE_KEYSTORE_BASE64` secret. If the keystore uses custom credentials, set `KEYSTORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD`.
+- iOS publishes an unsigned IPA and Xcode archive to an `ios-vX.Y.Z` release. Explicit shared `vX.Y.Z` tag pushes can still publish both platforms to one release.
+- Manual dispatch accepts a target version. Automatic releases advance the patch version from Git tags and leave the source branch untouched.
 
 ---
 

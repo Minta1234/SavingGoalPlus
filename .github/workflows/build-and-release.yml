@@ -9,6 +9,8 @@ on:
       - 'build.gradle.kts'
       - 'settings.gradle.kts'
       - 'gradle.properties'
+      - 'gradlew'
+      - '.github/scripts/release-version.sh'
       - '.github/workflows/build-and-release.yml'
     tags:
       - 'v*'
@@ -21,6 +23,8 @@ on:
       - 'build.gradle.kts'
       - 'settings.gradle.kts'
       - 'gradle.properties'
+      - 'gradlew'
+      - '.github/scripts/release-version.sh'
       - '.github/workflows/build-and-release.yml'
   workflow_dispatch:
     inputs:
@@ -36,242 +40,82 @@ on:
           - minor
           - major
         default: patch
-      commit_version_bump:
-        description: 'Commit updated version back to repository'
-        type: boolean
-        default: true
-
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  test:
-    name: Run Unit Tests
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up Java 21 (Temurin)
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Grant Execute Permission for Gradle Wrapper
-        run: chmod +x gradlew
-
-      - name: Run Unit Tests
-        run: ./gradlew testDebugUnitTest --stacktrace
-
   build:
-    name: Build Debug & Release APKs
-    needs: test
+    name: Test & Build Android
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: android-build-${{ github.event_name == 'pull_request' && github.ref || 'release' }}
+      cancel-in-progress: false
 
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up Java 21 (Temurin)
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '21'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Grant Execute Permission for Gradle Wrapper
-        run: chmod +x gradlew
-
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
-
-      - name: Build Release APK
-        run: ./gradlew assembleRelease --stacktrace
-
-      - name: Archive Built APKs
-        uses: actions/upload-artifact@v4
-        with:
-          name: SavingGoalPlus-APKs
-          path: |
-            app/build/outputs/apk/release/*.apk
-            app/build/outputs/apk/debug/*.apk
-
-  release:
-    name: Version Bump & Publish Release
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code (Full History for Tagging)
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: false
 
-      - name: Set up Java 21 (Temurin)
-        uses: actions/setup-java@v4
+      - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '21'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v4
 
-      - name: Grant Execute Permission for Gradle Wrapper
-        run: chmod +x gradlew
+      - name: Run unit tests
+        run: bash gradlew testDebugUnitTest --stacktrace
 
-      - name: Compute Next Release Version & VersionCode
-        id: compute_version
-        run: |
-          # Read current version from gradle.properties
-          CURRENT_VERSION=$(grep "^VERSION_NAME=" gradle.properties | cut -d'=' -f2 | tr -d '[:space:]')
-          if [ -z "$CURRENT_VERSION" ]; then
-            CURRENT_VERSION="1.0.0"
-          fi
+      - name: Build pull request APK
+        if: github.event_name == 'pull_request'
+        run: bash gradlew assembleDebug --stacktrace
 
-          INPUT_VERSION="${{ inputs.version }}"
-          BUMP_TYPE="${{ inputs.bump_type || 'patch' }}"
+      - name: Resolve release version
+        if: github.event_name != 'pull_request'
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          BUMP_TYPE: ${{ inputs.bump_type || 'patch' }}
+        run: bash .github/scripts/release-version.sh android
 
-          if [ -n "$INPUT_VERSION" ]; then
-            # Manually specified version
-            TARGET_VERSION=$(echo "$INPUT_VERSION" | sed 's/^v//')
-          elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            # Triggered by tag push
-            TAG_RAW="${GITHUB_REF#refs/tags/}"
-            TARGET_VERSION=$(echo "$TAG_RAW" | sed 's/^v//')
-          else
-            # Auto-increment based on bump_type (1.0.0 -> 1.0.1 -> 1.0.2 etc.)
-            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
-            MAJOR=${MAJOR:-1}
-            MINOR=${MINOR:-0}
-            PATCH=${PATCH:-0}
-
-            if [ "$BUMP_TYPE" = "major" ]; then
-              MAJOR=$((MAJOR + 1))
-              MINOR=0
-              PATCH=0
-            elif [ "$BUMP_TYPE" = "minor" ]; then
-              MINOR=$((MINOR + 1))
-              PATCH=0
-            else
-              PATCH=$((PATCH + 1))
-            fi
-            TARGET_VERSION="${MAJOR}.${MINOR}.${PATCH}"
-          fi
-
-          # Compute Android integer versionCode: (MAJOR * 10000) + (MINOR * 100) + PATCH
-          IFS='.' read -r V_MAJ V_MIN V_PAT <<< "$TARGET_VERSION"
-          V_MAJ=${V_MAJ:-1}
-          V_MIN=${V_MIN:-0}
-          V_PAT=${V_PAT:-0}
-          TARGET_CODE=$(( (V_MAJ * 10000) + (V_MIN * 100) + V_PAT ))
-
-          echo "Target Version: ${TARGET_VERSION}"
-          echo "Target VersionCode: ${TARGET_CODE}"
-
-          echo "RELEASE_VERSION=${TARGET_VERSION}" >> $GITHUB_ENV
-          echo "RELEASE_TAG=v${TARGET_VERSION}" >> $GITHUB_ENV
-          echo "RELEASE_CODE=${TARGET_CODE}" >> $GITHUB_ENV
-
-      - name: Update Version in gradle.properties
-        run: |
-          sed -i "s/^VERSION_NAME=.*/VERSION_NAME=${RELEASE_VERSION}/" gradle.properties
-          sed -i "s/^VERSION_CODE=.*/VERSION_CODE=${RELEASE_CODE}/" gradle.properties
-          echo "Updated gradle.properties:"
-          grep "^VERSION_" gradle.properties
-
-      - name: Commit & Push Version Bump (if enabled)
-        if: (github.event_name == 'workflow_dispatch' && inputs.commit_version_bump == true) || (github.event_name == 'push' && github.ref == 'refs/heads/main')
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add gradle.properties
-          git commit -m "chore(release): bump version to ${RELEASE_VERSION} [skip ci]" || echo "No changes to commit"
-          git push origin HEAD:${{ github.ref_name || 'main' }} || echo "Push skipped"
-
-      - name: Restore Release Keystore from GitHub Secret
+      - name: Build signed release APK
+        if: github.event_name != 'pull_request'
         env:
           KEYSTORE_BASE64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          if [ -n "$KEYSTORE_BASE64" ]; then
-            echo "$KEYSTORE_BASE64" | base64 -d > app/release.keystore
-            echo "Successfully decoded release.keystore from GitHub Secret"
-          elif [ -f "app/release.keystore" ]; then
-            echo "Using existing local release.keystore"
-          else
-            echo "Notice: RELEASE_KEYSTORE_BASE64 secret not found; generating runner keystore"
-            keytool -genkeypair -v \
-              -keystore app/release.keystore \
-              -alias savinggoal \
-              -keyalg RSA \
-              -keysize 2048 \
-              -validity 10000 \
-              -storepass savinggoalplus \
-              -keypass savinggoalplus \
-              -dname "CN=SavingGoalPlus, OU=Mobile, O=SavingGoal, L=Bangkok, ST=Bangkok, C=TH"
+          if [[ -z "$KEYSTORE_BASE64" ]]; then
+            echo "::error::Configure RELEASE_KEYSTORE_BASE64 with the existing release key."
+            exit 1
           fi
-
-      - name: Build Release APK with Target Version
-        run: |
-          ./gradlew assembleRelease -PversionName="${RELEASE_VERSION}" -PversionCode="${RELEASE_CODE}" --stacktrace
-
-      - name: Cleanup Keystore from Runner
-        if: always()
-        run: rm -f app/release.keystore
-
-      - name: Prepare Release APK Asset
-        run: |
+          [[ -n "$KEYSTORE_PASSWORD" ]] || unset KEYSTORE_PASSWORD
+          [[ -n "$KEY_ALIAS" ]] || unset KEY_ALIAS
+          [[ -n "$KEY_PASSWORD" ]] || unset KEY_PASSWORD
+          trap 'rm -f app/release.keystore' EXIT
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > app/release.keystore
+          bash gradlew assembleRelease -PversionName="$RELEASE_VERSION" -PversionCode="$RELEASE_CODE" --stacktrace
           mkdir -p release_dist
           cp app/build/outputs/apk/release/app-release.apk "release_dist/SavingGoalPlus-v${RELEASE_VERSION}.apk"
-          ls -la release_dist
 
-      - name: Push Git Tag (if not existing)
-        run: |
-          if ! git rev-parse "${RELEASE_TAG}" >/dev/null 2>&1; then
-            git tag "${RELEASE_TAG}"
-            git push origin "${RELEASE_TAG}" || echo "Tag already exists or push failed"
-          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SavingGoalPlus-APKs
+          if-no-files-found: error
+          path: |
+            release_dist/*.apk
+            app/build/outputs/apk/debug/*.apk
 
-      - name: Publish GitHub Release
+      - name: Publish Android release
+        if: github.event_name != 'pull_request'
         uses: softprops/action-gh-release@v2
         with:
           files: release_dist/*.apk
+          fail_on_unmatched_files: true
           tag_name: ${{ env.RELEASE_TAG }}
+          target_commitish: ${{ github.sha }}
           name: "SavingGoalPlus v${{ env.RELEASE_VERSION }}"
           generate_release_notes: true
-          draft: false
-          prerelease: false
-          body: |
-            # 🚀 SavingGoalPlus v${{ env.RELEASE_VERSION }}
-
-            Welcome to **SavingGoalPlus v${{ env.RELEASE_VERSION }}**!
-
-            ### 📦 Downloads & Packages
-
-            #### 🤖 Android
-            - **`SavingGoalPlus-v${{ env.RELEASE_VERSION }}.apk`**: Direct install for Android 7.0 (API 24) through Android 16 (API 36).
-
-            #### 🍏 iOS (iPhone & iPad)
-            - **`SavingGoalPlus-v${{ env.RELEASE_VERSION }}-unsigned.ipa`**: Install via AltStore, SideStore, Sideloadly, or TrollStore (iOS 16.0+).
-            - **`SavingGoalPlus-v${{ env.RELEASE_VERSION }}-iOS.xcarchive.zip`**: Full Xcode Archive for developers.
-
-            ---
-
-            ### 🌟 Highlights & Features
-            - **Modern Native Architecture**: 100% Kotlin 2.0 + Jetpack Compose + Material 3.
-            - **100% Free & Unlocked**: Zero ads, zero paywalls, zero trackers. Unlimited savings goals.
-            - **Dynamic 260° Arc Gauge**: Smooth animated visual progress gauge with multi-tier colors (Amber, Cyan, Emerald).
-            - **Projection Calculations**: Accurate Daily, Weekly, Bi-Weekly, and Monthly required savings rates.
-            - **Custom Scheduled Notifications**: Precise daily reminders via Android `AlarmManager` with device reboot support.
-            - **Celebratory Confetti**: Interactive 2D particle physics celebration when goals reach 100%.
-            - **Home Screen Widget**: Native AppWidget for at-a-glance balance and goals tracking.
-            - **Private Local Storage & Backup**: Offline SQLite database with JSON import/export and CSV export.
-            - **Vector App Icon**: Non-AI custom hand-crafted adaptive vector branding.

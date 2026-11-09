@@ -1,55 +1,51 @@
 package com.example.savingsgoal.util
 
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import androidx.core.content.FileProvider
-import java.io.File
-import java.io.FileOutputStream
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.IOException
 
-object FileExportHelper {
-
-    fun shareExportFile(context: Context, content: String, extension: String, mimeType: String, title: String) {
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
-        val fileName = "SavingGoalPlus_${title.replace(" ", "_")}_$timeStamp.$extension"
-
-        val exportDir = File(context.cacheDir, "exports").apply { mkdirs() }
-        val exportFile = File(exportDir, fileName).apply {
-            writeText(content, Charsets.UTF_8)
-        }
-
-        val contentUri: Uri = FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileprovider",
-            exportFile
-        )
-
-        val intent = Intent(Intent.ACTION_SEND).apply {
-            type = mimeType
-            putExtra(Intent.EXTRA_SUBJECT, fileName)
-            putExtra(Intent.EXTRA_STREAM, contentUri)
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        }
-
-        val chooser = Intent.createChooser(intent, "Share $fileName").apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        }
-        context.startActivity(chooser)
-    }
-
-    fun writeToUri(context: Context, targetUri: Uri, content: String): Boolean {
-        return try {
-            context.contentResolver.openOutputStream(targetUri)?.use { os ->
-                os.write(content.toByteArray(Charsets.UTF_8))
+@Composable
+fun rememberFileExport(
+    mimeType: String,
+    fileName: String,
+    content: suspend () -> String,
+    onResult: suspend (String) -> Unit
+): () -> Unit {
+    val resolver = LocalContext.current.contentResolver
+    val scope = rememberCoroutineScope()
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(mimeType)) { uri ->
+        if (uri != null) {
+            scope.launch {
+                val message = try {
+                    withContext(Dispatchers.IO) {
+                        val bytes = content().toByteArray(Charsets.UTF_8)
+                        val stream = resolver.openOutputStream(uri, "wt")
+                            ?: throw IOException("Cannot open the selected file")
+                        stream.use { it.write(bytes) }
+                    }
+                    "File saved successfully."
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    android.util.Log.e("FileExport", "Could not save export", e)
+                    "Could not save the file. Try a different location."
+                }
+                onResult(message)
             }
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
+        }
+    }
+    return {
+        try {
+            launcher.launch(fileName)
+        } catch (e: android.content.ActivityNotFoundException) {
+            scope.launch { onResult("No file picker is available.") }
         }
     }
 }
-

@@ -78,6 +78,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.savingsgoal.ui.theme.AppThemePalette
+import com.example.savingsgoal.util.rememberFileExport
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -91,6 +92,10 @@ fun SettingsScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val exportCsv = rememberFileExport(
+        "text/csv", "SavingGoalPlus_Goals.csv", viewModel.repository::exportToCsv
+    ) { snackbarHostState.showSnackbar(it) }
 
     var showCurrencyDialog by remember { mutableStateOf(false) }
     var showTimePickerDialog by remember { mutableStateOf(false) }
@@ -429,18 +434,7 @@ fun SettingsScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable {
-                        scope.launch {
-                            val csv = viewModel.repository.exportToCsv()
-                            com.example.savingsgoal.util.FileExportHelper.shareExportFile(
-                                context = context,
-                                content = csv,
-                                extension = "csv",
-                                mimeType = "text/csv",
-                                title = "Goals_Ledger"
-                            )
-                        }
-                    },
+                    .clickable(onClick = exportCsv),
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {

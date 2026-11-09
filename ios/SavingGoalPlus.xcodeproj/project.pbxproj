@@ -14,6 +14,7 @@
 		1005 /* SavingsCalculations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2005 /* SavingsCalculations.swift */; };
 		1006 /* SavingsStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2006 /* SavingsStorageService.swift */; };
 		1007 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2007 /* NotificationManager.swift */; };
+		1022 /* SavingsStreakManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2022 /* SavingsStreakManager.swift */; };
 		1008 /* ColorTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2008 /* ColorTheme.swift */; };
 		1009 /* CircularGoalGaugeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2009 /* CircularGoalGaugeView.swift */; };
 		1010 /* ConfettiView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2010 /* ConfettiView.swift */; };
@@ -49,6 +50,7 @@
 		2005 /* SavingsCalculations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsCalculations.swift; sourceTree = "<group>"; };
 		2006 /* SavingsStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsStorageService.swift; sourceTree = "<group>"; };
 		2007 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		2022 /* SavingsStreakManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsStreakManager.swift; sourceTree = "<group>"; };
 		2008 /* ColorTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorTheme.swift; sourceTree = "<group>"; };
 		2009 /* CircularGoalGaugeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircularGoalGaugeView.swift; sourceTree = "<group>"; };
 		2010 /* ConfettiView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfettiView.swift; sourceTree = "<group>"; };
@@ -131,6 +133,7 @@
 				2005 /* SavingsCalculations.swift */,
 				2006 /* SavingsStorageService.swift */,
 				2007 /* NotificationManager.swift */,
+				2022 /* SavingsStreakManager.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -282,6 +285,7 @@
 				1005 /* SavingsCalculations.swift in Sources */,
 				1006 /* SavingsStorageService.swift in Sources */,
 				1007 /* NotificationManager.swift in Sources */,
+				1022 /* SavingsStreakManager.swift in Sources */,
 				1008 /* ColorTheme.swift in Sources */,
 				1009 /* CircularGoalGaugeView.swift in Sources */,
 				1010 /* ConfettiView.swift in Sources */,

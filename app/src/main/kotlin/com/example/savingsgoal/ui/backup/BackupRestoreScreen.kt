@@ -55,6 +55,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.savingsgoal.data.SavingsGoalDbHelper
 import com.example.savingsgoal.data.SavingsRepository
+import com.example.savingsgoal.util.rememberFileExport
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -70,6 +71,13 @@ fun BackupRestoreScreen(
     val repository = remember { SavingsRepository(context) }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val exportJson = rememberFileExport("application/json", "SavingGoalPlus_Backup.json", repository::exportToJson) {
+        snackbarHostState.showSnackbar(it)
+    }
+    val exportCsv = rememberFileExport("text/csv", "SavingGoalPlus_Goals.csv", repository::exportToCsv) {
+        snackbarHostState.showSnackbar(it)
+    }
 
     var isProcessing by remember { mutableStateOf(false) }
     var confirmRestoreDialog by remember { mutableStateOf(false) }
@@ -161,21 +169,7 @@ fun BackupRestoreScreen(
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Button(
-                            onClick = {
-                                isProcessing = true
-                                scope.launch {
-                                    val json = repository.exportToJson()
-                                    com.example.savingsgoal.util.FileExportHelper.shareExportFile(
-                                        context = context,
-                                        content = json,
-                                        extension = "json",
-                                        mimeType = "application/json",
-                                        title = "FullBackup"
-                                    )
-                                    isProcessing = false
-                                    snackbarHostState.showSnackbar("Backup JSON file exported successfully!")
-                                }
-                            },
+                            onClick = exportJson,
                             modifier = Modifier.weight(1f)
                         ) {
                             Icon(Icons.Default.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -184,21 +178,7 @@ fun BackupRestoreScreen(
                         }
 
                         OutlinedButton(
-                            onClick = {
-                                isProcessing = true
-                                scope.launch {
-                                    val csv = repository.exportToCsv()
-                                    com.example.savingsgoal.util.FileExportHelper.shareExportFile(
-                                        context = context,
-                                        content = csv,
-                                        extension = "csv",
-                                        mimeType = "text/csv",
-                                        title = "Goals_Ledger"
-                                    )
-                                    isProcessing = false
-                                    snackbarHostState.showSnackbar("CSV file exported successfully!")
-                                }
-                            },
+                            onClick = exportCsv,
                             modifier = Modifier.weight(1f)
                         ) {
                             Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
