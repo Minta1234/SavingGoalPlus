@@ -552,6 +552,115 @@
       border-color: var(--stage-red);
     }
 
+    /* Live Theme Palette Swatches */
+    .theme-palette-picker {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .theme-picker-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .theme-swatches-row {
+      display: inline-flex;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .theme-swatch-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+    .theme-swatch-btn:hover {
+      transform: scale(1.22);
+    }
+    .theme-swatch-btn.active {
+      border-color: #fff;
+      box-shadow: 0 0 14px currentColor;
+      transform: scale(1.15);
+    }
+
+    /* Changelog Modal */
+    .changelog-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      animation: fadeIn 0.2s ease-out;
+    }
+    .changelog-modal.active {
+      display: flex;
+    }
+    .changelog-box {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      max-width: 680px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 32px;
+      position: relative;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
+    }
+    .changelog-box h3 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .changelog-item {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 20px;
+      margin-bottom: 20px;
+    }
+    .changelog-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    .changelog-tag {
+      font-size: 0.8rem;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      display: inline-block;
+      margin-bottom: 8px;
+    }
+    .changelog-item ul {
+      margin-left: 20px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
     /* ========================================================
        SECTION 2: DUAL PLATFORM INTERACTIVE SIMULATOR
        ======================================================== */
@@ -1193,6 +1302,7 @@
         <a href="#pro-screens">Production UI</a>
         <a href="#simulator">Live Simulator</a>
         <a href="#features">Features</a>
+        <a href="#changelog" onclick="openChangelogModal(event)">Change Log</a>
         <a href="#downloads">Downloads</a>
       </div>
       <div class="nav-actions">
@@ -1423,6 +1533,21 @@
           <button id="tab-android" class="platform-tab android" onclick="switchPlatform('android')">
             <span>🤖</span> Google Pixel (Android)
           </button>
+        </div>
+
+        <!-- Live iOS Theme Accent Palette Switcher -->
+        <div class="theme-palette-picker">
+          <div class="theme-picker-label">🎨 Live iOS Theme Accent Palette</div>
+          <div class="theme-swatches-row">
+            <button class="theme-swatch-btn active" data-palette="emerald" style="background:#10b981; color:#10b981;" title="Apple Mint" onclick="setWebTheme('emerald')"></button>
+            <button class="theme-swatch-btn" data-palette="cupertino_blue" style="background:#007aff; color:#007aff;" title="Cupertino Blue" onclick="setWebTheme('cupertino_blue')"></button>
+            <button class="theme-swatch-btn" data-palette="indigo" style="background:#5856d6; color:#5856d6;" title="Indigo Night" onclick="setWebTheme('indigo')"></button>
+            <button class="theme-swatch-btn" data-palette="rose_pink" style="background:#ff2d55; color:#ff2d55;" title="Rose Pink" onclick="setWebTheme('rose_pink')"></button>
+            <button class="theme-swatch-btn" data-palette="sunset_orange" style="background:#ff9500; color:#ff9500;" title="Sunset Orange" onclick="setWebTheme('sunset_orange')"></button>
+            <button class="theme-swatch-btn" data-palette="pacific_teal" style="background:#30b0c7; color:#30b0c7;" title="Pacific Teal" onclick="setWebTheme('pacific_teal')"></button>
+            <button class="theme-swatch-btn" data-palette="royal_purple" style="background:#af52de; color:#af52de;" title="Royal Purple" onclick="setWebTheme('royal_purple')"></button>
+            <button class="theme-swatch-btn" data-palette="midnight" style="background:#64748b; color:#64748b;" title="Midnight Slate" onclick="setWebTheme('midnight')"></button>
+          </div>
         </div>
       </div>
 
@@ -1814,6 +1939,45 @@
     </div>
   </div>
 
+  <!-- Change Log Modal -->
+  <div id="changelog-modal" class="changelog-modal" onclick="closeChangelogModal(event)">
+    <div class="changelog-box">
+      <button class="lightbox-close" onclick="closeChangelogModal(event)">✕</button>
+      <h3>📋 SavingGoalPlus Change Log</h3>
+
+      <!-- v1.0.2 -->
+      <div class="changelog-item">
+        <span class="changelog-tag">v1.0.2 • Latest Release</span>
+        <ul>
+          <li><strong>🎨 8 iOS-Style Theme Accent Palettes</strong>: Customize accent colors with Apple Mint, Cupertino Blue, Indigo Night, Rose Pink, Sunset Orange, Pacific Teal, Royal Purple, and Midnight Slate.</li>
+          <li><strong>🔄 Seamless In-Place Updates</strong>: Unified release keystore enables direct APK updates without uninstalling or losing data.</li>
+          <li><strong>📋 In-App Change Log &amp; Update Checker</strong>: One-click release notes viewer and GitHub Releases update checker in Settings.</li>
+        </ul>
+      </div>
+
+      <!-- v1.0.1 -->
+      <div class="changelog-item">
+        <span class="changelog-tag" style="background: rgba(6,182,212,0.15); color: #67e8f9;">v1.0.1 • Multi-Platform iOS</span>
+        <ul>
+          <li><strong>🍏 100% Native Swift 5.9 + SwiftUI Target</strong>: iOS 16.0+ support with WidgetKit and UNUserNotificationCenter reminders.</li>
+          <li><strong>📦 Sideloadable Packages</strong>: Unsigned .ipa and .xcarchive.zip distribution bundles for AltStore and Sideloadly.</li>
+          <li><strong>⚡ Smart CI/CD</strong>: Path-filtered workflows skip compilation when code outside the app is committed.</li>
+        </ul>
+      </div>
+
+      <!-- v1.0.0 -->
+      <div class="changelog-item">
+        <span class="changelog-tag" style="background: rgba(245,158,11,0.15); color: #fbbf24;">v1.0.0 • Initial Release</span>
+        <ul>
+          <li><strong>🚀 100% Native Kotlin 2.0 Rewrite</strong>: Jetpack Compose &amp; Material 3 zero-ads architecture.</li>
+          <li><strong>📊 260° Dynamic Arc Gauge</strong>: Fluid animated arc with 3-tier milestone color stages.</li>
+          <li><strong>🎉 2D Confetti Particle Physics</strong>: Realistic celebration physics on 100% goal milestone.</li>
+          <li><strong>🔒 100% Private Offline Storage</strong>: SQLite with JSON/CSV export and import.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
   <!-- Interactive JavaScript Engine -->
   <script>
     // Production Screenshot Metadata
@@ -1880,16 +2044,77 @@
       }
     }
 
-    // Keyboard support for Lightbox
+    // Keyboard support for Lightbox and Changelog
     window.addEventListener('keydown', (e) => {
       const modal = document.getElementById('lightbox');
-      if (modal.classList.contains('active')) {
-        if (e.key === 'Escape') {
+      const changelogModal = document.getElementById('changelog-modal');
+      if (e.key === 'Escape') {
+        if (modal.classList.contains('active')) {
           modal.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+        if (changelogModal && changelogModal.classList.contains('active')) {
+          changelogModal.classList.remove('active');
           document.body.style.overflow = '';
         }
       }
     });
+
+    // Changelog Modal Handlers
+    function openChangelogModal(e) {
+      if (e) e.preventDefault();
+      const modal = document.getElementById('changelog-modal');
+      if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        playBeep(620, 'triangle', 0.1);
+      }
+    }
+
+    function closeChangelogModal(e) {
+      if (e.target.id === 'changelog-modal' || e.target.classList.contains('lightbox-close')) {
+        const modal = document.getElementById('changelog-modal');
+        if (modal) {
+          modal.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      }
+    }
+
+    // Live iOS Theme Accent Palette Switcher
+    const themePalettes = [
+      { id: 'emerald', name: 'Apple Mint', primary: '#10b981', glow: 'rgba(16, 185, 129, 0.35)', light: '#34d399', freq: 520 },
+      { id: 'cupertino_blue', name: 'Cupertino Blue', primary: '#007aff', glow: 'rgba(0, 122, 255, 0.35)', light: '#60a5fa', freq: 580 },
+      { id: 'indigo', name: 'Indigo Night', primary: '#5856d6', glow: 'rgba(88, 86, 214, 0.35)', light: '#a78bfa', freq: 640 },
+      { id: 'rose_pink', name: 'Rose Pink', primary: '#ff2d55', glow: 'rgba(255, 45, 85, 0.35)', light: '#fb7185', freq: 700 },
+      { id: 'sunset_orange', name: 'Sunset Orange', primary: '#ff9500', glow: 'rgba(255, 149, 0, 0.35)', light: '#fbbf24', freq: 480 },
+      { id: 'pacific_teal', name: 'Pacific Teal', primary: '#30b0c7', glow: 'rgba(48, 176, 199, 0.35)', light: '#67e8f9', freq: 540 },
+      { id: 'royal_purple', name: 'Royal Purple', primary: '#af52de', glow: 'rgba(175, 82, 222, 0.35)', light: '#e879f9', freq: 660 },
+      { id: 'midnight', name: 'Midnight Slate', primary: '#64748b', glow: 'rgba(100, 116, 139, 0.35)', light: '#94a3b8', freq: 440 }
+    ];
+
+    function setWebTheme(paletteId) {
+      const palette = themePalettes.find(p => p.id === paletteId) || themePalettes[0];
+      document.documentElement.style.setProperty('--primary', palette.primary);
+      document.documentElement.style.setProperty('--primary-glow', palette.glow);
+      document.documentElement.style.setProperty('--primary-light', palette.light);
+
+      document.querySelectorAll('.theme-swatch-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.palette === paletteId);
+      });
+
+      // Update active gauge color if above 60%
+      const fillPath = document.getElementById('detail-gauge-fill');
+      if (fillPath) {
+        fillPath.style.stroke = palette.primary;
+      }
+      const pctLabel = document.getElementById('detail-pct');
+      if (pctLabel) {
+        pctLabel.style.color = palette.primary;
+      }
+
+      playBeep(palette.freq || 520, 'sine', 0.08);
+    }
 
     // =========================================================
     // Interactive Simulator Logic

@@ -25,11 +25,25 @@ android {
     versionName = appVersionName
   }
 
+  signingConfigs {
+    create("release") {
+      storeFile = file("release.keystore")
+      storePassword = "savinggoalplus"
+      keyAlias = "savinggoal"
+      keyPassword = "savinggoalplus"
+      enableV1Signing = true
+      enableV2Signing = true
+    }
+  }
+
   buildTypes {
     release {
       isMinifyEnabled = false
-      signingConfig = signingConfigs.getByName("debug")
+      signingConfig = signingConfigs.getByName("release")
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+    }
+    debug {
+      signingConfig = signingConfigs.getByName("release")
     }
   }
   compileOptions {

@@ -5,6 +5,8 @@ import android.content.Intent
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -26,11 +29,15 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.Backup
 import androidx.compose.material.icons.filled.Calculate
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.NotificationsActive
+import androidx.compose.material.icons.filled.SystemUpdate
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -62,11 +69,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.savingsgoal.ui.theme.AppThemePalette
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -83,6 +94,8 @@ fun SettingsScreen(
 
     var showCurrencyDialog by remember { mutableStateOf(false) }
     var showTimePickerDialog by remember { mutableStateOf(false) }
+    var showChangelogDialog by remember { mutableStateOf(false) }
+    val uriHandler = LocalUriHandler.current
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -193,6 +206,79 @@ fun SettingsScreen(
                                 modifier = Modifier.weight(1f)
                             ) {
                                 Text("Test Now")
+                            }
+                        }
+                    }
+                }
+            }
+
+            // iOS-Style Theme Accent Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.ColorLens, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text("Theme Accent (iOS Style)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text(
+                                "Active: ${uiState.selectedPalette.displayName}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    val palettes = AppThemePalette.entries
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        palettes.chunked(4).forEach { rowPalettes ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceAround
+                            ) {
+                                rowPalettes.forEach { palette ->
+                                    val isSelected = uiState.selectedPalette == palette
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        modifier = Modifier
+                                            .clickable { viewModel.updateThemePalette(palette) }
+                                            .padding(4.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(46.dp)
+                                                .clip(CircleShape)
+                                                .background(palette.primary)
+                                                .border(
+                                                    width = if (isSelected) 3.dp else 1.dp,
+                                                    color = if (isSelected) MaterialTheme.colorScheme.onSurface else Color.Transparent,
+                                                    shape = CircleShape
+                                                ),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            if (isSelected) {
+                                                Icon(
+                                                    Icons.Default.Check,
+                                                    contentDescription = null,
+                                                    tint = Color.White,
+                                                    modifier = Modifier.size(22.dp)
+                                                )
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        Text(
+                                            palette.displayName.split(" ").first(),
+                                            fontSize = 11.sp,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                            color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
@@ -381,6 +467,57 @@ fun SettingsScreen(
                 }
             }
 
+            // App Updates & Change Log Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.SystemUpdate, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text("App Version & Updates", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                                Text("v1.0.1 (Seamless In-Place Updates)", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = { showChangelogDialog = true },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.Default.History, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Change Log")
+                        }
+
+                        Button(
+                            onClick = {
+                                uriHandler.openUri("https://github.com/Minta1234/SavingGoalPlus/releases/latest")
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Icon(Icons.Default.SystemUpdate, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Check Updates")
+                        }
+                    }
+                }
+            }
+
             // About Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -508,6 +645,58 @@ fun SettingsScreen(
             dismissButton = {
                 TextButton(onClick = { showCurrencyDialog = false }) {
                     Text("Cancel")
+                }
+            }
+        )
+    }
+
+    // What's New & Change Log Dialog
+    if (showChangelogDialog) {
+        AlertDialog(
+            onDismissRequest = { showChangelogDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.History, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("SavingGoalPlus Change Log")
+                }
+            },
+            text = {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                ) {
+                    // v1.0.2
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("v1.0.2", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontSize = 15.sp)
+                        Text("• 🎨 Added 8 iOS-style Theme Accent Palettes (Apple Mint, Cupertino Blue, Indigo Night, Rose Pink, Sunset Orange, Pacific Teal, Royal Purple, Midnight Slate)", fontSize = 13.sp)
+                        Text("• 🔄 Seamless in-place updates: unified release signing keystore eliminates having to uninstall before updating", fontSize = 13.sp)
+                        Text("• 🚀 Added in-app Change Log viewer and 1-click Check for Updates", fontSize = 13.sp)
+                    }
+
+                    // v1.0.1
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("v1.0.1", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary, fontSize = 15.sp)
+                        Text("• 🍏 Native iOS Target in Swift 5.9 + SwiftUI (iOS 16.0+)", fontSize = 13.sp)
+                        Text("• 📦 Sideloadable unsigned .ipa and .xcarchive distribution packages", fontSize = 13.sp)
+                        Text("• ⚡ Smart CI/CD selective compilation workflow", fontSize = 13.sp)
+                    }
+
+                    // v1.0.0
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text("v1.0.0", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.tertiary, fontSize = 15.sp)
+                        Text("• 🚀 100% Native Kotlin 2.0 + Jetpack Compose rewrite", fontSize = 13.sp)
+                        Text("• 📊 260° Dynamic Arc Gauge with 3-tier colors", fontSize = 13.sp)
+                        Text("• 🧮 Daily, Weekly, Bi-Weekly, Monthly projection math", fontSize = 13.sp)
+                        Text("• 🎉 2D Confetti Particle Physics milestone celebration", fontSize = 13.sp)
+                        Text("• ⏰ Scheduled daily reminder notifications via AlarmManager", fontSize = 13.sp)
+                        Text("• 🔒 Offline SQLite storage with JSON/CSV export", fontSize = 13.sp)
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = { showChangelogDialog = false }) {
+                    Text("Close")
                 }
             }
         )

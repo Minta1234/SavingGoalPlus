@@ -71,9 +71,14 @@ Every feature from the original concept has been faithfully preserved with 100% 
   - One-click JSON backup export and import (compatible with legacy SQLite database schemas).
   - One-click CSV export for external spreadsheet analysis in Excel or Google Sheets.
 
-- **🎨 Modern Material 3 & Custom Branding**
-  - Full support for dynamic color themes (Material You), Dark Mode, and Light Mode.
+- **🎨 8 iOS-Style Theme Accent Palettes & Custom Branding**
+  - Choose from 8 vibrant iOS-inspired accent themes: **Apple Mint, Cupertino Blue, Indigo Night, Rose Pink, Sunset Orange, Pacific Teal, Royal Purple, and Midnight Slate**.
+  - Consistent across Android Jetpack Compose and iOS SwiftUI.
   - Custom hand-crafted vector app icon (non-AI, geometric finance vault & growth sprout symbol).
+
+- **🔄 Seamless In-Place Updates & Change Log**
+  - Unified permanent release signing keystore ensures every update installs directly over the previous version without requiring uninstallation.
+  - Interactive in-app Change Log dialog and 1-click update checker. See [CHANGELOG.md](CHANGELOG.md).
 
 ---
 

@@ -9,6 +9,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+import com.example.savingsgoal.ThemeManager
+import com.example.savingsgoal.ui.theme.AppThemePalette
+
 data class SettingsUiState(
     val defaultCurrency: String = "$",
     val toSaveOption: Int = 1,
@@ -16,6 +19,7 @@ data class SettingsUiState(
     val isReminderEnabled: Boolean = false,
     val reminderHour: Int = 20,
     val reminderMinute: Int = 0,
+    val selectedPalette: AppThemePalette = AppThemePalette.EMERALD_MINT,
     val exportMessage: String? = null
 ) {
     val formattedReminderTime: String
@@ -48,6 +52,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         val isReminder = prefs.getBoolean("REMINDER_ENABLED", false)
         val hour = prefs.getInt("REMINDER_HOUR", 20)
         val minute = prefs.getInt("REMINDER_MINUTE", 0)
+        val paletteId = prefs.getString("THEME_PALETTE_ID", "emerald")
+        val palette = AppThemePalette.fromId(paletteId)
 
         _uiState.value = SettingsUiState(
             defaultCurrency = currency,
@@ -55,8 +61,14 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             showTotalGoalsCard = showTotal,
             isReminderEnabled = isReminder,
             reminderHour = hour,
-            reminderMinute = minute
+            reminderMinute = minute,
+            selectedPalette = palette
         )
+    }
+
+    fun updateThemePalette(palette: AppThemePalette) {
+        ThemeManager.setPalette(getApplication(), palette)
+        loadSettings()
     }
 
     fun updateDefaultCurrency(currency: String) {
