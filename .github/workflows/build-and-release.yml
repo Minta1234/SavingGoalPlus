@@ -5,11 +5,13 @@ on:
     branches: [ "main" ]
     paths:
       - 'app/**'
+      - 'ios/**'
       - 'gradle/**'
       - 'build.gradle.kts'
       - 'settings.gradle.kts'
       - 'gradle.properties'
       - 'gradlew'
+      - 'gradlew.bat'
       - '.github/scripts/release-version.sh'
       - '.github/workflows/build-and-release.yml'
     tags:
@@ -19,11 +21,13 @@ on:
     branches: [ "main" ]
     paths:
       - 'app/**'
+      - 'ios/**'
       - 'gradle/**'
       - 'build.gradle.kts'
       - 'settings.gradle.kts'
       - 'gradle.properties'
       - 'gradlew'
+      - 'gradlew.bat'
       - '.github/scripts/release-version.sh'
       - '.github/workflows/build-and-release.yml'
   workflow_dispatch:
@@ -43,20 +47,40 @@ on:
 permissions:
   contents: read
 
-jobs:
-  build:
-    name: Test & Build Android
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    concurrency:
-      group: android-build-${{ github.event_name == 'pull_request' && github.ref || 'release' }}
-      cancel-in-progress: false
+concurrency:
+  group: savinggoalplus-${{ github.event_name == 'pull_request' && github.ref || 'release' }}
+  cancel-in-progress: false
 
+jobs:
+  version:
+    name: Resolve shared version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.RELEASE_VERSION }}
+      tag: ${{ steps.version.outputs.RELEASE_TAG }}
+      code: ${{ steps.version.outputs.RELEASE_CODE }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
+      - id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+          BUMP_TYPE: ${{ inputs.bump_type || 'patch' }}
+        run: bash .github/scripts/release-version.sh
+
+  android:
+    name: Test & Build Android
+    runs-on: ubuntu-latest
+    needs: version
+    env:
+      RELEASE_VERSION: ${{ needs.version.outputs.version }}
+      RELEASE_CODE: ${{ needs.version.outputs.code }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
           persist-credentials: false
 
       - uses: actions/setup-java@v4
@@ -72,13 +96,6 @@ jobs:
       - name: Build pull request APK
         if: github.event_name == 'pull_request'
         run: bash gradlew assembleDebug --stacktrace
-
-      - name: Resolve release version
-        if: github.event_name != 'pull_request'
-        env:
-          INPUT_VERSION: ${{ inputs.version }}
-          BUMP_TYPE: ${{ inputs.bump_type || 'patch' }}
-        run: bash .github/scripts/release-version.sh android
 
       - name: Build signed release APK
         if: github.event_name != 'pull_request'
@@ -103,19 +120,135 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: SavingGoalPlus-APKs
+          name: SavingGoalPlus-Android
           if-no-files-found: error
           path: |
             release_dist/*.apk
             app/build/outputs/apk/debug/*.apk
 
-      - name: Publish Android release
-        if: github.event_name != 'pull_request'
-        uses: softprops/action-gh-release@v2
+  ios:
+    name: Test & Build iOS
+    runs-on: macos-latest
+    needs: version
+    env:
+      RELEASE_VERSION: ${{ needs.version.outputs.version }}
+      RELEASE_CODE: ${{ needs.version.outputs.code }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
         with:
-          files: release_dist/*.apk
-          fail_on_unmatched_files: true
-          tag_name: ${{ env.RELEASE_TAG }}
-          target_commitish: ${{ github.sha }}
-          name: "SavingGoalPlus v${{ env.RELEASE_VERSION }}"
-          generate_release_notes: true
+          persist-credentials: false
+
+      - name: Select Xcode Version
+        run: |
+          if [ -d "/Applications/Xcode_16.0.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_16.0.app/Contents/Developer
+          elif [ -d "/Applications/Xcode_15.4.app" ]; then
+            sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
+          fi
+          xcodebuild -version
+
+      - name: Cache Swift Package Manager Dependencies
+        uses: actions/cache@v4
+        with:
+          path: ios/.spm-cache
+          key: ${{ runner.os }}-spm-${{ hashFiles('ios/Package.swift', 'ios/SavingGoalPlus.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved') }}
+          restore-keys: |
+            ${{ runner.os }}-spm-
+
+      - name: Resolve Swift Packages & Verify Scheme
+        run: |
+          cd ios
+          xcodebuild -list -project SavingGoalPlus.xcodeproj
+          xcodebuild -resolvePackageDependencies \
+            -project SavingGoalPlus.xcodeproj \
+            -scheme SavingGoalPlus \
+            -clonedSourcePackagesDirPath .spm-cache
+
+      - name: Compile App, Widget & Unit Tests (Simulator)
+        run: |
+          cd ios
+          xcodebuild build-for-testing \
+            -project SavingGoalPlus.xcodeproj \
+            -scheme SavingGoalPlus \
+            -destination 'generic/platform=iOS Simulator' \
+            -clonedSourcePackagesDirPath .spm-cache \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS=""
+
+      - name: Archive & Package Unsigned .ipa and .xcarchive
+        if: github.event_name != 'pull_request'
+        run: |
+          mkdir -p build_output
+          cd ios
+          xcodebuild archive \
+            -project SavingGoalPlus.xcodeproj \
+            -scheme SavingGoalPlus \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "../build_output/SavingGoalPlus.xcarchive" \
+            -clonedSourcePackagesDirPath .spm-cache \
+            MARKETING_VERSION="${RELEASE_VERSION}" \
+            CURRENT_PROJECT_VERSION="${RELEASE_CODE}" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES
+
+          cd ../build_output
+
+          # Package the unsigned app and its embedded widget.
+          mkdir -p Payload
+          APP_PATH=$(find SavingGoalPlus.xcarchive/Products/Applications -name "*.app" | head -n 1)
+          cp -r "$APP_PATH" Payload/
+          zip -r "SavingGoalPlus-v${RELEASE_VERSION}-unsigned.ipa" Payload
+          rm -rf Payload
+
+          # Package raw .xcarchive.zip
+          zip -r "SavingGoalPlus-v${RELEASE_VERSION}-iOS.xcarchive.zip" SavingGoalPlus.xcarchive
+          rm -rf SavingGoalPlus.xcarchive
+
+      - name: Upload CI Artifacts
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: SavingGoalPlus-iOS
+          if-no-files-found: error
+          path: |
+            build_output/*.ipa
+            build_output/*.zip
+
+  publish:
+    name: Publish Android & iOS release
+    if: github.event_name != 'pull_request'
+    needs: [version, android, ios]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      RELEASE_VERSION: ${{ needs.version.outputs.version }}
+      RELEASE_TAG: ${{ needs.version.outputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: SavingGoalPlus-Android
+          path: release_dist
+      - uses: actions/download-artifact@v4
+        with:
+          name: SavingGoalPlus-iOS
+          path: release_dist
+      - name: Publish all three packages
+        run: |
+          gh release create "$RELEASE_TAG" \
+            "release_dist/SavingGoalPlus-v${RELEASE_VERSION}.apk" \
+            "release_dist/SavingGoalPlus-v${RELEASE_VERSION}-unsigned.ipa" \
+            "release_dist/SavingGoalPlus-v${RELEASE_VERSION}-iOS.xcarchive.zip" \
+            --target "$GITHUB_SHA" \
+            --title "SavingGoalPlus v${RELEASE_VERSION}" \
+            --generate-notes

@@ -11,7 +11,6 @@
 
 <p align="center">
   <a href="https://github.com/Minta1234/SavingGoalPlus/actions"><img src="https://img.shields.io/github/actions/workflow/status/Minta1234/SavingGoalPlus/build-and-release.yml?branch=main&label=Android%20CI&logo=android" alt="Android Build Status"></a>
-  <a href="https://github.com/Minta1234/SavingGoalPlus/actions"><img src="https://img.shields.io/github/actions/workflow/status/Minta1234/SavingGoalPlus/ios-build-and-release.yml?branch=main&label=iOS%20CI&logo=apple" alt="iOS Build Status"></a>
   <img src="https://img.shields.io/badge/Android-16%20(API%2036)-3DDC84?logo=android&logoColor=white" alt="Android 16">
   <img src="https://img.shields.io/badge/iOS-16.0%2B-000000?logo=apple&logoColor=white" alt="iOS 16+">
   <img src="https://img.shields.io/badge/Kotlin-2.0.21-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin 2.0">
@@ -156,18 +155,9 @@ xcodebuild build -project SavingGoalPlus.xcodeproj -scheme SavingGoalPlus -desti
 
 ## 🔄 Automated CI/CD & Smart Change Detection
 
-This repository includes automated GitHub Actions release workflows for both Android and iOS:
-- **Android Workflow**: [`.github/workflows/build-and-release.yml`](.github/workflows/build-and-release.yml)
-- **iOS Workflow**: [`.github/workflows/ios-build-and-release.yml`](.github/workflows/ios-build-and-release.yml)
+The [release workflow](.github/workflows/build-and-release.yml) builds Android and iOS in parallel from the same commit. A relevant push to `main`, version tag push, or manual run publishes one release after both builds succeed. Each release contains the signed Android APK, unsigned iOS IPA, and Xcode archive. Pull requests validate both builds without publishing.
 
-### ⚡ Smart Selective Compilation ("Don't Compile if Nothing Changed")
-- **Android builds only when Android code changes**: Modifying files in `app/**`, `gradle/**`, or Android configs triggers the Android build. Changes only affecting documentation or iOS code **will NOT compile Android**.
-- **iOS builds only when iOS code changes**: Modifying files in `ios/**` triggers the iOS build. Changes only affecting documentation or Android code **will NOT compile iOS**.
-- **Docs & Non-code Commits**: Commits touching only markdown, documentation, or assets skip CI compilation entirely, saving build minutes.
-- Successful builds from relevant pushes to `main` publish a release automatically. Pull requests validate the build.
-- Android publishes a signed APK to a `vX.Y.Z` release using the existing `RELEASE_KEYSTORE_BASE64` secret. If the keystore uses custom credentials, set `KEYSTORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD`.
-- iOS publishes an unsigned IPA and Xcode archive to an `ios-vX.Y.Z` release. Explicit shared `vX.Y.Z` tag pushes can still publish both platforms to one release.
-- Manual dispatch accepts a target version. Automatic releases advance the patch version from Git tags and leave the source branch untouched.
+Android uses the existing `RELEASE_KEYSTORE_BASE64` secret. For custom credentials, set `KEYSTORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD`. The unsigned iOS IPA must be signed before installation.
 
 ---
 

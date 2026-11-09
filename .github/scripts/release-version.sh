@@ -1,26 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-platform=$1
 version_pattern='(0|[1-9][0-9]{0,4})\.(0|[1-9][0-9]?)\.(0|[1-9][0-9]?)'
-prefix=v
-if [[ "$platform" == ios ]]; then
-  prefix=ios-v
-fi
-
 if [[ "$GITHUB_REF" == refs/tags/* ]]; then
   tag=${GITHUB_REF#refs/tags/}
-  version=${tag#ios-}
-  version=${version#v}
+  version=${tag#v}
 elif [[ -n "${INPUT_VERSION:-}" ]]; then
   version=${INPUT_VERSION#v}
-  tag="$prefix$version"
+  tag="v$version"
 else
   # Pick the greatest stable version, including tags on other branches.
   tags=$(git tag --list)
-  if [[ "$platform" == android ]]; then
-    tags=$(printf '%s\n' "$tags" | sed '/^ios-v/d')
-  fi
   versions=$(printf '%s\n' "$tags" | sed -E 's/^(ios-)?v//' | grep -Ex "$version_pattern" || true)
   baseline=$(sed -n 's/^VERSION_NAME=//p' gradle.properties | tr -d '\r')
   current=$(printf '%s\n' "$versions" "$baseline" | sort -t. -k1,1n -k2,2n -k3,3n | tail -n 1)
@@ -44,7 +34,7 @@ else
     major=$((major + 1))
   fi
   version="$major.$minor.$patch"
-  tag="$prefix$version"
+  tag="v$version"
 fi
 
 if [[ ! "$version" =~ ^$version_pattern$ ]]; then
@@ -67,5 +57,5 @@ fi
   echo "RELEASE_VERSION=$version"
   echo "RELEASE_TAG=$tag"
   echo "RELEASE_CODE=$code"
-} >> "$GITHUB_ENV"
-echo "Publishing $tag from $GITHUB_SHA"
+} >> "$GITHUB_OUTPUT"
+echo "Resolved $tag from $GITHUB_SHA"
