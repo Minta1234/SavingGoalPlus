@@ -106,7 +106,7 @@ jobs:
   release:
     name: Version Bump & Publish Release
     needs: build
-    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
 
     steps:
@@ -189,7 +189,7 @@ jobs:
           grep "^VERSION_" gradle.properties
 
       - name: Commit & Push Version Bump (if enabled)
-        if: github.event_name == 'workflow_dispatch' && inputs.commit_version_bump == true
+        if: (github.event_name == 'workflow_dispatch' && inputs.commit_version_bump == true) || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
