@@ -1,71 +1,40 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
-public struct TotalSummaryCardView: View {
+public struct SingleGoalSummaryCardView: View {
     @AppStorage(SavingsCalculations.currencyPreferenceKey) private var currencySymbol = "$"
-    public let goals: [Goal]
-    public let summary: TotalSummary
-
-    @State private var selectedIndex = 0
+    public let title: String
+    public let saved: Double
+    public let target: Double
+    public let remaining: Double
+    public let percent: Int
+    public let badge: String
+    public let photoPath: String?
+    public let statusLabel: String
 
     public init(
-        goals: [Goal] = [],
-        summary: TotalSummary
-    ) {
-        self.goals = goals
-        self.summary = summary
-    }
-
-    public var body: some View {
-        if goals.isEmpty {
-            singleCard(
-                title: "You've already saved",
-                saved: summary.totalSavedAmount,
-                target: summary.totalTargetAmount,
-                remaining: summary.totalRemainingAmount,
-                percent: summary.overallPercentage,
-                badge: "\(summary.activeGoalCount) Goals"
-            )
-        } else {
-            VStack(spacing: 10) {
-                TabView(selection: $selectedIndex) {
-                    ForEach(Array(goals.enumerated()), id: \.element.id) { index, goal in
-                        singleCard(
-                            title: goal.title,
-                            saved: goal.savedAmount,
-                            target: goal.targetAmount,
-                            remaining: goal.remainingAmount,
-                            percent: goal.progressPercentage,
-                            badge: "\(index + 1)/\(goals.count) (\(goal.progressPercentage)%)"
-                        )
-                        .tag(index)
-                    }
-                }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-                .frame(height: 170)
-
-                if goals.count > 1 {
-                    HStack(spacing: 6) {
-                        ForEach(0..<goals.count, id: \.self) { idx in
-                            Capsule()
-                                .fill(selectedIndex == idx ? ColorTheme.primaryEmerald : Color.secondary.opacity(0.3))
-                                .frame(width: selectedIndex == idx ? 22 : 6, height: 6)
-                                .animation(.spring(response: 0.35, dampingFraction: 0.7), value: selectedIndex)
-                        }
-                    }
-                    .padding(.top, 2)
-                }
-            }
-        }
-    }
-
-    private func singleCard(
         title: String,
         saved: Double,
         target: Double,
         remaining: Double,
         percent: Int,
-        badge: String
-    ) -> some View {
+        badge: String,
+        photoPath: String? = nil,
+        statusLabel: String = "Progress"
+    ) {
+        self.title = title
+        self.saved = saved
+        self.target = target
+        self.remaining = remaining
+        self.percent = percent
+        self.badge = badge
+        self.photoPath = photoPath
+        self.statusLabel = statusLabel
+    }
+
+    public var body: some View {
         VStack(spacing: 14) {
             // Top Row: Goal Title & Saved Amount + Badge
             HStack(alignment: .center) {
@@ -87,7 +56,27 @@ public struct TotalSummaryCardView: View {
 
                 Spacer()
 
-                // Piggy Bank Icon badge
+                // Photo Avatar or Piggy Bank Icon badge
+                #if canImport(UIKit)
+                if let photoPath = photoPath,
+                   let uiImage = UIImage(contentsOfFile: photoPath) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 44, height: 44)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                } else {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.white.opacity(0.12))
+                            .frame(width: 44, height: 44)
+
+                        Image(systemName: "banknote.fill")
+                            .font(.system(size: 22))
+                            .foregroundColor(ColorTheme.primaryEmerald)
+                    }
+                }
+                #else
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.white.opacity(0.12))
@@ -97,6 +86,7 @@ public struct TotalSummaryCardView: View {
                         .font(.system(size: 22))
                         .foregroundColor(ColorTheme.primaryEmerald)
                 }
+                #endif
             }
 
             // Progress Bar
@@ -138,7 +128,7 @@ public struct TotalSummaryCardView: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text("Progress")
+                    Text(statusLabel)
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(Color(white: 0.65))
                     Text(badge)
@@ -157,5 +147,67 @@ public struct TotalSummaryCardView: View {
         )
         .cornerRadius(20)
         .shadow(color: Color.black.opacity(0.12), radius: 8, x: 0, y: 3)
+    }
+}
+
+public struct TotalSummaryCardView: View {
+    public let goals: [Goal]
+    public let summary: TotalSummary
+
+    @State private var selectedIndex = 0
+
+    public init(
+        goals: [Goal] = [],
+        summary: TotalSummary
+    ) {
+        self.goals = goals
+        self.summary = summary
+    }
+
+    public var body: some View {
+        if goals.isEmpty {
+            SingleGoalSummaryCardView(
+                title: "You've already saved",
+                saved: summary.totalSavedAmount,
+                target: summary.totalTargetAmount,
+                remaining: summary.totalRemainingAmount,
+                percent: summary.overallPercentage,
+                badge: "\(summary.activeGoalCount) Goals",
+                photoPath: nil,
+                statusLabel: "Goals"
+            )
+        } else {
+            VStack(spacing: 10) {
+                TabView(selection: $selectedIndex) {
+                    ForEach(Array(goals.enumerated()), id: \.element.id) { index, goal in
+                        SingleGoalSummaryCardView(
+                            title: goal.title,
+                            saved: goal.savedAmount,
+                            target: goal.targetAmount,
+                            remaining: goal.remainingAmount,
+                            percent: goal.progressPercentage,
+                            badge: "\(index + 1)/\(goals.count) (\(goal.progressPercentage)%)",
+                            photoPath: goal.photoPath,
+                            statusLabel: "Progress"
+                        )
+                        .tag(index)
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .frame(height: 170)
+
+                if goals.count > 1 {
+                    HStack(spacing: 6) {
+                        ForEach(0..<goals.count, id: \.self) { idx in
+                            Capsule()
+                                .fill(selectedIndex == idx ? ColorTheme.primaryEmerald : Color.secondary.opacity(0.3))
+                                .frame(width: selectedIndex == idx ? 22 : 6, height: 6)
+                                .animation(.spring(response: 0.35, dampingFraction: 0.7), value: selectedIndex)
+                        }
+                    }
+                    .padding(.top, 2)
+                }
+            }
+        }
     }
 }

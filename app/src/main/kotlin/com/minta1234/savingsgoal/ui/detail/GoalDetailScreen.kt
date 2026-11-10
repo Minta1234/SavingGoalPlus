@@ -1,4 +1,4 @@
-﻿package com.minta1234.savingsgoal.ui.detail
+package com.minta1234.savingsgoal.ui.detail
 
 import androidx.compose.ui.res.stringResource
 import com.minta1234.savingsgoal.R
@@ -94,6 +94,7 @@ import com.minta1234.savingsgoal.ui.components.CircularGoalGauge
 import com.minta1234.savingsgoal.ui.components.ConfettiCelebrationDialog
 import com.minta1234.savingsgoal.ui.components.GoalEditDialog
 import com.minta1234.savingsgoal.ui.components.PaymentAddEditDialog
+import com.minta1234.savingsgoal.ui.components.SingleSummaryCardView
 import com.minta1234.savingsgoal.ui.components.localizedDeadlineText
 import com.minta1234.savingsgoal.ui.theme.DepositGreen
 import com.minta1234.savingsgoal.ui.theme.ProgressEmerald
@@ -358,25 +359,20 @@ private fun OverviewTabContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
-        // Goal Photo (if present)
-        val imageBitmap = remember(goal.imagePath) {
-            goal.imagePath?.let { path ->
-                val file = File(path)
-                if (file.exists()) BitmapFactory.decodeFile(path)?.asImageBitmap() else null
-            }
-        }
-
-        if (imageBitmap != null) {
-            Image(
-                bitmap = imageBitmap,
-                contentDescription = goal.name,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp)
-                    .clip(RoundedCornerShape(16.dp))
-            )
-        }
+        // Goal Summary Card (K-Plus Card Like in Home)
+        SingleSummaryCardView(
+            title = goal.name,
+            savedAmount = goal.totalSaved,
+            targetAmount = goal.amount,
+            remainingAmount = goal.remainingAmount,
+            progressFraction = goal.progressFraction,
+            statusBadge = "${goal.progressPercent}%",
+            statusLabel = stringResource(R.string.ui_progress),
+            currencySymbol = currency,
+            imagePath = goal.imagePath,
+            onClick = null,
+            modifier = Modifier.fillMaxWidth()
+        )
 
         // Circular Gauge
         CircularGoalGauge(

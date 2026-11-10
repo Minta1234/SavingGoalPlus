@@ -154,6 +154,7 @@
     <string name="ui_overview">ภาพรวม</string>
     <string name="ui_permanently_delete">ลบถาวรหรือไม่?</string>
     <string name="ui_previous_goal">เป้าหมายก่อนหน้า</string>
+    <string name="ui_progress">ความคืบหน้า</string>
     <string name="ui_recommended_savings_plan">แผนการออมที่แนะนำ</string>
     <string name="ui_record_transaction">บันทึกรายการ</string>
     <string name="ui_red">แดง</string>

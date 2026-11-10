@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 public struct GoalCardView: View {
     @AppStorage(SavingsCalculations.currencyPreferenceKey) private var currencySymbol = "$"
@@ -37,7 +40,27 @@ public struct GoalCardView: View {
     public var body: some View {
         VStack(spacing: 12) {
             HStack(spacing: 14) {
-                // Category / Monogram Icon
+                // Photo Avatar or Category / Monogram Icon
+                #if canImport(UIKit)
+                if let photoPath = goal.photoPath,
+                   let uiImage = UIImage(contentsOfFile: photoPath) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 48, height: 48)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                } else {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(ColorTheme.stageColor(for: goal.progressPercentage).opacity(0.15))
+                            .frame(width: 48, height: 48)
+
+                        Text(String(goal.title.prefix(2)).uppercased())
+                            .font(.system(size: 16, weight: .bold, design: .rounded))
+                            .foregroundColor(ColorTheme.stageColor(for: goal.progressPercentage))
+                    }
+                }
+                #else
                 ZStack {
                     RoundedRectangle(cornerRadius: 14)
                         .fill(ColorTheme.stageColor(for: goal.progressPercentage).opacity(0.15))
@@ -47,6 +70,7 @@ public struct GoalCardView: View {
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundColor(ColorTheme.stageColor(for: goal.progressPercentage))
                 }
+                #endif
 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {

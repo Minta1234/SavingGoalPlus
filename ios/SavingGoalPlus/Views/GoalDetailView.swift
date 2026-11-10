@@ -34,6 +34,20 @@ public struct GoalDetailView: View {
             if let goal = currentGoal {
                 ScrollView {
                     VStack(spacing: 20) {
+                        // K-Plus Goal Summary Card
+                        SingleGoalSummaryCardView(
+                            title: goal.title,
+                            saved: goal.savedAmount,
+                            target: goal.targetAmount,
+                            remaining: goal.remainingAmount,
+                            percent: goal.progressPercentage,
+                            badge: "\(goal.progressPercentage)%",
+                            photoPath: goal.photoPath,
+                            statusLabel: "Progress"
+                        )
+                        .padding(.horizontal)
+                        .padding(.top, 10)
+
                         // 260° Gauge
                         CircularGoalGaugeView(
                             progressFraction: goal.progressFraction,

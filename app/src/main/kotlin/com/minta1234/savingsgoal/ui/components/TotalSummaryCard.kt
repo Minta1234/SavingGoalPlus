@@ -1,7 +1,9 @@
-﻿package com.minta1234.savingsgoal.ui.components
+package com.minta1234.savingsgoal.ui.components
 
+import android.graphics.BitmapFactory
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,6 +38,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -45,6 +50,7 @@ import com.minta1234.savingsgoal.data.Goal
 import com.minta1234.savingsgoal.data.SavingsCalculations
 import com.minta1234.savingsgoal.data.TotalSummary
 import kotlinx.coroutines.launch
+import java.io.File
 
 @Composable
 fun TotalSummaryCard(
@@ -90,6 +96,7 @@ fun TotalSummaryCard(
                 progressFraction = goal.progressFraction,
                 statusBadge = "${page + 1}/${goals.size} (${goal.progressPercent}%)",
                 currencySymbol = currency,
+                imagePath = goal.imagePath,
                 onClick = { onGoalClick(goal.id) },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -139,7 +146,7 @@ fun TotalSummaryCard(
 }
 
 @Composable
-private fun SingleSummaryCardView(
+fun SingleSummaryCardView(
     title: String,
     savedAmount: Double,
     targetAmount: Double,
@@ -147,7 +154,8 @@ private fun SingleSummaryCardView(
     progressFraction: Float,
     statusBadge: String,
     currencySymbol: String,
-    onClick: (() -> Unit)?,
+    imagePath: String? = null,
+    onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     Card(
@@ -174,7 +182,7 @@ private fun SingleSummaryCardView(
                 .padding(20.dp)
         ) {
             Column {
-                // Top Header Row: Goal Title & Saved Amount + Piggy Bank Badge
+                // Top Header Row: Goal Title & Saved Amount + Piggy Bank / Avatar Badge
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -205,21 +213,39 @@ private fun SingleSummaryCardView(
                         )
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .size(46.dp)
-                            .background(
-                                Color(0xFF384355),
-                                shape = RoundedCornerShape(14.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Savings,
-                            contentDescription = stringResource(R.string.ui_total_saved),
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(26.dp)
+                    val imageBitmap = remember(imagePath) {
+                        imagePath?.let { path ->
+                            val file = File(path)
+                            if (file.exists()) BitmapFactory.decodeFile(path)?.asImageBitmap() else null
+                        }
+                    }
+
+                    if (imageBitmap != null) {
+                        Image(
+                            bitmap = imageBitmap,
+                            contentDescription = title,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .size(50.dp)
+                                .clip(RoundedCornerShape(14.dp))
                         )
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .size(46.dp)
+                                .background(
+                                    Color(0xFF384355),
+                                    shape = RoundedCornerShape(14.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Savings,
+                                contentDescription = stringResource(R.string.ui_total_saved),
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(26.dp)
+                            )
+                        }
                     }
                 }
 
