@@ -11,6 +11,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,6 +46,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -81,7 +84,7 @@ import com.example.savingsgoal.ui.theme.AppThemePalette
 import com.example.savingsgoal.util.rememberFileExport
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
@@ -581,46 +584,32 @@ fun SettingsScreen(
             onDismissRequest = { showCurrencyDialog = false },
             title = { Text("Choose Currency Symbol") },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(
+                    modifier = Modifier.verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
                     Text("Select a popular currency or type your own:")
 
-                    Row(
+                    FlowRow(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
-                        commonCurrencies.take(6).forEach { symbol ->
-                            TextButton(
+                        commonCurrencies.forEach { symbol ->
+                            FilterChip(
+                                selected = customInput.isBlank() && selectedSymbol == symbol,
                                 onClick = {
                                     selectedSymbol = symbol
                                     customInput = ""
-                                }
-                            ) {
-                                Text(symbol, fontSize = 18.sp, fontWeight = if (selectedSymbol == symbol) FontWeight.Bold else FontWeight.Normal)
-                            }
-                        }
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        commonCurrencies.drop(6).forEach { symbol ->
-                            TextButton(
-                                onClick = {
-                                    selectedSymbol = symbol
-                                    customInput = ""
-                                }
-                            ) {
-                                Text(symbol, fontSize = 18.sp, fontWeight = if (selectedSymbol == symbol) FontWeight.Bold else FontWeight.Normal)
-                            }
+                                },
+                                label = { Text(symbol, fontSize = 18.sp) }
+                            )
                         }
                     }
 
                     OutlinedTextField(
                         value = customInput,
-                        onValueChange = {
-                            customInput = it
-                            if (it.isNotBlank()) selectedSymbol = it
-                        },
+                        onValueChange = { customInput = it },
                         label = { Text("Custom Symbol / Code") },
                         placeholder = { Text("e.g. USD, EUR, THB") },
                         modifier = Modifier.fillMaxWidth(),
