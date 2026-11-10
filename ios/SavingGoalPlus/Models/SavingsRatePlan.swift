@@ -30,6 +30,10 @@ public struct TotalSummary: Codable, Equatable {
     public let activeGoalCount: Int
     public let completedGoalCount: Int
 
+    public var totalGoalsCount: Int {
+        activeGoalCount + completedGoalCount
+    }
+
     public init(
         totalTargetAmount: Double = 0.0,
         totalSavedAmount: Double = 0.0,

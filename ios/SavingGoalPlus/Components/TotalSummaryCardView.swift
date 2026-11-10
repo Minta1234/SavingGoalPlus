@@ -102,7 +102,7 @@ public struct TotalSummaryCardView: View {
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundColor(.secondary)
                         .tracking(1.0)
-                    Text("\(summary.totalGoalsCount) Active")
+                    Text("\(summary.activeGoalCount) Active")
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundColor(.secondary)
                 }
@@ -159,7 +159,7 @@ public struct TotalSummaryCardView: View {
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundColor(.secondary)
                         .tracking(1.0)
-                    Text("\(summary.totalGoalsCount) Goals")
+                    Text("\(summary.activeGoalCount) Goals")
                         .font(.system(size: 15, weight: .semibold, design: .rounded))
                         .foregroundColor(.secondary)
                 }
