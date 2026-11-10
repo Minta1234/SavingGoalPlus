@@ -151,13 +151,12 @@ fun MainScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // Header Total Summary Card (Swipeable K PLUS Style)
+                // Header Total Summary Card (Single Master Card with Target, Saved, Remaining)
                 if (uiState.showTotalGoalsCard) {
                     item {
                         TotalSummaryCard(
                             summary = uiState.summary,
-                            currencySymbol = uiState.defaultCurrency,
-                            streakInfo = streakInfo
+                            currencySymbol = uiState.defaultCurrency
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                     }

@@ -52,7 +52,7 @@ public struct SettingsView: View {
                 // Theme Accent Section (iOS UI Swatches)
                 Section(header: Text("Theme Accent (iOS Style)")) {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Active: \(customAccent.isEmpty ? Text(AppAccentTheme(rawValue: selectedAccent)?.displayName ?? "Apple Mint") : Text("Custom"))")
+                        Text("Active: \(customAccent.isEmpty ? (AppAccentTheme(rawValue: selectedAccent)?.displayName ?? "Apple Mint") : "Custom")")
                             .font(.caption)
                             .foregroundColor(.secondary)
 

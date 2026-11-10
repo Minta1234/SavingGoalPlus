@@ -267,7 +267,7 @@ public struct StreakMilestonesSheet: View {
                             .frame(maxWidth: .infinity)
                             .accessibilityElement(children: .ignore)
                             .accessibilityLabel(day.isToday ? Text("Today") : Text(verbatim: day.description))
-                            .accessibilityValue(Text(day.saved ? LocalizedStringKey("Saved") : LocalizedStringKey("No deposit")))
+                            .accessibilityValue(day.saved ? Text("Saved") : Text("No deposit"))
                         }
                     }
                     .padding(.vertical, 4)
