@@ -88,6 +88,31 @@ class SavingsCalculationsTest {
     }
 
     @Test
+    fun testBackupPayloadDeserialization() {
+        val json = kotlinx.serialization.json.Json { ignoreUnknownKeys = true; isLenient = true; coerceInputValues = true }
+        
+        // Standard Android JSON
+        val androidJson = """
+            {
+                "version": 2,
+                "exportDate": "2026-11-10",
+                "goals": [{"id": 1, "name": "Trip", "amount": 5000.0}],
+                "payments": [{"id": 1, "mainId": 1, "date": "2026-11-10", "amount": 500.0}]
+            }
+        """.trimIndent()
+        val parsedAndroid = json.decodeFromString<com.minta1234.savingsgoal.data.BackupPayload>(androidJson)
+        assertEquals(1, parsedAndroid.goals.size)
+        assertEquals("Trip", parsedAndroid.goals[0].name)
+        assertEquals(5000.0, parsedAndroid.goals[0].amount, 0.001)
+
+        // Missing exportDate or optional fields
+        val minimalJson = """{"goals": [{"name": "Car", "amount": 20000.0}]}"""
+        val parsedMinimal = json.decodeFromString<com.minta1234.savingsgoal.data.BackupPayload>(minimalJson)
+        assertEquals(1, parsedMinimal.goals.size)
+        assertEquals("Car", parsedMinimal.goals[0].name)
+    }
+
+    @Test
     fun testNumberParsing() {
         assertEquals(1500.75, SavingsCalculations.parseAmount("1,500.75"), 0.001)
         assertEquals(250.0, SavingsCalculations.parseAmount("250"), 0.001)

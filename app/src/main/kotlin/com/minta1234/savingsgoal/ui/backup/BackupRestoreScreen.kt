@@ -1,8 +1,5 @@
 ﻿package com.minta1234.savingsgoal.ui.backup
 
-import androidx.compose.ui.res.stringResource
-import com.minta1234.savingsgoal.R
-import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -54,8 +51,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.minta1234.savingsgoal.R
 import com.minta1234.savingsgoal.data.SavingsGoalDbHelper
 import com.minta1234.savingsgoal.data.SavingsRepository
 import com.minta1234.savingsgoal.util.rememberFileExport
@@ -85,28 +84,58 @@ fun BackupRestoreScreen(
 
     var isProcessing by remember { mutableStateOf(false) }
     var confirmRestoreDialog by remember { mutableStateOf(false) }
-    var pendingRestoreUri by remember { mutableStateOf<Uri?>(null) }
-    var pendingRestoreType by remember { mutableStateOf<String?>(null) } // "json" or "sqlite"
+    var pendingRestoreFile by remember { mutableStateOf<File?>(null) }
 
-    // Launcher for JSON Restore
-    val jsonPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        if (uri != null) {
-            pendingRestoreUri = uri
-            pendingRestoreType = "json"
-            confirmRestoreDialog = true
+    fun handleSelectedUri(uri: Uri) {
+        scope.launch(Dispatchers.IO) {
+            try {
+                isProcessing = true
+                val cacheFile = File(context.cacheDir, "pending_restore_upload.bin")
+                context.contentResolver.openInputStream(uri)?.use { inStream ->
+                    FileOutputStream(cacheFile).use { outStream ->
+                        inStream.copyTo(outStream)
+                    }
+                }
+                pendingRestoreFile = cacheFile
+                isProcessing = false
+                confirmRestoreDialog = true
+            } catch (e: Exception) {
+                isProcessing = false
+                android.util.Log.e("BackupRestoreScreen", "Failed to cache selected file", e)
+                snackbarHostState.showSnackbar(resources.getString(R.string.restore_failed))
+            }
         }
     }
 
-    // Launcher for SQLite Database Restore
-    val dbPickerLauncher = rememberLauncherForActivityResult(
+    // OpenDocument contract opens document / file manager (Files, Drive, Downloads, SD card)
+    val documentPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            handleSelectedUri(uri)
+        }
+    }
+
+    // Fallback GetContent launcher
+    val getContentFallbackLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         if (uri != null) {
-            pendingRestoreUri = uri
-            pendingRestoreType = "sqlite"
-            confirmRestoreDialog = true
+            handleSelectedUri(uri)
+        }
+    }
+
+    fun openPicker(mimeTypes: Array<String>) {
+        try {
+            documentPickerLauncher.launch(mimeTypes)
+        } catch (_: Exception) {
+            try {
+                getContentFallbackLauncher.launch("*/*")
+            } catch (_: Exception) {
+                scope.launch {
+                    snackbarHostState.showSnackbar(resources.getString(R.string.file_picker_unavailable))
+                }
+            }
         }
     }
 
@@ -221,7 +250,7 @@ fun BackupRestoreScreen(
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Button(
-                            onClick = { jsonPickerLauncher.launch("*/*") },
+                            onClick = { openPicker(arrayOf("application/json", "text/*", "*/*")) },
                             modifier = Modifier.weight(1f)
                         ) {
                             Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -230,7 +259,7 @@ fun BackupRestoreScreen(
                         }
 
                         OutlinedButton(
-                            onClick = { dbPickerLauncher.launch("*/*") },
+                            onClick = { openPicker(arrayOf("application/octet-stream", "application/x-sqlite3", "*/*")) },
                             modifier = Modifier.weight(1f)
                         ) {
                             Icon(Icons.Default.Storage, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -252,33 +281,30 @@ fun BackupRestoreScreen(
             confirmButton = {
                 Button(
                     onClick = {
-                        val uri = pendingRestoreUri
-                        val type = pendingRestoreType
+                        val file = pendingRestoreFile
                         confirmRestoreDialog = false
 
-                        if (uri != null) {
+                        if (file != null && file.exists()) {
                             isProcessing = true
                             scope.launch {
                                 var success = false
                                 withContext(Dispatchers.IO) {
                                     try {
-                                        if (type == "json") {
-                                            context.contentResolver.openInputStream(uri)?.use { stream ->
-                                                val content = stream.bufferedReader().readText()
-                                                success = repository.importFromJson(content)
+                                        val isSqlite = isSqliteDatabase(file)
+                                        if (isSqlite) {
+                                            success = SavingsGoalDbHelper.getInstance(context).importDatabaseFile(context, file)
+                                            if (success) {
+                                                repository.notifyChanged()
                                             }
-                                        } else if (type == "sqlite") {
-                                            val tempFile = File(context.cacheDir, "temp_restore.db")
-                                            context.contentResolver.openInputStream(uri)?.use { inStream ->
-                                                FileOutputStream(tempFile).use { outStream ->
-                                                    inStream.copyTo(outStream)
-                                                }
-                                            }
-                                            success = SavingsGoalDbHelper.getInstance(context).importDatabaseFile(context, tempFile)
-                                            tempFile.delete()
+                                        } else {
+                                            val content = file.readText(Charsets.UTF_8)
+                                            success = repository.importFromJson(content)
                                         }
-                                    } catch (_: Exception) {
+                                    } catch (e: Exception) {
+                                        android.util.Log.e("BackupRestoreScreen", "Restore failed", e)
                                         success = false
+                                    } finally {
+                                        file.delete()
                                     }
                                 }
                                 isProcessing = false
@@ -300,5 +326,16 @@ fun BackupRestoreScreen(
                 }
             }
         )
+    }
+}
+
+private fun isSqliteDatabase(file: File): Boolean {
+    return try {
+        if (!file.exists() || file.length() < 16) return false
+        val header = ByteArray(16)
+        file.inputStream().use { it.read(header) }
+        header.contentEquals("SQLite format 3\u0000".toByteArray(Charsets.US_ASCII))
+    } catch (_: Exception) {
+        false
     }
 }

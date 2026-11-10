@@ -5,8 +5,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Goal(
     val id: Long = 0,
-    val name: String,
-    val amount: Double,
+    val name: String = "",
+    val amount: Double = 0.0,
     val date: String? = null, // YYYY-MM-DD or null
     val folder: String = "MAIN", // "MAIN" or "ARCHIVE"
     val position: Int = 0,
@@ -35,9 +35,9 @@ data class Goal(
 @Serializable
 data class Payment(
     val id: Long = 0,
-    val mainId: Long,
-    val date: String, // YYYY-MM-DD
-    val amount: Double,
+    val mainId: Long = 0,
+    val date: String = "", // YYYY-MM-DD
+    val amount: Double = 0.0,
     val isSaving: Boolean = true, // true = deposit/saving, false = withdrawal
     val note: String = ""
 )
@@ -78,8 +78,8 @@ data class TotalSummary(
 @Serializable
 data class BackupPayload(
     val version: Int = 2,
-    val exportDate: String,
-    val goals: List<Goal>,
-    val payments: List<Payment>
+    val exportDate: String = "",
+    val goals: List<Goal> = emptyList(),
+    val payments: List<Payment> = emptyList()
 )
 

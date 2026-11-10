@@ -43,6 +43,15 @@ class SavingsGoalDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
                 instance ?: SavingsGoalDbHelper(context.applicationContext).also { instance = it }
             }
         }
+
+        @Synchronized
+        fun resetInstance() {
+            try {
+                instance?.close()
+            } catch (_: Exception) {
+            }
+            instance = null
+        }
     }
 
     override fun onConfigure(db: SQLiteDatabase) {
@@ -118,15 +127,30 @@ class SavingsGoalDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
     // Direct database file restore
     fun importDatabaseFile(context: Context, srcFile: File): Boolean {
         return try {
-            close()
+            resetInstance()
             val dbPath = context.getDatabasePath(DATABASE_NAME)
+            dbPath.parentFile?.mkdirs()
+
+            // Remove existing WAL/SHM journal files if present
+            File(dbPath.path + "-wal").delete()
+            File(dbPath.path + "-shm").delete()
+            File(dbPath.path + "-journal").delete()
+
             FileInputStream(srcFile).use { input ->
                 FileOutputStream(dbPath).use { output ->
                     input.copyTo(output)
                 }
             }
+
+            // Verify database opens and table structure exists
+            val newHelper = getInstance(context)
+            val db = newHelper.readableDatabase
+            db.rawQuery("SELECT count(*) FROM sqlite_master WHERE type='table'", null).use { c ->
+                c.moveToFirst()
+            }
             true
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            android.util.Log.e("SavingsGoalDbHelper", "Failed to import database file", e)
             false
         }
     }

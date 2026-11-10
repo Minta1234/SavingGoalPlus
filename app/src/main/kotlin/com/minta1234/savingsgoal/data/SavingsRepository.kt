@@ -15,6 +15,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.longOrNull
 import java.io.File
 import java.io.FileOutputStream
 import java.time.LocalDate
@@ -30,7 +37,7 @@ class SavingsRepository(private val context: Context) {
     private val _dataRevision = MutableStateFlow(0L)
     val dataRevision: StateFlow<Long> = _dataRevision.asStateFlow()
 
-    private fun notifyChanged() {
+    fun notifyChanged() {
         _dataRevision.value += 1
         try {
             SavingsGoalWidgetProvider.triggerUpdate(context)
@@ -471,19 +478,115 @@ class SavingsRepository(private val context: Context) {
 
     suspend fun importFromJson(jsonString: String): Boolean = withContext(Dispatchers.IO) {
         try {
-            val json = Json { ignoreUnknownKeys = true }
-            val payload = json.decodeFromString<BackupPayload>(jsonString)
-            val db = dbHelper.writableDatabase
+            val cleanJson = jsonString.trim().removePrefix("\uFEFF")
+            val json = Json {
+                ignoreUnknownKeys = true
+                isLenient = true
+                coerceInputValues = true
+            }
 
+            val parsedGoals = mutableListOf<Goal>()
+            val parsedPayments = mutableListOf<Payment>()
+
+            try {
+                val payload = json.decodeFromString<BackupPayload>(cleanJson)
+                parsedGoals.addAll(payload.goals)
+                parsedPayments.addAll(payload.payments)
+            } catch (e: Exception) {
+                android.util.Log.w("SavingsRepository", "Direct BackupPayload decode failed, trying dynamic JSON parse", e)
+            }
+
+            // Fallback for iOS format or raw array
+            if (parsedGoals.isEmpty()) {
+                val element = json.parseToJsonElement(cleanJson)
+                if (element is JsonObject) {
+                    val goalsArray = element["goals"] as? JsonArray
+                    goalsArray?.forEach { gElem ->
+                        if (gElem is JsonObject) {
+                            val id = gElem["id"]?.jsonPrimitive?.longOrNull ?: 0L
+                            val name = gElem["name"]?.jsonPrimitive?.contentOrNull
+                                ?: gElem["title"]?.jsonPrimitive?.contentOrNull
+                                ?: "Goal"
+                            val amount = gElem["amount"]?.jsonPrimitive?.doubleOrNull
+                                ?: gElem["targetAmount"]?.jsonPrimitive?.doubleOrNull
+                                ?: 0.0
+                            val date = gElem["date"]?.jsonPrimitive?.contentOrNull
+                                ?: gElem["targetDate"]?.jsonPrimitive?.contentOrNull
+                            val folder = gElem["folder"]?.jsonPrimitive?.contentOrNull
+                                ?: if (gElem["isArchived"]?.jsonPrimitive?.booleanOrNull == true) "ARCHIVE" else "MAIN"
+                            val note = gElem["note"]?.jsonPrimitive?.contentOrNull
+                                ?: gElem["notes"]?.jsonPrimitive?.contentOrNull
+                                ?: ""
+                            val currency = gElem["currency"]?.jsonPrimitive?.contentOrNull
+                            parsedGoals.add(
+                                Goal(
+                                    id = id,
+                                    name = name,
+                                    amount = amount,
+                                    date = date,
+                                    folder = folder,
+                                    note = note,
+                                    currency = currency
+                                )
+                            )
+                        }
+                    }
+
+                    val paymentsArray = element["payments"] as? JsonArray
+                    paymentsArray?.forEach { pElem ->
+                        if (pElem is JsonObject) {
+                            val id = pElem["id"]?.jsonPrimitive?.longOrNull ?: 0L
+                            val mainId = pElem["mainId"]?.jsonPrimitive?.longOrNull
+                                ?: pElem["goalId"]?.jsonPrimitive?.longOrNull
+                                ?: 0L
+                            val date = pElem["date"]?.jsonPrimitive?.contentOrNull ?: LocalDate.now().toString()
+                            val amount = pElem["amount"]?.jsonPrimitive?.doubleOrNull ?: 0.0
+                            val isSaving = pElem["isSaving"]?.jsonPrimitive?.booleanOrNull ?: true
+                            val note = pElem["note"]?.jsonPrimitive?.contentOrNull
+                                ?: pElem["notes"]?.jsonPrimitive?.contentOrNull
+                                ?: ""
+                            parsedPayments.add(
+                                Payment(
+                                    id = id,
+                                    mainId = mainId,
+                                    date = date,
+                                    amount = amount,
+                                    isSaving = isSaving,
+                                    note = note
+                                )
+                            )
+                        }
+                    }
+                } else if (element is JsonArray) {
+                    element.forEach { gElem ->
+                        if (gElem is JsonObject) {
+                            val id = gElem["id"]?.jsonPrimitive?.longOrNull ?: 0L
+                            val name = gElem["name"]?.jsonPrimitive?.contentOrNull
+                                ?: gElem["title"]?.jsonPrimitive?.contentOrNull
+                                ?: "Goal"
+                            val amount = gElem["amount"]?.jsonPrimitive?.doubleOrNull
+                                ?: gElem["targetAmount"]?.jsonPrimitive?.doubleOrNull
+                                ?: 0.0
+                            parsedGoals.add(Goal(id = id, name = name, amount = amount))
+                        }
+                    }
+                }
+            }
+
+            if (parsedGoals.isEmpty() && parsedPayments.isEmpty()) {
+                android.util.Log.e("SavingsRepository", "No valid goals or payments found in JSON")
+                return@withContext false
+            }
+
+            val db = dbHelper.writableDatabase
             db.beginTransaction()
             try {
-                // Clear existing
                 db.delete(SavingsGoalDbHelper.TABLE_MAINLIST, null, null)
                 db.delete(SavingsGoalDbHelper.TABLE_PAYMENTLIST, null, null)
 
-                payload.goals.forEach { g ->
+                parsedGoals.forEach { g ->
                     val cv = ContentValues().apply {
-                        put(SavingsGoalDbHelper.COL_ID, g.id)
+                        if (g.id > 0) put(SavingsGoalDbHelper.COL_ID, g.id)
                         put(SavingsGoalDbHelper.COL_NAME, g.name)
                         put(SavingsGoalDbHelper.COL_AMOUNT, g.amount)
                         put(SavingsGoalDbHelper.COL_DATE, g.date)
@@ -500,9 +603,9 @@ class SavingsRepository(private val context: Context) {
                     )
                 }
 
-                payload.payments.forEach { p ->
+                parsedPayments.forEach { p ->
                     val cv = ContentValues().apply {
-                        put(SavingsGoalDbHelper.COL_PAY_ID, p.id)
+                        if (p.id > 0) put(SavingsGoalDbHelper.COL_PAY_ID, p.id)
                         put(SavingsGoalDbHelper.COL_PAY_MAINID, p.mainId)
                         put(SavingsGoalDbHelper.COL_PAY_DATE, p.date)
                         put(SavingsGoalDbHelper.COL_PAY_AMOUNT, p.amount)
@@ -522,7 +625,8 @@ class SavingsRepository(private val context: Context) {
             }
             notifyChanged()
             true
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            android.util.Log.e("SavingsRepository", "Error during importFromJson", e)
             false
         }
     }
