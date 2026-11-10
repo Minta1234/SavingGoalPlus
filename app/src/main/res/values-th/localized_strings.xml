@@ -129,6 +129,8 @@
     <string name="ui_green">เขียว</string>
     <string name="ui_hex_color">รหัสสี Hex</string>
     <string name="ui_highest_amount">จำนวนเงินมากสุดก่อน</string>
+    <string name="ui_lowest_amount">จำนวนเงินน้อยสุดก่อน</string>
+    <string name="ui_sort">จัดเรียง</string>
     <string name="ui_last_7_days">ย้อนหลัง 7 วัน</string>
     <string name="ui_loading_goal">กำลังโหลดเป้าหมาย…</string>
     <string name="ui_loading_release_notes_from_github">กำลังโหลดประวัติจาก GitHub…</string>

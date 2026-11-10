@@ -129,6 +129,8 @@
     <string name="ui_green">Green</string>
     <string name="ui_hex_color">Hex color</string>
     <string name="ui_highest_amount">Highest Amount</string>
+    <string name="ui_lowest_amount">Lowest Amount</string>
+    <string name="ui_sort">Sort</string>
     <string name="ui_last_7_days">Last 7 days</string>
     <string name="ui_loading_goal">Loading goal...</string>
     <string name="ui_loading_release_notes_from_github">Loading release notes from GitHub…</string>

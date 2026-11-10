@@ -48,6 +48,13 @@ enum class SortOrder {
     HIGHEST_AMOUNT
 }
 
+enum class GoalSortOrder {
+    HIGHEST_TO_LOWEST,
+    LOWEST_TO_HIGHEST,
+    NEWEST_FIRST,
+    OLDEST_FIRST
+}
+
 data class SavingsRatePlan(
     val daysToGo: Long,
     val monthsToGo: Long,

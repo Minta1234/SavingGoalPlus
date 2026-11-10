@@ -18,15 +18,41 @@ public struct MainDashboardView: View {
         case completed = "Completed"
     }
 
+    enum GoalSortOrder: String, CaseIterable, Identifiable {
+        case highestToLowest = "Highest Amount"
+        case lowestToHighest = "Lowest Amount"
+        case newestFirst = "Newest First"
+
+        var id: String { rawValue }
+    }
+
+    @AppStorage("goals_sort_order") private var sortOrder: GoalSortOrder = .highestToLowest
+
     private var filteredGoals: [Goal] {
         let active = storage.goals.filter { !$0.isArchived }
+        let sorted: [Goal]
+        switch sortOrder {
+        case .highestToLowest:
+            sorted = active.sorted {
+                if $0.targetAmount != $1.targetAmount { return $0.targetAmount > $1.targetAmount }
+                return $0.savedAmount > $1.savedAmount
+            }
+        case .lowestToHighest:
+            sorted = active.sorted {
+                if $0.targetAmount != $1.targetAmount { return $0.targetAmount < $1.targetAmount }
+                return $0.savedAmount < $1.savedAmount
+            }
+        case .newestFirst:
+            sorted = active.sorted { $0.id > $1.id }
+        }
+
         switch selectedFilter {
         case .all:
-            return active
+            return sorted
         case .inProgress:
-            return active.filter { !$0.isCompleted }
+            return sorted.filter { !$0.isCompleted }
         case .completed:
-            return active.filter { $0.isCompleted }
+            return sorted.filter { $0.isCompleted }
         }
     }
 
@@ -91,6 +117,20 @@ public struct MainDashboardView: View {
             .overlay { ConfettiView(trigger: $showConfetti).allowsHitTesting(false) }
             .navigationTitle("SavingGoalPlus")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Menu {
+                        Picker("Sort", selection: $sortOrder) {
+                            ForEach(GoalSortOrder.allCases) { order in
+                                Text(LocalizedStringKey(order.rawValue)).tag(order)
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "arrow.up.arrow.down")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(ColorTheme.primaryEmerald)
+                    }
+                }
+
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddGoalSheet = true }) {
                         Image(systemName: "plus.circle.fill")

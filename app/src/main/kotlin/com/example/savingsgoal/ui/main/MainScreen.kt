@@ -20,11 +20,14 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -51,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.savingsgoal.data.Goal
+import com.example.savingsgoal.data.GoalSortOrder
 import com.example.savingsgoal.data.SavingsStreakManager
 import com.example.savingsgoal.ui.components.GoalCard
 import com.example.savingsgoal.ui.components.GoalEditDialog
@@ -83,6 +87,58 @@ fun MainScreen(
                     )
                 },
                 actions = {
+                    var sortMenuExpanded by remember { mutableStateOf(false) }
+
+                    Box {
+                        IconButton(onClick = { sortMenuExpanded = true }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.Sort,
+                                contentDescription = stringResource(R.string.ui_sort)
+                            )
+                        }
+                        DropdownMenu(
+                            expanded = sortMenuExpanded,
+                            onDismissRequest = { sortMenuExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        stringResource(R.string.ui_highest_amount),
+                                        fontWeight = if (uiState.sortOrder == GoalSortOrder.HIGHEST_TO_LOWEST) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                },
+                                onClick = {
+                                    sortMenuExpanded = false
+                                    viewModel.setSortOrder(GoalSortOrder.HIGHEST_TO_LOWEST)
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        stringResource(R.string.ui_lowest_amount),
+                                        fontWeight = if (uiState.sortOrder == GoalSortOrder.LOWEST_TO_HIGHEST) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                },
+                                onClick = {
+                                    sortMenuExpanded = false
+                                    viewModel.setSortOrder(GoalSortOrder.LOWEST_TO_HIGHEST)
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = {
+                                    Text(
+                                        stringResource(R.string.ui_newest_first),
+                                        fontWeight = if (uiState.sortOrder == GoalSortOrder.NEWEST_FIRST) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                },
+                                onClick = {
+                                    sortMenuExpanded = false
+                                    viewModel.setSortOrder(GoalSortOrder.NEWEST_FIRST)
+                                }
+                            )
+                        }
+                    }
+
                     IconButton(onClick = onNavigateArchive) {
                         Icon(
                             imageVector = Icons.Default.Archive,
