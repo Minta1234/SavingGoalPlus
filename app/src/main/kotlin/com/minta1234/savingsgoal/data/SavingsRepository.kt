@@ -17,13 +17,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.doubleOrNull
-import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.longOrNull
 import java.io.File
 import java.io.FileOutputStream
 import java.time.LocalDate
@@ -458,184 +451,96 @@ class SavingsRepository(private val context: Context) {
     // --- Backup & Export ---
 
     suspend fun exportToJson(): String = withContext(Dispatchers.IO) {
-        val allGoals = getGoalsByFolder("MAIN") + getGoalsByFolder("ARCHIVE")
-        val allPayments = mutableListOf<Payment>()
         val db = dbHelper.readableDatabase
-        val cursor = db.query(SavingsGoalDbHelper.TABLE_PAYMENTLIST, null, null, null, null, null, null)
-        cursor.use { c ->
-            while (c.moveToNext()) {
-                val id = c.getLong(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_PAY_ID))
-                val mainId = c.getLong(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_PAY_MAINID))
-                val date = c.getString(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_PAY_DATE)) ?: ""
-                val amount = c.getDouble(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_PAY_AMOUNT))
-                val isSavingStr = c.getString(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_PAY_DOSAVING))
-                val isSaving = isSavingStr.equals("true", ignoreCase = true)
-                val note = c.getString(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_PAY_NOTE)) ?: ""
-                allPayments.add(Payment(id, mainId, date, amount, isSaving, note))
+        db.beginTransactionNonExclusive()
+        try {
+            val allGoals = getGoalsByFolder("MAIN") + getGoalsByFolder("ARCHIVE")
+            val allPayments = mutableListOf<Payment>()
+            val cursor = db.query(SavingsGoalDbHelper.TABLE_PAYMENTLIST, null, null, null, null, null, null)
+            cursor.use { c ->
+                while (c.moveToNext()) {
+                    val id = c.getLong(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_PAY_ID))
+                    val mainId = c.getLong(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_PAY_MAINID))
+                    val date = c.getString(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_PAY_DATE)) ?: ""
+                    val amount = c.getDouble(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_PAY_AMOUNT))
+                    val isSavingStr = c.getString(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_PAY_DOSAVING))
+                    val isSaving = isSavingStr.equals("true", ignoreCase = true)
+                    val note = c.getString(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_PAY_NOTE)) ?: ""
+                    allPayments.add(Payment(id, mainId, date, amount, isSaving, note))
+                }
             }
+            val goalIds = allGoals.map { it.id }.toSet()
+            val payload = BackupPayload(
+                exportDate = LocalDate.now().toString(),
+                goals = allGoals.map { it.copy(imagePath = null) },
+                payments = allPayments.filter { it.mainId in goalIds }
+            )
+            val json = Json { prettyPrint = true; encodeDefaults = true }
+            json.encodeToString(payload)
+        } finally {
+            db.endTransaction()
         }
-        val payload = BackupPayload(
-            exportDate = LocalDate.now().toString(),
-            goals = allGoals,
-            payments = allPayments
-        )
-        val json = Json { prettyPrint = true }
-        json.encodeToString(payload)
     }
 
-    suspend fun importFromJson(jsonString: String): Boolean = withContext(Dispatchers.IO) {
+    suspend fun previewBackup(uri: Uri): BackupPayload = withContext(Dispatchers.IO) {
+        val file = File.createTempFile("savings-restore-", ".backup", context.cacheDir)
         try {
-            val cleanJson = jsonString.trim().removePrefix("\uFEFF")
-            val json = Json {
-                ignoreUnknownKeys = true
-                isLenient = true
-                coerceInputValues = true
+            val stream = context.contentResolver.openInputStream(uri)
+                ?: throw java.io.IOException("Cannot open selected backup")
+            stream.use { input ->
+                file.outputStream().use { output -> BackupReader.copy(input, output) }
             }
-
-            val parsedGoals = mutableListOf<Goal>()
-            val parsedPayments = mutableListOf<Payment>()
-
-            try {
-                val payload = json.decodeFromString<BackupPayload>(cleanJson)
-                parsedGoals.addAll(payload.goals)
-                parsedPayments.addAll(payload.payments)
-            } catch (e: Exception) {
-                android.util.Log.w("SavingsRepository", "Direct BackupPayload decode failed, trying dynamic JSON parse", e)
-            }
-
-            // Fallback for iOS format or raw array
-            if (parsedGoals.isEmpty()) {
-                val element = json.parseToJsonElement(cleanJson)
-                if (element is JsonObject) {
-                    val goalsArray = element["goals"] as? JsonArray
-                    goalsArray?.forEach { gElem ->
-                        if (gElem is JsonObject) {
-                            val id = gElem["id"]?.jsonPrimitive?.longOrNull ?: 0L
-                            val name = gElem["name"]?.jsonPrimitive?.contentOrNull
-                                ?: gElem["title"]?.jsonPrimitive?.contentOrNull
-                                ?: "Goal"
-                            val amount = gElem["amount"]?.jsonPrimitive?.doubleOrNull
-                                ?: gElem["targetAmount"]?.jsonPrimitive?.doubleOrNull
-                                ?: 0.0
-                            val date = gElem["date"]?.jsonPrimitive?.contentOrNull
-                                ?: gElem["targetDate"]?.jsonPrimitive?.contentOrNull
-                            val folder = gElem["folder"]?.jsonPrimitive?.contentOrNull
-                                ?: if (gElem["isArchived"]?.jsonPrimitive?.booleanOrNull == true) "ARCHIVE" else "MAIN"
-                            val note = gElem["note"]?.jsonPrimitive?.contentOrNull
-                                ?: gElem["notes"]?.jsonPrimitive?.contentOrNull
-                                ?: ""
-                            val currency = gElem["currency"]?.jsonPrimitive?.contentOrNull
-                            parsedGoals.add(
-                                Goal(
-                                    id = id,
-                                    name = name,
-                                    amount = amount,
-                                    date = date,
-                                    folder = folder,
-                                    note = note,
-                                    currency = currency
-                                )
-                            )
-                        }
-                    }
-
-                    val paymentsArray = element["payments"] as? JsonArray
-                    paymentsArray?.forEach { pElem ->
-                        if (pElem is JsonObject) {
-                            val id = pElem["id"]?.jsonPrimitive?.longOrNull ?: 0L
-                            val mainId = pElem["mainId"]?.jsonPrimitive?.longOrNull
-                                ?: pElem["goalId"]?.jsonPrimitive?.longOrNull
-                                ?: 0L
-                            val date = pElem["date"]?.jsonPrimitive?.contentOrNull ?: LocalDate.now().toString()
-                            val amount = pElem["amount"]?.jsonPrimitive?.doubleOrNull ?: 0.0
-                            val isSaving = pElem["isSaving"]?.jsonPrimitive?.booleanOrNull ?: true
-                            val note = pElem["note"]?.jsonPrimitive?.contentOrNull
-                                ?: pElem["notes"]?.jsonPrimitive?.contentOrNull
-                                ?: ""
-                            parsedPayments.add(
-                                Payment(
-                                    id = id,
-                                    mainId = mainId,
-                                    date = date,
-                                    amount = amount,
-                                    isSaving = isSaving,
-                                    note = note
-                                )
-                            )
-                        }
-                    }
-                } else if (element is JsonArray) {
-                    element.forEach { gElem ->
-                        if (gElem is JsonObject) {
-                            val id = gElem["id"]?.jsonPrimitive?.longOrNull ?: 0L
-                            val name = gElem["name"]?.jsonPrimitive?.contentOrNull
-                                ?: gElem["title"]?.jsonPrimitive?.contentOrNull
-                                ?: "Goal"
-                            val amount = gElem["amount"]?.jsonPrimitive?.doubleOrNull
-                                ?: gElem["targetAmount"]?.jsonPrimitive?.doubleOrNull
-                                ?: 0.0
-                            parsedGoals.add(Goal(id = id, name = name, amount = amount))
-                        }
-                    }
-                }
-            }
-
-            if (parsedGoals.isEmpty() && parsedPayments.isEmpty()) {
-                android.util.Log.e("SavingsRepository", "No valid goals or payments found in JSON")
-                return@withContext false
-            }
-
-            val db = dbHelper.writableDatabase
-            db.beginTransaction()
-            try {
-                db.delete(SavingsGoalDbHelper.TABLE_MAINLIST, null, null)
-                db.delete(SavingsGoalDbHelper.TABLE_PAYMENTLIST, null, null)
-
-                parsedGoals.forEach { g ->
-                    val cv = ContentValues().apply {
-                        if (g.id > 0) put(SavingsGoalDbHelper.COL_ID, g.id)
-                        put(SavingsGoalDbHelper.COL_NAME, g.name)
-                        put(SavingsGoalDbHelper.COL_AMOUNT, g.amount)
-                        put(SavingsGoalDbHelper.COL_DATE, g.date)
-                        put(SavingsGoalDbHelper.COL_FOLDER, g.folder)
-                        put(SavingsGoalDbHelper.COL_POSITION, g.position)
-                        put(SavingsGoalDbHelper.COL_NOTE, g.note)
-                        put(SavingsGoalDbHelper.COL_CURRENCY, g.currency ?: "null")
-                    }
-                    db.insertWithOnConflict(
-                        SavingsGoalDbHelper.TABLE_MAINLIST,
-                        null,
-                        cv,
-                        android.database.sqlite.SQLiteDatabase.CONFLICT_REPLACE
-                    )
-                }
-
-                parsedPayments.forEach { p ->
-                    val cv = ContentValues().apply {
-                        if (p.id > 0) put(SavingsGoalDbHelper.COL_PAY_ID, p.id)
-                        put(SavingsGoalDbHelper.COL_PAY_MAINID, p.mainId)
-                        put(SavingsGoalDbHelper.COL_PAY_DATE, p.date)
-                        put(SavingsGoalDbHelper.COL_PAY_AMOUNT, p.amount)
-                        put(SavingsGoalDbHelper.COL_PAY_DOSAVING, p.isSaving.toString())
-                        put(SavingsGoalDbHelper.COL_PAY_NOTE, p.note)
-                    }
-                    db.insertWithOnConflict(
-                        SavingsGoalDbHelper.TABLE_PAYMENTLIST,
-                        null,
-                        cv,
-                        android.database.sqlite.SQLiteDatabase.CONFLICT_REPLACE
-                    )
-                }
-                db.setTransactionSuccessful()
-            } finally {
-                db.endTransaction()
-            }
-            notifyChanged()
-            true
-        } catch (e: Exception) {
-            android.util.Log.e("SavingsRepository", "Error during importFromJson", e)
-            false
+            BackupReader.read(file)
+        } finally {
+            file.delete()
         }
+    }
+
+    suspend fun restoreBackup(payload: BackupPayload) = withContext(Dispatchers.IO + NonCancellable) {
+        val db = dbHelper.writableDatabase
+        db.beginTransaction()
+        try {
+            db.delete(SavingsGoalDbHelper.TABLE_MAINLIST, null, null)
+            db.delete(SavingsGoalDbHelper.TABLE_PAYMENTLIST, null, null)
+
+            payload.goals.sortedBy { it.id == 0L }.forEach { g ->
+                val cv = ContentValues().apply {
+                    if (g.id > 0) put(SavingsGoalDbHelper.COL_ID, g.id)
+                    put(SavingsGoalDbHelper.COL_NAME, g.name)
+                    put(SavingsGoalDbHelper.COL_AMOUNT, g.amount)
+                    put(SavingsGoalDbHelper.COL_DATE, g.date)
+                    put(SavingsGoalDbHelper.COL_FOLDER, g.folder)
+                    put(SavingsGoalDbHelper.COL_POSITION, g.position)
+                    put(SavingsGoalDbHelper.COL_NOTE, g.note)
+                    put(SavingsGoalDbHelper.COL_CURRENCY, g.currency ?: "null")
+                }
+                db.insertOrThrow(
+                    SavingsGoalDbHelper.TABLE_MAINLIST,
+                    null,
+                    cv
+                )
+            }
+
+            payload.payments.sortedBy { it.id == 0L }.forEach { p ->
+                val cv = ContentValues().apply {
+                    if (p.id > 0) put(SavingsGoalDbHelper.COL_PAY_ID, p.id)
+                    put(SavingsGoalDbHelper.COL_PAY_MAINID, p.mainId)
+                    put(SavingsGoalDbHelper.COL_PAY_DATE, p.date)
+                    put(SavingsGoalDbHelper.COL_PAY_AMOUNT, p.amount)
+                    put(SavingsGoalDbHelper.COL_PAY_DOSAVING, p.isSaving.toString())
+                    put(SavingsGoalDbHelper.COL_PAY_NOTE, p.note)
+                }
+                db.insertOrThrow(
+                    SavingsGoalDbHelper.TABLE_PAYMENTLIST,
+                    null,
+                    cv
+                )
+            }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+        }
+        notifyChanged()
     }
 
     suspend fun exportToCsv(): String = withContext(Dispatchers.IO) {

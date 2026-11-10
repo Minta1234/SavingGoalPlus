@@ -208,4 +208,8 @@
     <string name="widget_select_goal_title">Select Savings Goal</string>
     <string name="widget_select_goal_desc">Choose which savings goal you want to track on this widget</string>
     <string name="widget_no_goals">No savings goals available</string>
+    <string name="backup_save_json">Save backup (JSON)</string>
+    <string name="backup_open_file">Open backup file</string>
+    <string name="backup_preview">%1$d goals and %2$d transactions</string>
+    <string name="backup_invalid">Could not read this backup. Choose a SavingGoalPlus JSON or SQLite file up to 16 MB.</string>
 </resources>

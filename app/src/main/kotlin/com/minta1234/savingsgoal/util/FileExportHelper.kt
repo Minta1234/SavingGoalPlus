@@ -29,7 +29,7 @@ fun rememberFileExport(
                 val message = try {
                     withContext(Dispatchers.IO) {
                         val bytes = content().toByteArray(Charsets.UTF_8)
-                        val stream = resolver.openOutputStream(uri, "wt")
+                        val stream = resolver.openOutputStream(uri, "w")
                             ?: throw IOException("Cannot open the selected file")
                         stream.use { it.write(bytes) }
                     }

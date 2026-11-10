@@ -157,14 +157,11 @@ public final class SavingsStorageService: ObservableObject {
     }
 
     // MARK: - Backup & Restore
-    public func exportBackupJson() -> String {
+    func exportBackupData() throws -> Data {
         let payload = BackupPayload(goals: goals, payments: payments)
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
-        if let data = try? encoder.encode(payload), let string = String(data: data, encoding: .utf8) {
-            return string
-        }
-        return "{}"
+        return try encoder.encode(payload)
     }
 
     static func readBackup(_ url: URL) throws -> BackupPayload {

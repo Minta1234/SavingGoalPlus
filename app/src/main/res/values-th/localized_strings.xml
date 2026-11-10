@@ -208,4 +208,8 @@
     <string name="widget_select_goal_title">เลือกเป้าหมายการออม</string>
     <string name="widget_select_goal_desc">เลือกเป้าหมายที่คุณต้องการแสดงบนวิดเจ็ตนี้</string>
     <string name="widget_no_goals">ยังไม่มีเป้าหมายการออม</string>
+    <string name="backup_save_json">บันทึกไฟล์สำรอง JSON</string>
+    <string name="backup_open_file">เปิดไฟล์สำรอง</string>
+    <string name="backup_preview">%1$d เป้าหมายและ %2$d รายการ</string>
+    <string name="backup_invalid">อ่านไฟล์สำรองไม่สำเร็จ เลือกไฟล์ JSON หรือ SQLite ของ SavingGoalPlus ขนาดไม่เกิน 16 MB</string>
 </resources>

@@ -220,7 +220,7 @@ public struct SettingsView: View {
             .sheet(isPresented: $showingUpdateSheet) {
                 UpdateCheckSheet()
             }
-            .fileImporter(isPresented: $showingFilePicker, allowedContentTypes: [.json]) { result in
+            .fileImporter(isPresented: $showingFilePicker, allowedContentTypes: [.data]) { result in
                 previewBackup(result)
             }
             .alert("Replace savings data?", isPresented: Binding(
@@ -278,7 +278,14 @@ public struct SettingsView: View {
     }
 
     private func exportJson() {
-        prepareExport(storage.exportBackupJson(), type: .json, name: "SavingGoalPlus_Backup")
+        do {
+            exportDocument = ExportDocument(data: try storage.exportBackupData())
+            exportType = .json
+            exportName = "SavingGoalPlus_Backup"
+            showingExportAlert = true
+        } catch {
+            exportError = error.localizedDescription
+        }
     }
 
     private func exportCsv() {

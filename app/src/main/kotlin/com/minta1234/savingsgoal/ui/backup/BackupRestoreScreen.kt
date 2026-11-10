@@ -1,6 +1,7 @@
 package com.minta1234.savingsgoal.ui.backup
 
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -23,7 +24,6 @@ import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.FileUpload
-import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -55,14 +55,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.minta1234.savingsgoal.R
-import com.minta1234.savingsgoal.data.SavingsGoalDbHelper
+import com.minta1234.savingsgoal.data.BackupPayload
 import com.minta1234.savingsgoal.data.SavingsRepository
 import com.minta1234.savingsgoal.util.rememberFileExport
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.io.File
-import java.io.FileOutputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,58 +80,45 @@ fun BackupRestoreScreen(
     }
 
     var isProcessing by remember { mutableStateOf(false) }
-    var confirmRestoreDialog by remember { mutableStateOf(false) }
-    var pendingRestoreFile by remember { mutableStateOf<File?>(null) }
+    var pendingBackup by remember { mutableStateOf<BackupPayload?>(null) }
 
     fun handleSelectedUri(uri: Uri) {
-        scope.launch(Dispatchers.IO) {
-            try {
-                isProcessing = true
-                val cacheFile = File(context.cacheDir, "pending_restore_upload.bin")
-                context.contentResolver.openInputStream(uri)?.use { inStream ->
-                    FileOutputStream(cacheFile).use { outStream ->
-                        inStream.copyTo(outStream)
-                    }
-                }
-                pendingRestoreFile = cacheFile
-                isProcessing = false
-                confirmRestoreDialog = true
+        if (isProcessing) return
+        isProcessing = true
+        scope.launch {
+            val backup = try {
+                repository.previewBackup(uri)
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
+                Log.w("BackupRestoreScreen", "Could not read the selected backup", e)
+                null
+            } finally {
                 isProcessing = false
-                android.util.Log.e("BackupRestoreScreen", "Failed to cache selected file", e)
-                snackbarHostState.showSnackbar(resources.getString(R.string.restore_failed))
+            }
+            if (backup == null) {
+                snackbarHostState.showSnackbar(resources.getString(R.string.backup_invalid))
+            } else {
+                pendingBackup = backup
             }
         }
     }
 
-    // OpenDocument contract opens document / file manager (Files, Drive, Downloads, SD card)
-    val documentPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) { uri: Uri? ->
-        if (uri != null) {
-            handleSelectedUri(uri)
-        }
+    val documentPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let(::handleSelectedUri)
+    }
+    val fallbackPicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let(::handleSelectedUri)
     }
 
-    // Fallback GetContent launcher
-    val getContentFallbackLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
-    ) { uri: Uri? ->
-        if (uri != null) {
-            handleSelectedUri(uri)
-        }
-    }
-
-    fun openPicker(mimeTypes: Array<String>) {
+    fun openPicker() {
         try {
-            documentPickerLauncher.launch(mimeTypes)
-        } catch (_: Exception) {
+            documentPicker.launch(arrayOf("*/*"))
+        } catch (_: android.content.ActivityNotFoundException) {
             try {
-                getContentFallbackLauncher.launch("*/*")
-            } catch (_: Exception) {
-                scope.launch {
-                    snackbarHostState.showSnackbar(resources.getString(R.string.file_picker_unavailable))
-                }
+                fallbackPicker.launch("*/*")
+            } catch (_: android.content.ActivityNotFoundException) {
+                scope.launch { snackbarHostState.showSnackbar(resources.getString(R.string.file_picker_unavailable)) }
             }
         }
     }
@@ -203,15 +187,17 @@ fun BackupRestoreScreen(
                     ) {
                         Button(
                             onClick = exportJson,
+                            enabled = !isProcessing,
                             modifier = Modifier.weight(1f)
                         ) {
                             Icon(Icons.Default.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(stringResource(R.string.ui_export_json))
+                            Text(stringResource(R.string.backup_save_json))
                         }
 
                         OutlinedButton(
                             onClick = exportCsv,
+                            enabled = !isProcessing,
                             modifier = Modifier.weight(1f)
                         ) {
                             Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
@@ -245,97 +231,49 @@ fun BackupRestoreScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        Button(
-                            onClick = { openPicker(arrayOf("application/json", "text/*", "*/*")) },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(stringResource(R.string.ui_restore_json))
-                        }
-
-                        OutlinedButton(
-                            onClick = { openPicker(arrayOf("application/octet-stream", "application/x-sqlite3", "*/*")) },
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Icon(Icons.Default.Storage, contentDescription = null, modifier = Modifier.size(18.dp))
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(stringResource(R.string.ui_restore_db))
-                        }
+                    Button(onClick = ::openPicker, enabled = !isProcessing, modifier = Modifier.fillMaxWidth()) {
+                        Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(stringResource(R.string.backup_open_file))
                     }
                 }
             }
         }
     }
 
-    // Confirmation Alert
-    if (confirmRestoreDialog) {
+    pendingBackup?.let { backup ->
         AlertDialog(
-            onDismissRequest = { confirmRestoreDialog = false },
+            onDismissRequest = { pendingBackup = null },
             title = { Text(stringResource(R.string.ui_confirm_database_restore)) },
-            text = { Text(stringResource(R.string.ui_restoring_will_replace_all_current_data_with_the_selected_backup_are_you_sure_you_want_to_proceed)) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        val file = pendingRestoreFile
-                        confirmRestoreDialog = false
-
-                        if (file != null && file.exists()) {
-                            isProcessing = true
-                            scope.launch {
-                                var success = false
-                                withContext(Dispatchers.IO) {
-                                    try {
-                                        val isSqlite = isSqliteDatabase(file)
-                                        if (isSqlite) {
-                                            success = SavingsGoalDbHelper.getInstance(context).importDatabaseFile(context, file)
-                                            if (success) {
-                                                repository.notifyChanged()
-                                            }
-                                        } else {
-                                            val content = file.readText(Charsets.UTF_8)
-                                            success = repository.importFromJson(content)
-                                        }
-                                    } catch (e: Exception) {
-                                        android.util.Log.e("BackupRestoreScreen", "Restore failed", e)
-                                        success = false
-                                    } finally {
-                                        file.delete()
-                                    }
-                                }
-                                isProcessing = false
-                                if (success) {
-                                    snackbarHostState.showSnackbar(resources.getString(R.string.restore_success))
-                                } else {
-                                    snackbarHostState.showSnackbar(resources.getString(R.string.restore_failed))
-                                }
-                            }
-                        }
-                    }
-                ) {
-                    Text(stringResource(R.string.ui_restore_now))
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.backup_preview, backup.goals.size, backup.payments.size))
+                    Text(stringResource(R.string.ui_restoring_will_replace_all_current_data_with_the_selected_backup_are_you_sure_you_want_to_proceed))
                 }
             },
+            confirmButton = {
+                Button(onClick = {
+                    pendingBackup = null
+                    isProcessing = true
+                    scope.launch {
+                        val message = try {
+                            repository.restoreBackup(backup)
+                            R.string.restore_success
+                        } catch (e: CancellationException) {
+                            throw e
+                        } catch (e: Exception) {
+                            Log.e("BackupRestoreScreen", "Restore failed", e)
+                            R.string.restore_failed
+                        } finally {
+                            isProcessing = false
+                        }
+                        snackbarHostState.showSnackbar(resources.getString(message))
+                    }
+                }) { Text(stringResource(R.string.ui_restore_now)) }
+            },
             dismissButton = {
-                TextButton(onClick = { confirmRestoreDialog = false }) {
-                    Text(stringResource(R.string.ui_cancel))
-                }
+                TextButton(onClick = { pendingBackup = null }) { Text(stringResource(R.string.ui_cancel)) }
             }
         )
-    }
-}
-
-private fun isSqliteDatabase(file: File): Boolean {
-    return try {
-        if (!file.exists() || file.length() < 16) return false
-        val header = ByteArray(16)
-        file.inputStream().use { it.read(header) }
-        header.contentEquals("SQLite format 3\u0000".toByteArray(Charsets.US_ASCII))
-    } catch (_: Exception) {
-        false
     }
 }

@@ -1,13 +1,8 @@
 package com.minta1234.savingsgoal.data
 
-import android.content.ContentValues
 import android.content.Context
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 
 class SavingsGoalDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
@@ -42,15 +37,6 @@ class SavingsGoalDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
             return instance ?: synchronized(this) {
                 instance ?: SavingsGoalDbHelper(context.applicationContext).also { instance = it }
             }
-        }
-
-        @Synchronized
-        fun resetInstance() {
-            try {
-                instance?.close()
-            } catch (_: Exception) {
-            }
-            instance = null
         }
     }
 
@@ -107,52 +93,4 @@ class SavingsGoalDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
             db.execSQL("ALTER TABLE $TABLE_PAYMENTLIST ADD COLUMN $COL_PAY_DOSAVING VARCHAR(1) DEFAULT 'true'")
         }
     }
-
-    // Direct database file backup
-    fun exportDatabaseFile(context: Context, destFile: File): Boolean {
-        return try {
-            val dbPath = context.getDatabasePath(DATABASE_NAME)
-            if (!dbPath.exists()) return false
-            FileInputStream(dbPath).use { input ->
-                FileOutputStream(destFile).use { output ->
-                    input.copyTo(output)
-                }
-            }
-            true
-        } catch (_: Exception) {
-            false
-        }
-    }
-
-    // Direct database file restore
-    fun importDatabaseFile(context: Context, srcFile: File): Boolean {
-        return try {
-            resetInstance()
-            val dbPath = context.getDatabasePath(DATABASE_NAME)
-            dbPath.parentFile?.mkdirs()
-
-            // Remove existing WAL/SHM journal files if present
-            File(dbPath.path + "-wal").delete()
-            File(dbPath.path + "-shm").delete()
-            File(dbPath.path + "-journal").delete()
-
-            FileInputStream(srcFile).use { input ->
-                FileOutputStream(dbPath).use { output ->
-                    input.copyTo(output)
-                }
-            }
-
-            // Verify database opens and table structure exists
-            val newHelper = getInstance(context)
-            val db = newHelper.readableDatabase
-            db.rawQuery("SELECT count(*) FROM sqlite_master WHERE type='table'", null).use { c ->
-                c.moveToFirst()
-            }
-            true
-        } catch (e: Exception) {
-            android.util.Log.e("SavingsGoalDbHelper", "Failed to import database file", e)
-            false
-        }
-    }
 }
-
