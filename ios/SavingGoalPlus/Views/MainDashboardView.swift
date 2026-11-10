@@ -9,10 +9,8 @@ public struct MainDashboardView: View {
     @State private var selectedFilter: GoalFilter = .all
     @State private var goalToEdit: Goal?
     @State private var depositGoal: Goal?
-    @State private var selectedGoalID: Int64?
     @State private var showDepositError = false
     @State private var showConfetti = false
-    @ScaledMetric(relativeTo: .body) private var carouselHeight: CGFloat = 242
 
     enum GoalFilter: String, CaseIterable {
         case all = "All"
@@ -69,7 +67,21 @@ public struct MainDashboardView: View {
                         }
                         .padding(.vertical, 40)
                     } else {
-                        goalCarousel
+                        LazyVStack(spacing: 14) {
+                            ForEach(filteredGoals) { goal in
+                                NavigationLink(destination: GoalDetailView(goalId: goal.id)) {
+                                    GoalCardView(
+                                        goal: goal,
+                                        onEdit: { goalToEdit = goal },
+                                        onArchive: { storage.toggleArchive(id: goal.id) },
+                                        onDelete: { storage.deleteGoal(id: goal.id) },
+                                        onSaveToday: { depositGoal = goal }
+                                    )
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                        .padding(.horizontal)
                     }
                 }
                 .padding(.bottom, 80)
@@ -122,60 +134,6 @@ public struct MainDashboardView: View {
                 }
             }
         }
-    }
-
-    private var goalCarousel: some View {
-        let goals = filteredGoals
-        let page = goals.firstIndex { $0.id == selectedGoalID } ?? 0
-        return VStack(spacing: 6) {
-            HStack {
-                Text("Savings goals").font(.headline)
-                Spacer()
-                if goals.count > 1 {
-                    Button {
-                        selectedGoalID = goals[page - 1].id
-                    } label: {
-                        Image(systemName: "chevron.backward").frame(width: 44, height: 44)
-                    }
-                    .accessibilityLabel("Previous goal")
-                    .disabled(page == 0)
-                    Text("\(page + 1) / \(goals.count)")
-                        .font(.caption.monospacedDigit())
-                    Button {
-                        selectedGoalID = goals[page + 1].id
-                    } label: {
-                        Image(systemName: "chevron.forward").frame(width: 44, height: 44)
-                    }
-                    .accessibilityLabel("Next goal")
-                    .disabled(page == goals.count - 1)
-                }
-            }
-            .padding(.horizontal)
-
-            TabView(selection: $selectedGoalID) {
-                ForEach(goals) { goal in
-                    GoalCardView(
-                        goal: goal,
-                        onEdit: { goalToEdit = goal },
-                        onArchive: { storage.toggleArchive(id: goal.id) },
-                        onDelete: { storage.deleteGoal(id: goal.id) },
-                        onSaveToday: { depositGoal = goal }
-                    )
-                    .padding(.horizontal)
-                    .frame(maxHeight: .infinity, alignment: .top)
-                    .tag(Optional(goal.id))
-                }
-            }
-            .tabViewStyle(.page(indexDisplayMode: .never))
-            .frame(height: carouselHeight)
-        }
-        .onAppear { selectExistingGoal(goals.map(\.id)) }
-        .onChange(of: goals.map(\.id)) { selectExistingGoal($0) }
-    }
-
-    private func selectExistingGoal(_ ids: [Int64]) {
-        if let selectedGoalID, ids.contains(selectedGoalID) { return }
-        selectedGoalID = ids.first
     }
 
     private var streakBanner: some View {

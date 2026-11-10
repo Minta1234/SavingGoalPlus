@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.pager.HorizontalPager
@@ -150,12 +151,13 @@ fun MainScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                // Header Total Summary Card
+                // Header Total Summary Card (Swipeable K PLUS Style)
                 if (uiState.showTotalGoalsCard) {
                     item {
                         TotalSummaryCard(
                             summary = uiState.summary,
-                            currencySymbol = uiState.defaultCurrency
+                            currencySymbol = uiState.defaultCurrency,
+                            streakInfo = streakInfo
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                     }
@@ -165,18 +167,16 @@ fun MainScreen(
                     StreakBanner(streakInfo = streakInfo)
                 }
 
-                if (uiState.goals.isNotEmpty()) {
-                    item {
-                        GoalCarousel(
-                            goals = uiState.goals,
-                            defaultCurrency = uiState.defaultCurrency,
-                            onGoalClick = onGoalClick,
-                            onSaveToday = onSaveToday,
-                            onEdit = { editingGoal = it },
-                            onArchive = { viewModel.archiveGoal(it.id) },
-                            onDelete = { deletingGoal = it }
-                        )
-                    }
+                items(uiState.goals, key = { it.id }) { goal ->
+                    GoalCard(
+                        goal = goal,
+                        defaultCurrency = uiState.defaultCurrency,
+                        onClick = { onGoalClick(goal.id) },
+                        onSaveToday = { onSaveToday(goal.id) },
+                        onEdit = { editingGoal = goal },
+                        onToggleArchive = { viewModel.archiveGoal(goal.id) },
+                        onDelete = { deletingGoal = goal }
+                    )
                 }
 
                 item {
@@ -237,60 +237,5 @@ fun MainScreen(
                 }
             }
         )
-    }
-}
-
-
-@Composable
-private fun GoalCarousel(
-    goals: List<Goal>,
-    defaultCurrency: String,
-    onGoalClick: (Long) -> Unit,
-    onSaveToday: (Long) -> Unit,
-    onEdit: (Goal) -> Unit,
-    onArchive: (Goal) -> Unit,
-    onDelete: (Goal) -> Unit
-) {
-    val pager = rememberPagerState { goals.size }
-    val scope = rememberCoroutineScope()
-    val page = pager.currentPage.coerceIn(goals.indices)
-    Column {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(stringResource(R.string.ui_savings_goals), style = MaterialTheme.typography.titleMedium)
-            if (goals.size > 1) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        enabled = page > 0,
-                        onClick = { scope.launch { pager.animateScrollToPage(page - 1) } }
-                    ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.ui_previous_goal)) }
-                    Text(stringResource(R.string.goal_page_position, page + 1, goals.size), style = MaterialTheme.typography.labelMedium)
-                    IconButton(
-                        enabled = page < goals.lastIndex,
-                        onClick = { scope.launch { pager.animateScrollToPage(page + 1) } }
-                    ) { Icon(Icons.AutoMirrored.Filled.ArrowForward, stringResource(R.string.ui_next_goal)) }
-                }
-            }
-        }
-        HorizontalPager(
-            state = pager,
-            key = { goals[it].id },
-            pageSpacing = 12.dp,
-            verticalAlignment = Alignment.Top
-        ) { index ->
-            val goal = goals[index]
-            GoalCard(
-                goal = goal,
-                defaultCurrency = defaultCurrency,
-                onClick = { onGoalClick(goal.id) },
-                onSaveToday = { onSaveToday(goal.id) },
-                onEdit = { onEdit(goal) },
-                onToggleArchive = { onArchive(goal) },
-                onDelete = { onDelete(goal) }
-            )
-        }
     }
 }
