@@ -13,7 +13,7 @@ import java.net.URL
 internal data class ReleaseNote(
     @SerialName("tag_name") val tag: String,
     val name: String? = null,
-    val body: String? = null,
+    @SerialName("body_html") val bodyHtml: String? = null,
     @SerialName("html_url") val url: String
 ) {
     val title: String get() = name?.takeIf { it.isNotBlank() } ?: tag
@@ -28,7 +28,7 @@ internal object GitHubReleaseNotes {
         try {
             connection.connectTimeout = 10_000
             connection.readTimeout = 10_000
-            connection.setRequestProperty("Accept", "application/vnd.github+json")
+            connection.setRequestProperty("Accept", "application/vnd.github.html+json")
             connection.setRequestProperty("User-Agent", "SavingGoalPlus")
             if (connection.responseCode != HttpURLConnection.HTTP_OK) {
                 throw IOException("GitHub returned HTTP ${connection.responseCode}")

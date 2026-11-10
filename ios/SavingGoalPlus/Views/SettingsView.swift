@@ -1,5 +1,6 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import WebKit
 
 public struct SettingsView: View {
     @ObservedObject var notifications = NotificationManager.shared
@@ -270,7 +271,7 @@ private struct ExportDocument: FileDocument {
 private struct GitHubReleaseNote: Decodable, Identifiable {
     let tag: String
     let name: String?
-    let body: String?
+    let bodyHTML: String?
     let htmlURL: URL
 
     var id: String { tag }
@@ -278,14 +279,15 @@ private struct GitHubReleaseNote: Decodable, Identifiable {
 
     enum CodingKeys: String, CodingKey {
         case tag = "tag_name"
-        case name, body
+        case name
+        case bodyHTML = "body_html"
         case htmlURL = "html_url"
     }
 
     static func load() async throws -> [Self] {
         let endpoint = URL(string: "https://api.github.com/repos/Minta1234/SavingGoalPlus/releases?per_page=10")!
         var request = URLRequest(url: endpoint, timeoutInterval: 15)
-        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+        request.setValue("application/vnd.github.html+json", forHTTPHeaderField: "Accept")
         request.setValue("SavingGoalPlus", forHTTPHeaderField: "User-Agent")
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
@@ -305,24 +307,18 @@ public struct ChangelogSheetView: View {
 
     public var body: some View {
         NavigationView {
-            List {
+            Group {
                 if failed {
-                    Text("Could not load release notes from GitHub.")
-                    Button("Try again") { attempt += 1 }
+                    VStack(spacing: 12) {
+                        Text("Could not load release notes from GitHub.")
+                        Button("Try again") { attempt += 1 }
+                    }
+                    .padding()
                 } else if let releases {
                     if releases.isEmpty {
                         Text("No published releases yet.")
-                    }
-                    ForEach(releases) { release in
-                        Section {
-                            let notes = release.body?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-                            Text(verbatim: notes.isEmpty ? "No notes were published for this release." : notes)
-                            if release.htmlURL.absoluteString.hasPrefix("https://github.com/Minta1234/SavingGoalPlus/releases/tag/") {
-                                Link("View on GitHub", destination: release.htmlURL)
-                            }
-                        } header: {
-                            Text(release.title)
-                        }
+                    } else {
+                        ReleaseNotesWebView(document: releaseDocument(releases))
                     }
                 } else {
                     ProgressView("Loading release notes from GitHub…")
@@ -345,4 +341,87 @@ public struct ChangelogSheetView: View {
             }
         }
     }
+}
+
+private struct ReleaseNotesWebView: UIViewRepresentable {
+    @Environment(\.openURL) private var openURL
+    let document: String
+
+    func makeCoordinator() -> Coordinator { Coordinator(openURL: openURL) }
+
+    func makeUIView(context: Context) -> WKWebView {
+        let configuration = WKWebViewConfiguration()
+        configuration.defaultWebpagePreferences.allowsContentJavaScript = false
+        configuration.websiteDataStore = .nonPersistent()
+        let view = WKWebView(frame: .zero, configuration: configuration)
+        view.navigationDelegate = context.coordinator
+        return view
+    }
+
+    func updateUIView(_ view: WKWebView, context: Context) {
+        guard context.coordinator.loadedDocument != document else { return }
+        context.coordinator.loadedDocument = document
+        view.loadHTMLString(document, baseURL: nil)
+    }
+
+    final class Coordinator: NSObject, WKNavigationDelegate {
+        let openURL: OpenURLAction
+        var loadedDocument: String?
+
+        init(openURL: OpenURLAction) {
+            self.openURL = openURL
+        }
+
+        func webView(
+            _ webView: WKWebView,
+            decidePolicyFor action: WKNavigationAction,
+            decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+        ) {
+            if action.navigationType == .linkActivated {
+                if let url = action.request.url, url.scheme == "https" { openURL(url) }
+                decisionHandler(.cancel)
+            } else {
+                let isLocalDocument = action.request.url?.absoluteString == "about:blank"
+                decisionHandler(isLocalDocument ? .allow : .cancel)
+            }
+        }
+    }
+}
+
+private func releaseDocument(_ releases: [GitHubReleaseNote]) -> String {
+    let articles = releases.map { release in
+        let body = release.bodyHTML.flatMap { $0.isEmpty ? nil : $0 }
+            ?? "<p>No notes were published for this release.</p>"
+        let url = release.htmlURL.absoluteString
+        let link = url.hasPrefix("https://github.com/Minta1234/SavingGoalPlus/releases/tag/")
+            ? "<p><a href=\"\(htmlEscape(url))\">View on GitHub</a></p>" : ""
+        return "<article><h1>\(htmlEscape(release.title))</h1>\(body)\(link)</article>"
+    }.joined()
+    return """
+        <!doctype html><html><head><meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+        <style>
+          :root { color-scheme: light dark; --line: #d1d9e0; --code: #f6f8fa; --link: #0969da; }
+          @media (prefers-color-scheme: dark) { :root { --line: #3d444d; --code: #212830; --link: #58a6ff; } }
+          body { margin: 16px; font: 16px/1.55 system-ui, sans-serif; overflow-wrap: anywhere; }
+          article + article { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 16px; }
+          h1, h2 { border-bottom: 1px solid var(--line); padding-bottom: .3em; }
+          h1 { font-size: 1.4em; } h2 { font-size: 1.2em; } h3 { font-size: 1.1em; }
+          a { color: var(--link); }
+          pre, :not(pre) > code { background: var(--code); border-radius: 6px; }
+          pre { padding: 12px; overflow-x: auto; } :not(pre) > code { padding: .15em .3em; }
+          pre, code, tt { font-family: monospace; font-size: .875em; }
+          blockquote { margin-left: 0; padding-left: 12px; border-left: 3px solid var(--line); }
+          table { display: block; overflow-x: auto; border-collapse: collapse; }
+          td, th { border: 1px solid var(--line); padding: 6px 10px; }
+        </style></head><body>\(articles)</body></html>
+        """
+}
+
+private func htmlEscape(_ value: String) -> String {
+    value.replacingOccurrences(of: "&", with: "&amp;")
+        .replacingOccurrences(of: "<", with: "&lt;")
+        .replacingOccurrences(of: ">", with: "&gt;")
+        .replacingOccurrences(of: "\"", with: "&quot;")
 }
