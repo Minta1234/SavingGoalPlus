@@ -2,9 +2,16 @@ import SwiftUI
 import UniformTypeIdentifiers
 import WebKit
 
+private var installedVersion: String? {
+    Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+}
+
 public struct SettingsView: View {
     @ObservedObject var notifications = NotificationManager.shared
     @ObservedObject var storage = SavingsStorageService.shared
+    @AppStorage(SavingsCalculations.currencyPreferenceKey) private var currencySymbol = "$"
+    @State private var showingCurrencySheet = false
+    @State private var showingUpdateSheet = false
     @AppStorage("app_accent_theme") private var selectedAccent: String = "emerald"
 
     @State private var reminderDate: Date = {
@@ -19,8 +26,9 @@ public struct SettingsView: View {
     @State private var exportType: UTType = .json
     @State private var exportName = ""
     @State private var exportError: String?
-    @State private var showingImportSheet = false
-    @State private var importText = ""
+    @State private var showingFilePicker = false
+    @State private var readingBackup = false
+    @State private var pendingBackup: BackupPayload?
     @State private var importErrorMessage = ""
     @State private var showingErrorAlert = false
     @State private var showingSuccessAlert = false
@@ -73,6 +81,16 @@ public struct SettingsView: View {
                     }
                 }
 
+                Section("Currency") {
+                    Button { showingCurrencySheet = true } label: {
+                        HStack {
+                            Text("Change Currency")
+                            Spacer()
+                            Text(currencySymbol).foregroundColor(.secondary)
+                        }
+                    }
+                }
+
                 // Daily Reminder Section
                 Section(header: Text("Daily Savings Reminders")) {
                     DatePicker("Reminder Time", selection: $reminderDate, displayedComponents: .hourAndMinute)
@@ -106,9 +124,11 @@ public struct SettingsView: View {
                         Label("Export Data as CSV", systemImage: "tablecells")
                     }
 
-                    Button(action: { showingImportSheet = true }) {
-                        Label("Restore Backup (JSON)", systemImage: "square.and.arrow.down")
+                    Button { showingFilePicker = true } label: {
+                        Label("Restore Backup from Files", systemImage: "square.and.arrow.down")
                     }
+                    .disabled(readingBackup)
+                    if readingBackup { ProgressView("Reading backup…") }
                 }
 
                 // Updates & Changelog Section
@@ -117,10 +137,8 @@ public struct SettingsView: View {
                         Label("What's New / Change Log", systemImage: "clock.arrow.circlepath")
                     }
 
-                    if let url = URL(string: "https://github.com/Minta1234/SavingGoalPlus/releases/latest") {
-                        Link(destination: url) {
-                            Label("Check for Updates (GitHub)", systemImage: "arrow.down.circle")
-                        }
+                    Button { showingUpdateSheet = true } label: {
+                        Label("Check for Updates", systemImage: "arrow.down.circle")
                     }
                 }
 
@@ -129,7 +147,7 @@ public struct SettingsView: View {
                     HStack {
                         Text("Version")
                         Spacer()
-                        Text("1.0.1 (Native iOS & Android)")
+                        Text(installedVersion ?? "Unavailable")
                             .foregroundColor(.secondary)
                     }
 
@@ -177,47 +195,31 @@ public struct SettingsView: View {
             .sheet(isPresented: $showingChangelogSheet) {
                 ChangelogSheetView()
             }
-            .sheet(isPresented: $showingImportSheet) {
-                NavigationView {
-                    VStack(spacing: 12) {
-                        Text("Paste your JSON backup payload below:")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal)
-
-                        TextEditor(text: $importText)
-                            .font(.system(.body, design: .monospaced))
-                            .padding(8)
-                            .background(ColorTheme.cardBackground)
-                            .cornerRadius(12)
-                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gray.opacity(0.2)))
-                            .padding(.horizontal)
-
-                        Spacer()
-                    }
-                    .padding(.top)
-                    .navigationTitle("Restore Backup")
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Cancel") { showingImportSheet = false }
-                        }
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button("Restore") {
-                                do {
-                                    try storage.importBackupJson(importText)
-                                    showingImportSheet = false
-                                    showingSuccessAlert = true
-                                } catch {
-                                    importErrorMessage = error.localizedDescription
-                                    showingErrorAlert = true
-                                }
-                            }
-                            .disabled(importText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                        }
+            .sheet(isPresented: $showingCurrencySheet) {
+                CurrencySettingsSheet(symbol: $currencySymbol)
+            }
+            .sheet(isPresented: $showingUpdateSheet) {
+                UpdateCheckSheet()
+            }
+            .fileImporter(isPresented: $showingFilePicker, allowedContentTypes: [.json]) { result in
+                previewBackup(result)
+            }
+            .alert("Replace savings data?", isPresented: Binding(
+                get: { pendingBackup != nil },
+                set: { if !$0 { pendingBackup = nil } }
+            ), presenting: pendingBackup) { backup in
+                Button("Cancel", role: .cancel) { pendingBackup = nil }
+                Button("Restore", role: .destructive) {
+                    pendingBackup = nil
+                    do {
+                        try storage.restoreBackup(backup)
+                        showingSuccessAlert = true
+                    } catch {
+                        reportImportError(error)
                     }
                 }
+            } message: { backup in
+                Text("This backup contains \(backup.goals.count) goals and \(backup.payments.count) transactions. Restoring replaces the current goals and transactions.")
             }
             .alert("Import Error", isPresented: $showingErrorAlert) {
                 Button("OK", role: .cancel) { }
@@ -230,6 +232,30 @@ public struct SettingsView: View {
                 Text("Backup imported successfully!")
             }
         }
+    }
+
+    private func previewBackup(_ result: Result<URL, Error>) {
+        do {
+            let url = try result.get()
+            readingBackup = true
+            Task {
+                defer { readingBackup = false }
+                do {
+                    pendingBackup = try await Task.detached(priority: .userInitiated) {
+                        try SavingsStorageService.readBackup(url)
+                    }.value
+                } catch {
+                    reportImportError(error)
+                }
+            }
+        } catch {
+            reportImportError(error)
+        }
+    }
+
+    private func reportImportError(_ error: Error) {
+        importErrorMessage = error.localizedDescription
+        showingErrorAlert = true
     }
 
     private func exportJson() {
@@ -245,6 +271,53 @@ public struct SettingsView: View {
         exportType = type
         exportName = name
         showingExportAlert = true
+    }
+}
+
+private struct CurrencySettingsSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Binding var symbol: String
+    @State private var draft = ""
+    private let presets = ["$", "€", "£", "¥", "฿", "₹", "₩", "₱", "R$", "zł", "CHF", "kr"]
+
+    var body: some View {
+        NavigationView {
+            Form {
+                Section("Popular symbols") {
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 58))]) {
+                        ForEach(presets, id: \.self) { preset in
+                            Button { draft = preset } label: {
+                                Text(preset)
+                                    .frame(maxWidth: .infinity, minHeight: 44)
+                                    .background(draft == preset ? Color.accentColor.opacity(0.16) : Color.clear,
+                                                in: RoundedRectangle(cornerRadius: 8))
+                            }
+                            .buttonStyle(.borderless)
+                            .accessibilityAddTraits(draft == preset ? .isSelected : [])
+                        }
+                    }
+                }
+                Section {
+                    TextField("Custom Symbol / Code", text: $draft)
+                        .autocorrectionDisabled()
+                } footer: {
+                    Text("This changes how amounts are labeled. Amounts are not converted.")
+                }
+            }
+            .navigationTitle("Change Currency")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        symbol = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+                        dismiss()
+                    }
+                    .disabled(draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || draft.count > 12)
+                }
+            }
+            .onAppear { draft = symbol }
+        }
     }
 }
 
@@ -276,6 +349,9 @@ private struct GitHubReleaseNote: Decodable, Identifiable {
 
     var id: String { tag }
     var title: String { name.flatMap { $0.isEmpty ? nil : $0 } ?? tag }
+    var isGitHubReleaseLink: Bool {
+        htmlURL.absoluteString.hasPrefix("https://github.com/Minta1234/SavingGoalPlus/releases/tag/")
+    }
 
     enum CodingKeys: String, CodingKey {
         case tag = "tag_name"
@@ -285,7 +361,15 @@ private struct GitHubReleaseNote: Decodable, Identifiable {
     }
 
     static func load() async throws -> [Self] {
-        let endpoint = URL(string: "https://api.github.com/repos/Minta1234/SavingGoalPlus/releases?per_page=10")!
+        try await request("?per_page=10")
+    }
+
+    static func latest() async throws -> Self {
+        try await request("/latest")
+    }
+
+    private static func request<T: Decodable>(_ suffix: String) async throws -> T {
+        let endpoint = URL(string: "https://api.github.com/repos/Minta1234/SavingGoalPlus/releases" + suffix)!
         var request = URLRequest(url: endpoint, timeoutInterval: 15)
         request.setValue("application/vnd.github.html+json", forHTTPHeaderField: "Accept")
         request.setValue("SavingGoalPlus", forHTTPHeaderField: "User-Agent")
@@ -293,7 +377,70 @@ private struct GitHubReleaseNote: Decodable, Identifiable {
         guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
             throw URLError(.badServerResponse)
         }
-        return try JSONDecoder().decode([Self].self, from: data)
+        return try JSONDecoder().decode(T.self, from: data)
+    }
+}
+
+private struct UpdateCheckSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var latest: GitHubReleaseNote?
+    @State private var failed = false
+    @State private var attempt = 0
+
+    var body: some View {
+        NavigationView {
+            List {
+                Section("Installed version") {
+                    Text(installedVersion ?? "Unavailable")
+                }
+                if failed {
+                    Text("Could not check GitHub for updates.")
+                    Button("Try again") { attempt += 1 }
+                } else if let latest {
+                    Section("Latest release") {
+                        Text(latest.tag)
+                        Text(updateStatus(latest.tag))
+                        if latest.isGitHubReleaseLink {
+                            Link("Open GitHub Release", destination: latest.htmlURL)
+                        }
+                    }
+                } else {
+                    ProgressView("Checking GitHub…")
+                }
+            }
+            .navigationTitle("Check for Updates")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) { Button("Done") { dismiss() } }
+            }
+            .task(id: attempt) {
+                failed = false
+                do {
+                    latest = try await GitHubReleaseNote.latest()
+                } catch {
+                    if !Task.isCancelled { failed = true }
+                }
+            }
+        }
+    }
+
+    private func updateStatus(_ published: String) -> String {
+        func components(_ version: String) -> [Int]? {
+            let value = version.hasPrefix("v") ? version.dropFirst() : version[...]
+            let pieces = value.split(separator: ".", omittingEmptySubsequences: false)
+            guard pieces.count == 3, pieces.allSatisfy({ part in
+                !part.isEmpty && part.utf8.allSatisfy { (48...57).contains($0) }
+            }) else { return nil }
+            let numbers = pieces.compactMap { Int($0) }
+            return numbers.count == 3 ? numbers : nil
+        }
+
+        guard let installedVersion, let current = components(installedVersion), let latest = components(published)
+        else { return "Could not compare the version numbers." }
+        if current == latest { return "Already up to date." }
+        return current.lexicographicallyPrecedes(latest)
+            ? "An update is available."
+            : "The installed version is newer than the latest release."
     }
 }
 
@@ -393,7 +540,7 @@ private func releaseDocument(_ releases: [GitHubReleaseNote]) -> String {
         let body = release.bodyHTML.flatMap { $0.isEmpty ? nil : $0 }
             ?? "<p>No notes were published for this release.</p>"
         let url = release.htmlURL.absoluteString
-        let link = url.hasPrefix("https://github.com/Minta1234/SavingGoalPlus/releases/tag/")
+        let link = release.isGitHubReleaseLink
             ? "<p><a href=\"\(htmlEscape(url))\">View on GitHub</a></p>" : ""
         return "<article><h1>\(htmlEscape(release.title))</h1>\(body)\(link)</article>"
     }.joined()

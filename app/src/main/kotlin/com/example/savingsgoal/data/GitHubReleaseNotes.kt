@@ -17,14 +17,20 @@ internal data class ReleaseNote(
     @SerialName("html_url") val url: String
 ) {
     val title: String get() = name?.takeIf { it.isNotBlank() } ?: tag
+    val isGitHubReleaseLink: Boolean
+        get() = url.startsWith("https://github.com/Minta1234/SavingGoalPlus/releases/tag/")
 }
 
 internal object GitHubReleaseNotes {
-    private const val RELEASES_API = "https://api.github.com/repos/Minta1234/SavingGoalPlus/releases?per_page=10"
+    private const val RELEASES_API = "https://api.github.com/repos/Minta1234/SavingGoalPlus/releases"
     private val json = Json { ignoreUnknownKeys = true }
 
-    suspend fun load(): List<ReleaseNote> = withContext(Dispatchers.IO) {
-        val connection = URL(RELEASES_API).openConnection() as HttpURLConnection
+    suspend fun load(): List<ReleaseNote> = json.decodeFromString(request("$RELEASES_API?per_page=10"))
+
+    suspend fun latest(): ReleaseNote = json.decodeFromString(request("$RELEASES_API/latest"))
+
+    private suspend fun request(url: String): String = withContext(Dispatchers.IO) {
+        val connection = URL(url).openConnection() as HttpURLConnection
         try {
             connection.connectTimeout = 10_000
             connection.readTimeout = 10_000
@@ -33,10 +39,28 @@ internal object GitHubReleaseNotes {
             if (connection.responseCode != HttpURLConnection.HTTP_OK) {
                 throw IOException("GitHub returned HTTP ${connection.responseCode}")
             }
-            val payload = connection.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
-            json.decodeFromString<List<ReleaseNote>>(payload)
+            connection.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
         } finally {
             connection.disconnect()
         }
     }
+}
+
+
+internal fun compareReleaseVersions(installed: String, published: String): Int? {
+    fun parts(version: String): List<Int>? {
+        val components = version.removePrefix("v").split('.')
+        if (components.size != 3 || components.any { it.isEmpty() || it.any { char -> char !in '0'..'9' } }) {
+            return null
+        }
+        return components.map { it.toIntOrNull() ?: return null }
+    }
+
+    val current = parts(installed) ?: return null
+    val latest = parts(published) ?: return null
+    for (index in current.indices) {
+        val comparison = current[index].compareTo(latest[index])
+        if (comparison != 0) return comparison
+    }
+    return 0
 }

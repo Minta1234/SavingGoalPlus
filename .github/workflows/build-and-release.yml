@@ -115,8 +115,15 @@ jobs:
           trap 'rm -f app/release.keystore' EXIT
           printf '%s' "$KEYSTORE_BASE64" | base64 --decode > app/release.keystore
           bash gradlew assembleRelease -PversionName="$RELEASE_VERSION" -PversionCode="$RELEASE_CODE" --stacktrace
+          apk=app/build/outputs/apk/release/app-release.apk
+          aapt=$(find "$ANDROID_HOME/build-tools" -type f -name aapt | sort -V | tail -n 1)
+          badging=$("$aapt" dump badging "$apk")
+          if ! grep -Fq "versionCode='$RELEASE_CODE' versionName='$RELEASE_VERSION'" <<< "$badging"; then
+            echo "::error::APK version does not match release v$RELEASE_VERSION ($RELEASE_CODE)"
+            exit 1
+          fi
           mkdir -p release_dist
-          cp app/build/outputs/apk/release/app-release.apk "release_dist/SavingGoalPlus-v${RELEASE_VERSION}.apk"
+          cp "$apk" "release_dist/SavingGoalPlus-v${RELEASE_VERSION}.apk"
 
       - name: Upload signed APK
         if: github.event_name != 'pull_request'
@@ -209,9 +216,19 @@ jobs:
 
           cd ../build_output
 
+          APP_PATH=$(find SavingGoalPlus.xcarchive/Products/Applications -name "*.app" | head -n 1)
+          shopt -s nullglob
+          for bundle in "$APP_PATH" "$APP_PATH"/PlugIns/*.appex; do
+            version=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$bundle/Info.plist")
+            code=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$bundle/Info.plist")
+            if [[ "$version" != "$RELEASE_VERSION" || "$code" != "$RELEASE_CODE" ]]; then
+              echo "::error::$bundle reports $version ($code), expected $RELEASE_VERSION ($RELEASE_CODE)"
+              exit 1
+            fi
+          done
+
           # Package the unsigned app and its embedded widget.
           mkdir -p Payload
-          APP_PATH=$(find SavingGoalPlus.xcarchive/Products/Applications -name "*.app" | head -n 1)
           cp -r "$APP_PATH" Payload/
           zip -r "SavingGoalPlus-v${RELEASE_VERSION}-unsigned.ipa" Payload
           rm -rf Payload

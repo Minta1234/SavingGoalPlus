@@ -1,6 +1,7 @@
 import SwiftUI
 
 public struct TotalSummaryCardView: View {
+    @AppStorage(SavingsCalculations.currencyPreferenceKey) private var currencySymbol = "$"
     public let summary: TotalSummary
 
     public init(summary: TotalSummary) {
@@ -16,7 +17,7 @@ public struct TotalSummaryCardView: View {
                         .foregroundColor(.secondary)
                         .tracking(1.2)
 
-                    Text(SavingsCalculations.formatCurrency(summary.totalSavedAmount))
+                    Text(SavingsCalculations.formatCurrency(summary.totalSavedAmount, currencySymbol: currencySymbol))
                         .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundColor(ColorTheme.primaryEmerald)
                 }
@@ -52,7 +53,7 @@ public struct TotalSummaryCardView: View {
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundColor(.secondary)
                         .tracking(1.0)
-                    Text(SavingsCalculations.formatCurrency(summary.totalRemainingAmount))
+                    Text(SavingsCalculations.formatCurrency(summary.totalRemainingAmount, currencySymbol: currencySymbol))
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundColor(.primary)
                 }
@@ -64,7 +65,7 @@ public struct TotalSummaryCardView: View {
                         .font(.system(size: 10, weight: .semibold))
                         .foregroundColor(.secondary)
                         .tracking(1.0)
-                    Text(SavingsCalculations.formatCurrency(summary.totalTargetAmount))
+                    Text(SavingsCalculations.formatCurrency(summary.totalTargetAmount, currencySymbol: currencySymbol))
                         .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundColor(.secondary)
                 }

@@ -1,6 +1,7 @@
 import SwiftUI
 
 public struct GoalDetailView: View {
+    @AppStorage(SavingsCalculations.currencyPreferenceKey) private var currencySymbol = "$"
     public let goalId: Int64
     @ObservedObject var storage = SavingsStorageService.shared
 
@@ -107,7 +108,7 @@ public struct GoalDetailView: View {
 
                                         Spacer()
 
-                                        Text(SavingsCalculations.formatCurrency(abs(p.amount)))
+                                        Text(SavingsCalculations.formatCurrency(abs(p.amount), currencySymbol: currencySymbol))
                                             .font(.system(size: 15, weight: .bold, design: .rounded))
                                             .foregroundColor(p.isDeposit ? ColorTheme.primaryEmerald : ColorTheme.withdrawalRed)
 
@@ -166,6 +167,7 @@ public struct GoalDetailView: View {
 }
 
 private struct RateCard: View {
+    @AppStorage(SavingsCalculations.currencyPreferenceKey) private var currencySymbol = "$"
     let title: String
     let amount: Double
 
@@ -175,7 +177,7 @@ private struct RateCard: View {
                 .font(.system(size: 10, weight: .bold))
                 .foregroundColor(.secondary)
                 .tracking(1.0)
-            Text(SavingsCalculations.formatCurrency(amount))
+            Text(SavingsCalculations.formatCurrency(amount, currencySymbol: currencySymbol))
                 .font(.system(size: 18, weight: .bold, design: .rounded))
                 .foregroundColor(.primary)
         }

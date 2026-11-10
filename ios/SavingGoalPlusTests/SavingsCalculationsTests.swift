@@ -46,3 +46,21 @@ final class SavingsCalculationsTests: XCTestCase {
     }
 }
 
+
+final class BackupImportTests: XCTestCase {
+    func testFilePreviewAcceptsValidBackupAndRejectsOrphanedPayment() throws {
+        let file = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".json")
+        defer { try? FileManager.default.removeItem(at: file) }
+        let goal = Goal(id: 1, title: "Trip", targetAmount: 100, savedAmount: 20, targetDate: "2027-01-01")
+        let payment = Payment(id: 1, goalId: 1, amount: 20)
+        let encoder = JSONEncoder()
+
+        try encoder.encode(BackupPayload(goals: [goal], payments: [payment])).write(to: file)
+        let preview = try SavingsStorageService.readBackup(file)
+        XCTAssertEqual(preview.goals, [goal])
+        XCTAssertEqual(preview.payments, [payment])
+
+        try encoder.encode(BackupPayload(goals: [], payments: [payment])).write(to: file)
+        XCTAssertThrowsError(try SavingsStorageService.readBackup(file))
+    }
+}

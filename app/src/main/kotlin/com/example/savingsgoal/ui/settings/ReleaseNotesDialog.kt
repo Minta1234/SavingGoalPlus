@@ -136,7 +136,7 @@ private fun releaseDocument(
     releases.forEach { release ->
         append("<article><h1>${TextUtils.htmlEncode(release.title)}</h1>")
         append(release.bodyHtml?.takeIf { it.isNotBlank() } ?: "<p>No notes were published for this release.</p>")
-        if (release.url.startsWith("https://github.com/Minta1234/SavingGoalPlus/releases/tag/")) {
+        if (release.isGitHubReleaseLink) {
             append("<p><a href=\"${TextUtils.htmlEncode(release.url)}\">View on GitHub</a></p>")
         }
         append("</article>")

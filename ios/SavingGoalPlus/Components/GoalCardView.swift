@@ -1,6 +1,7 @@
 import SwiftUI
 
 public struct GoalCardView: View {
+    @AppStorage(SavingsCalculations.currencyPreferenceKey) private var currencySymbol = "$"
     public let goal: Goal
     public let onEdit: () -> Void
     public let onArchive: () -> Void
@@ -97,11 +98,11 @@ public struct GoalCardView: View {
 
             // Amounts Row
             HStack {
-                Text(SavingsCalculations.formatCurrency(goal.savedAmount))
+                Text(SavingsCalculations.formatCurrency(goal.savedAmount, currencySymbol: currencySymbol))
                     .font(.system(size: 15, weight: .bold, design: .rounded))
                     .foregroundColor(.primary)
 
-                Text("of \(SavingsCalculations.formatCurrency(goal.targetAmount))")
+                Text("of \(SavingsCalculations.formatCurrency(goal.targetAmount, currencySymbol: currencySymbol))")
                     .font(.system(size: 13))
                     .foregroundColor(.secondary)
 

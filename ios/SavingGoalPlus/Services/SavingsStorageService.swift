@@ -18,7 +18,7 @@ public final class SavingsStorageService: ObservableObject {
 
     public init() {
         loadData()
-        if goals.isEmpty {
+        if !fileManager.fileExists(atPath: dbFileURL.path) {
             seedSampleGoals()
         }
     }
@@ -167,12 +167,36 @@ public final class SavingsStorageService: ObservableObject {
         return "{}"
     }
 
-    public func importBackupJson(_ jsonString: String) throws {
-        guard let data = jsonString.data(using: .utf8) else { throw NSError(domain: "InvalidJSON", code: 1) }
-        let payload = try JSONDecoder().decode(BackupPayload.self, from: data)
-        self.goals = payload.goals
-        self.payments = payload.payments
-        saveData()
+    static func readBackup(_ url: URL) throws -> BackupPayload {
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+        let file = try FileHandle(forReadingFrom: url)
+        defer { try? file.close() }
+        let limit = 16 * 1024 * 1024
+        let data = try file.read(upToCount: limit + 1) ?? Data()
+        guard data.count <= limit else { throw BackupImportError.tooLarge }
+
+        let payload: BackupPayload
+        do {
+            payload = try JSONDecoder().decode(BackupPayload.self, from: data)
+        } catch {
+            throw BackupImportError.invalidFile
+        }
+        let goalIDs = Set(payload.goals.map(\.id))
+        guard payload.version == 1,
+              goalIDs.count == payload.goals.count,
+              Set(payload.payments.map(\.id)).count == payload.payments.count,
+              payload.goals.allSatisfy({ $0.id > 0 && $0.id < Int64.max && $0.targetAmount.isFinite && $0.savedAmount.isFinite }),
+              payload.payments.allSatisfy({ $0.id > 0 && $0.id < Int64.max && goalIDs.contains($0.goalId) && $0.amount.isFinite })
+        else { throw BackupImportError.invalidFile }
+        return payload
+    }
+
+    func restoreBackup(_ payload: BackupPayload) throws {
+        let data = try JSONEncoder().encode(payload)
+        try data.write(to: dbFileURL, options: .atomic)
+        goals = payload.goals
+        payments = payload.payments
     }
 
     public func exportCsv() -> String {
@@ -202,3 +226,15 @@ public final class SavingsStorageService: ObservableObject {
     }
 }
 
+
+
+private enum BackupImportError: LocalizedError {
+    case tooLarge, invalidFile
+
+    var errorDescription: String? {
+        switch self {
+        case .tooLarge: return "Choose a backup file under 16 MB."
+        case .invalidFile: return "This file is not a valid SavingGoalPlus iOS backup."
+        }
+    }
+}

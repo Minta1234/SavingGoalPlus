@@ -1,6 +1,7 @@
 import SwiftUI
 
 public struct ArchiveView: View {
+    @AppStorage(SavingsCalculations.currencyPreferenceKey) private var currencySymbol = "$"
     @ObservedObject var storage = SavingsStorageService.shared
 
     private var archivedGoals: [Goal] {
@@ -31,7 +32,7 @@ public struct ArchiveView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(goal.title)
                                     .font(.headline)
-                                Text("\(SavingsCalculations.formatCurrency(goal.savedAmount)) of \(SavingsCalculations.formatCurrency(goal.targetAmount))")
+                                Text("\(SavingsCalculations.formatCurrency(goal.savedAmount, currencySymbol: currencySymbol)) of \(SavingsCalculations.formatCurrency(goal.targetAmount, currencySymbol: currencySymbol))")
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
                             }

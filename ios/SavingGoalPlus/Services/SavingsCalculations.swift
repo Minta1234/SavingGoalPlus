@@ -50,6 +50,8 @@ public enum SavingsCalculations {
         )
     }
 
+    static let currencyPreferenceKey = "default_currency_symbol"
+
     public static func formatCurrency(_ amount: Double, currencySymbol: String = "$") -> String {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal

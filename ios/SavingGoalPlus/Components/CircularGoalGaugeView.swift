@@ -1,6 +1,7 @@
 import SwiftUI
 
 public struct CircularGoalGaugeView: View {
+    @AppStorage(SavingsCalculations.currencyPreferenceKey) private var currencySymbol = "$"
     public let progressFraction: Double // 0.0 ... 1.0
     public let savedAmount: Double
     public let targetAmount: Double
@@ -53,11 +54,11 @@ public struct CircularGoalGaugeView: View {
                     .font(.system(size: size * 0.18, weight: .bold, design: .rounded))
                     .foregroundColor(stageColor)
 
-                Text(SavingsCalculations.formatCurrency(savedAmount))
+                Text(SavingsCalculations.formatCurrency(savedAmount, currencySymbol: currencySymbol))
                     .font(.system(size: size * 0.11, weight: .semibold, design: .rounded))
                     .foregroundColor(.primary)
 
-                Text("of \(SavingsCalculations.formatCurrency(targetAmount))")
+                Text("of \(SavingsCalculations.formatCurrency(targetAmount, currencySymbol: currencySymbol))")
                     .font(.system(size: size * 0.065, weight: .medium))
                     .foregroundColor(.secondary)
             }

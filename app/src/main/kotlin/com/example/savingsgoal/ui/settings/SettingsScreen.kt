@@ -75,11 +75,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.savingsgoal.BuildConfig
 import com.example.savingsgoal.ui.theme.AppThemePalette
 import com.example.savingsgoal.util.rememberFileExport
 import kotlinx.coroutines.launch
@@ -103,7 +103,7 @@ fun SettingsScreen(
     var showCurrencyDialog by remember { mutableStateOf(false) }
     var showTimePickerDialog by remember { mutableStateOf(false) }
     var showChangelogDialog by remember { mutableStateOf(false) }
-    val uriHandler = LocalUriHandler.current
+    var showUpdateDialog by remember { mutableStateOf(false) }
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -482,7 +482,11 @@ fun SettingsScreen(
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
                                 Text("App Version & Updates", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                                Text("v1.0.1 (Seamless In-Place Updates)", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(
+                                    "Version ${BuildConfig.VERSION_NAME}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     }
@@ -503,9 +507,7 @@ fun SettingsScreen(
                         }
 
                         Button(
-                            onClick = {
-                                uriHandler.openUri("https://github.com/Minta1234/SavingGoalPlus/releases/latest")
-                            },
+                            onClick = { showUpdateDialog = true },
                             modifier = Modifier.weight(1f)
                         ) {
                             Icon(Icons.Default.SystemUpdate, contentDescription = null, modifier = Modifier.size(16.dp))
@@ -632,6 +634,10 @@ fun SettingsScreen(
                 }
             }
         )
+    }
+
+    if (showUpdateDialog) {
+        UpdateCheckDialog(installedVersion = BuildConfig.VERSION_NAME, onDismiss = { showUpdateDialog = false })
     }
 
     if (showChangelogDialog) {
