@@ -9,9 +9,11 @@ import android.graphics.BitmapFactory
 import android.net.Uri
 import com.minta1234.savingsgoal.widget.SavingsGoalWidgetProvider
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -34,11 +36,16 @@ class SavingsRepository(private val context: Context) {
         Context.MODE_PRIVATE
     )
 
-    private val _dataRevision = MutableStateFlow(0L)
-    val dataRevision: StateFlow<Long> = _dataRevision.asStateFlow()
+    companion object {
+        // Repository instances share one SQLite database and must observe the same mutations.
+        private val revision = MutableStateFlow(0L)
+        private val revisions = revision.asStateFlow()
+    }
+
+    val dataRevision: StateFlow<Long> = revisions
 
     fun notifyChanged() {
-        _dataRevision.value += 1
+        revision.update { it + 1 }
         try {
             SavingsGoalWidgetProvider.triggerUpdate(context)
         } catch (_: Exception) {
@@ -416,7 +423,8 @@ class SavingsRepository(private val context: Context) {
         notifyChanged()
     }
 
-    suspend fun deletePayment(id: Long) = withContext(Dispatchers.IO) {
+    // A confirmed delete must finish even if its screen is popped immediately.
+    suspend fun deletePayment(id: Long) = withContext(Dispatchers.IO + NonCancellable) {
         val db = dbHelper.writableDatabase
         db.delete(
             SavingsGoalDbHelper.TABLE_PAYMENTLIST,
@@ -428,8 +436,7 @@ class SavingsRepository(private val context: Context) {
 
     // --- Overview Summary ---
 
-    suspend fun getTotalSummary(): TotalSummary = withContext(Dispatchers.IO) {
-        val activeGoals = getActiveGoals()
+    fun summarizeGoals(activeGoals: List<Goal>): TotalSummary {
         var totalTarget = 0.0
         var totalSaved = 0.0
         var totalRemaining = 0.0
@@ -440,7 +447,7 @@ class SavingsRepository(private val context: Context) {
             totalRemaining += goal.remainingAmount
         }
 
-        TotalSummary(
+        return TotalSummary(
             totalGoals = activeGoals.size,
             totalTarget = totalTarget,
             totalSaved = totalSaved,

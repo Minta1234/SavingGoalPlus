@@ -32,16 +32,14 @@ class ArchiveViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun loadData() {
-        viewModelScope.launch {
-            val archived = repository.getArchivedGoals()
-            val defaultCurrency = repository.getDefaultCurrency()
-            _uiState.value = ArchiveUiState(
-                archivedGoals = archived,
-                defaultCurrency = defaultCurrency,
-                isLoading = false
-            )
-        }
+    private suspend fun loadData() {
+        val archived = repository.getArchivedGoals()
+        val defaultCurrency = repository.getDefaultCurrency()
+        _uiState.value = ArchiveUiState(
+            archivedGoals = archived,
+            defaultCurrency = defaultCurrency,
+            isLoading = false
+        )
     }
 
     fun unarchiveGoal(id: Long) {

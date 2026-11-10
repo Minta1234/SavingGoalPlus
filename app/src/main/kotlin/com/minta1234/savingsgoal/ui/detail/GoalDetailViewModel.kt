@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 
 data class GoalDetailUiState(
@@ -33,44 +34,40 @@ class GoalDetailViewModel(
 
     private val repository = SavingsRepository(application)
 
+    private val selectedSort = MutableStateFlow(SortOrder.NEWEST_FIRST)
     private val _uiState = MutableStateFlow(GoalDetailUiState())
     val uiState: StateFlow<GoalDetailUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
-            repository.dataRevision.collectLatest {
-                loadData()
-            }
+            repository.dataRevision.combine(selectedSort) { _, sort -> sort }
+                .collectLatest { sort -> loadData(sort) }
         }
     }
 
-    fun loadData() {
-        viewModelScope.launch {
-            val goal = repository.getGoalById(goalId)
-            val currentSort = _uiState.value.sortOrder
-            val payments = repository.getPaymentsForGoal(goalId, currentSort)
-            val defaultCurrency = repository.getDefaultCurrency()
-            val toSaveOption = repository.getToSaveOption()
+    private suspend fun loadData(currentSort: SortOrder) {
+        val goal = repository.getGoalById(goalId)
+        val payments = repository.getPaymentsForGoal(goalId, currentSort)
+        val defaultCurrency = repository.getDefaultCurrency()
+        val toSaveOption = repository.getToSaveOption()
 
-            val ratePlan = if (goal != null) {
-                SavingsCalculations.calculateRatePlan(goal.date, goal.remainingAmount, goal.isReached)
-            } else null
+        val ratePlan = if (goal != null) {
+            SavingsCalculations.calculateRatePlan(goal.date, goal.remainingAmount, goal.isReached)
+        } else null
 
-            _uiState.value = GoalDetailUiState(
-                goal = goal,
-                payments = payments,
-                ratePlan = ratePlan,
-                defaultCurrency = defaultCurrency,
-                toSaveOption = toSaveOption,
-                sortOrder = currentSort,
-                isLoading = false
-            )
-        }
+        _uiState.value = GoalDetailUiState(
+            goal = goal,
+            payments = payments,
+            ratePlan = ratePlan,
+            defaultCurrency = defaultCurrency,
+            toSaveOption = toSaveOption,
+            sortOrder = currentSort,
+            isLoading = false
+        )
     }
 
     fun setSortOrder(sortOrder: SortOrder) {
-        _uiState.value = _uiState.value.copy(sortOrder = sortOrder)
-        loadData()
+        selectedSort.value = sortOrder
     }
 
     fun addPayment(amount: Double, date: String, isSaving: Boolean, note: String) {
