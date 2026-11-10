@@ -1,4 +1,4 @@
-﻿package com.minta1234.savingsgoal.ui.backup
+package com.minta1234.savingsgoal.ui.backup
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
