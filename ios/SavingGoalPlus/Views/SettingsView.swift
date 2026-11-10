@@ -9,6 +9,7 @@ private var installedVersion: String? {
 public struct SettingsView: View {
     @ObservedObject var notifications = NotificationManager.shared
     @ObservedObject var storage = SavingsStorageService.shared
+    @AppStorage(AppThemeMode.preferenceKey) private var appearance = AppThemeMode.system
     @AppStorage(AppLanguage.preferenceKey) private var language = AppLanguage.system
     @AppStorage(SavingsCalculations.currencyPreferenceKey) private var currencySymbol = "$"
     @State private var showingCurrencySheet = false
@@ -45,6 +46,14 @@ public struct SettingsView: View {
                     Picker("App language", selection: $language) {
                         ForEach(AppLanguage.allCases) { option in
                             Text(option.label).tag(option)
+                        }
+                    }
+                }
+
+                Section {
+                    Picker("Appearance", selection: $appearance) {
+                        ForEach(AppThemeMode.allCases) { mode in
+                            Text(mode.label).tag(mode)
                         }
                     }
                 }

@@ -90,6 +90,7 @@ import com.minta1234.savingsgoal.ThemeManager
 import com.minta1234.savingsgoal.ui.components.ColorChoiceDialog
 import androidx.compose.ui.graphics.toArgb
 import com.minta1234.savingsgoal.ui.theme.AppLanguage
+import com.minta1234.savingsgoal.ui.theme.AppThemeMode
 import com.minta1234.savingsgoal.ui.theme.AppThemePalette
 import com.minta1234.savingsgoal.util.rememberFileExport
 import kotlinx.coroutines.launch
@@ -103,6 +104,7 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val customAccent by ThemeManager.customAccent.collectAsState()
+    val appearance by ThemeManager.appearance.collectAsState()
     var showAccentPicker by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val resources = LocalResources.current
@@ -173,6 +175,27 @@ fun SettingsScreen(
                         Text(stringResource(language.label), style = MaterialTheme.typography.bodySmall)
                     }
                     Icon(Icons.Default.ChevronRight, contentDescription = null)
+                }
+            }
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(stringResource(R.string.theme_appearance), style = MaterialTheme.typography.titleMedium)
+                    FlowRow(
+                        modifier = Modifier.selectableGroup(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        AppThemeMode.entries.forEach { mode ->
+                            FilterChip(
+                                selected = appearance == mode,
+                                onClick = { ThemeManager.setAppearance(context, mode) },
+                                label = { Text(stringResource(mode.label)) }
+                            )
+                        }
+                    }
                 }
             }
 

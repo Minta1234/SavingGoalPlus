@@ -114,11 +114,13 @@
     <string name="ui_edit">Edit</string>
     <string name="ui_edit_goal">Edit Goal</string>
     <string name="ui_edit_transaction">Edit Transaction</string>
+    <string name="ui_chinese">中文</string>
     <string name="ui_english">English</string>
     <string name="ui_exceeding">Exceeding</string>
     <string name="ui_export_csv">Export CSV</string>
     <string name="ui_export_goals_to_csv">Export Goals to CSV</string>
     <string name="ui_export_json">Export JSON</string>
+    <string name="ui_french">Français</string>
     <string name="ui_goal_achieved">Goal Achieved!</string>
     <string name="ui_goal_completed">🎉 Goal Completed!</string>
     <string name="ui_goal_completed_celebrate">🎉 Goal Completed! Celebrate</string>
@@ -129,6 +131,7 @@
     <string name="ui_green">Green</string>
     <string name="ui_hex_color">Hex color</string>
     <string name="ui_highest_amount">Highest Saved</string>
+    <string name="ui_japanese">日本語</string>
     <string name="ui_lowest_amount">Lowest Saved</string>
     <string name="ui_sort">Sort</string>
     <string name="ui_last_7_days">Last 7 days</string>
@@ -166,6 +169,7 @@
     <string name="ui_restore_json">Restore JSON</string>
     <string name="ui_restore_now">Restore Now</string>
     <string name="ui_restoring_will_replace_all_current_data_with_the_selected_backup_are_you_sure_you_want_to_proceed">Restoring will replace all current data with the selected backup. Are you sure you want to proceed?</string>
+    <string name="ui_russian">Русский</string>
     <string name="ui_save">Save</string>
     <string name="ui_save_today">Save today</string>
     <string name="ui_saved">Saved</string>
@@ -179,6 +183,7 @@
     <string name="ui_set_reminder_time">Set Reminder Time</string>
     <string name="ui_set_target_date_optional">Set Target Date (Optional)</string>
     <string name="ui_settings">Settings</string>
+    <string name="ui_spanish">Español</string>
     <string name="ui_start_saving">Start saving</string>
     <string name="ui_system_default">System default</string>
     <string name="ui_tap_the_button_below_to_create_your_first_goal_and_start_tracking_your_savings">Tap the + button below to create your first goal and start tracking your savings!</string>
@@ -212,4 +217,7 @@
     <string name="backup_open_file">Open backup file</string>
     <string name="backup_preview">%1$d goals and %2$d transactions</string>
     <string name="backup_invalid">Could not read this backup. Choose a SavingGoalPlus JSON or SQLite file up to 16 MB.</string>
+    <string name="theme_appearance">Appearance</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
 </resources>

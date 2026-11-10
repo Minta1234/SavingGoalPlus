@@ -4,6 +4,29 @@ import SwiftUI
 import UIKit
 #endif
 
+enum AppThemeMode: String, CaseIterable, Identifiable {
+    case system, light, dark
+
+    static let preferenceKey = "app_theme_mode"
+    var id: String { rawValue }
+
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: return nil
+        case .light: return .light
+        case .dark: return .dark
+        }
+    }
+
+    var label: LocalizedStringKey {
+        switch self {
+        case .system: return "System default"
+        case .light: return "Light"
+        case .dark: return "Dark"
+        }
+    }
+}
+
 public enum AppAccentTheme: String, CaseIterable, Identifiable {
     case emerald = "emerald"
     case cupertinoBlue = "cupertino_blue"

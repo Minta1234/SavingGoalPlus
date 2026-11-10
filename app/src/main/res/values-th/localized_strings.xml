@@ -114,11 +114,13 @@
     <string name="ui_edit">แก้ไข</string>
     <string name="ui_edit_goal">แก้ไขเป้าหมาย</string>
     <string name="ui_edit_transaction">แก้ไขรายการ</string>
+    <string name="ui_chinese">中文</string>
     <string name="ui_english">English</string>
     <string name="ui_exceeding">เกินเป้าหมาย</string>
     <string name="ui_export_csv">ส่งออก CSV</string>
     <string name="ui_export_goals_to_csv">ส่งออกเป้าหมายเป็น CSV</string>
     <string name="ui_export_json">ส่งออก JSON</string>
+    <string name="ui_french">Français</string>
     <string name="ui_goal_achieved">ออมครบเป้าหมายแล้ว!</string>
     <string name="ui_goal_completed">🎉 ออมครบเป้าหมายแล้ว!</string>
     <string name="ui_goal_completed_celebrate">🎉 ออมครบเป้าหมายแล้ว! ฉลองเลย</string>
@@ -129,6 +131,7 @@
     <string name="ui_green">เขียว</string>
     <string name="ui_hex_color">รหัสสี Hex</string>
     <string name="ui_highest_amount">เงินที่ออมได้ มากสุดก่อน</string>
+    <string name="ui_japanese">日本語</string>
     <string name="ui_lowest_amount">เงินที่ออมได้ น้อยสุดก่อน</string>
     <string name="ui_sort">จัดเรียง</string>
     <string name="ui_last_7_days">ย้อนหลัง 7 วัน</string>
@@ -166,6 +169,7 @@
     <string name="ui_restore_json">กู้คืน JSON</string>
     <string name="ui_restore_now">กู้คืนตอนนี้</string>
     <string name="ui_restoring_will_replace_all_current_data_with_the_selected_backup_are_you_sure_you_want_to_proceed">การกู้คืนจะแทนที่ข้อมูลปัจจุบันทั้งหมดด้วยไฟล์ที่เลือก ต้องการดำเนินการต่อหรือไม่?</string>
+    <string name="ui_russian">Русский</string>
     <string name="ui_save">บันทึก</string>
     <string name="ui_save_today">ออมวันนี้</string>
     <string name="ui_saved">ออมแล้ว</string>
@@ -179,8 +183,9 @@
     <string name="ui_set_reminder_time">ตั้งเวลาเตือน</string>
     <string name="ui_set_target_date_optional">กำหนดวันเป้าหมาย (ไม่บังคับ)</string>
     <string name="ui_settings">ตั้งค่า</string>
+    <string name="ui_spanish">Español</string>
     <string name="ui_start_saving">เริ่มออม</string>
-    <string name="ui_system_default">ตามภาษาเครื่อง</string>
+    <string name="ui_system_default">ตามระบบ</string>
     <string name="ui_tap_the_button_below_to_create_your_first_goal_and_start_tracking_your_savings">แตะปุ่ม + เพื่อสร้างเป้าหมายแรกและเริ่มบันทึกเงินออม</string>
     <string name="ui_tap_the_button_to_add_your_first_deposit_or_withdrawal">แตะปุ่ม + เพื่อเพิ่มรายการฝากหรือถอนครั้งแรก</string>
     <string name="ui_target">เป้าหมาย</string>
@@ -212,4 +217,7 @@
     <string name="backup_open_file">เปิดไฟล์สำรอง</string>
     <string name="backup_preview">%1$d เป้าหมายและ %2$d รายการ</string>
     <string name="backup_invalid">อ่านไฟล์สำรองไม่สำเร็จ เลือกไฟล์ JSON หรือ SQLite ของ SavingGoalPlus ขนาดไม่เกิน 16 MB</string>
+    <string name="theme_appearance">โหมดสี</string>
+    <string name="theme_light">สว่าง</string>
+    <string name="theme_dark">มืด</string>
 </resources>

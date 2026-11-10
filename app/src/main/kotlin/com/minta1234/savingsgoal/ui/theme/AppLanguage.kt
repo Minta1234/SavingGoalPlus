@@ -1,4 +1,4 @@
-﻿package com.minta1234.savingsgoal.ui.theme
+package com.minta1234.savingsgoal.ui.theme
 
 import android.content.Context
 import android.content.res.Configuration
@@ -11,7 +11,12 @@ import kotlinx.coroutines.flow.asStateFlow
 internal enum class AppLanguage(val tag: String, @param:StringRes val label: Int) {
     SYSTEM("", R.string.ui_system_default),
     ENGLISH("en", R.string.ui_english),
-    THAI("th", R.string.ui_thai);
+    THAI("th", R.string.ui_thai),
+    JAPANESE("ja", R.string.ui_japanese),
+    RUSSIAN("ru", R.string.ui_russian),
+    CHINESE("zh", R.string.ui_chinese),
+    SPANISH("es", R.string.ui_spanish),
+    FRENCH("fr", R.string.ui_french);
 
     companion object {
         private const val PREFERENCES = "app_language"
