@@ -118,13 +118,21 @@ jobs:
           mkdir -p release_dist
           cp app/build/outputs/apk/release/app-release.apk "release_dist/SavingGoalPlus-v${RELEASE_VERSION}.apk"
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload signed APK
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-artifact@v4
         with:
           name: SavingGoalPlus-Android
           if-no-files-found: error
-          path: |
-            release_dist/*.apk
-            app/build/outputs/apk/debug/*.apk
+          path: release_dist/SavingGoalPlus-v${{ env.RELEASE_VERSION }}.apk
+
+      - name: Upload pull request APK
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: SavingGoalPlus-Android-Debug
+          if-no-files-found: error
+          path: app/build/outputs/apk/debug/app-debug.apk
 
   ios:
     name: Test & Build iOS
@@ -219,8 +227,8 @@ jobs:
           name: SavingGoalPlus-iOS
           if-no-files-found: error
           path: |
-            build_output/*.ipa
-            build_output/*.zip
+            build_output/SavingGoalPlus-v${{ env.RELEASE_VERSION }}-unsigned.ipa
+            build_output/SavingGoalPlus-v${{ env.RELEASE_VERSION }}-iOS.xcarchive.zip
 
   publish:
     name: Publish Android & iOS release
