@@ -128,8 +128,8 @@
     <string name="ui_got_it">Got It!</string>
     <string name="ui_green">Green</string>
     <string name="ui_hex_color">Hex color</string>
-    <string name="ui_highest_amount">Highest Amount</string>
-    <string name="ui_lowest_amount">Lowest Amount</string>
+    <string name="ui_highest_amount">Highest Saved</string>
+    <string name="ui_lowest_amount">Lowest Saved</string>
     <string name="ui_sort">Sort</string>
     <string name="ui_last_7_days">Last 7 days</string>
     <string name="ui_loading_goal">Loading goal...</string>

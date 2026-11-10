@@ -19,8 +19,8 @@ public struct MainDashboardView: View {
     }
 
     enum GoalSortOrder: String, CaseIterable, Identifiable {
-        case highestToLowest = "Highest Amount"
-        case lowestToHighest = "Lowest Amount"
+        case highestToLowest = "Highest Saved"
+        case lowestToHighest = "Lowest Saved"
         case newestFirst = "Newest First"
 
         var id: String { rawValue }
@@ -34,13 +34,13 @@ public struct MainDashboardView: View {
         switch sortOrder {
         case .highestToLowest:
             sorted = active.sorted {
-                if $0.targetAmount != $1.targetAmount { return $0.targetAmount > $1.targetAmount }
-                return $0.savedAmount > $1.savedAmount
+                if $0.savedAmount != $1.savedAmount { return $0.savedAmount > $1.savedAmount }
+                return $0.targetAmount > $1.targetAmount
             }
         case .lowestToHighest:
             sorted = active.sorted {
-                if $0.targetAmount != $1.targetAmount { return $0.targetAmount < $1.targetAmount }
-                return $0.savedAmount < $1.savedAmount
+                if $0.savedAmount != $1.savedAmount { return $0.savedAmount < $1.savedAmount }
+                return $0.targetAmount < $1.targetAmount
             }
         case .newestFirst:
             sorted = active.sorted { $0.id > $1.id }

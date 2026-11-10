@@ -1,11 +1,11 @@
-plugins {
+﻿plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.compose.compiler)
   alias(libs.plugins.kotlin.serialization)
 }
 
 android {
-  namespace = "com.example.savingsgoal"
+  namespace = "com.minta1234.savingsgoal"
   compileSdk = 36
 
   val appVersionName: String = (project.findProperty("versionName") as? String)
@@ -18,7 +18,7 @@ android {
     ?: 10000
 
   defaultConfig {
-    applicationId = "com.example.savingsgoal"
+    applicationId = "com.minta1234.savingsgoal"
     minSdk = 24
     targetSdk = 36
     versionCode = appVersionCode

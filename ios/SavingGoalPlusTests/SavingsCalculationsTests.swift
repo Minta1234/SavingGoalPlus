@@ -44,6 +44,20 @@ final class SavingsCalculationsTests: XCTestCase {
         let formatted = SavingsCalculations.formatCurrency(1234.56, currencySymbol: "$")
         XCTAssertEqual(formatted, "$1,234.56")
     }
+
+    func testGoalSortingBySavedAmount() {
+        let goalZero = Goal(id: 1, title: "A", targetAmount: 100, savedAmount: 0)
+        let goalHigh = Goal(id: 2, title: "Savings", targetAmount: 10000, savedAmount: 6702.41)
+
+        let goals = [goalZero, goalHigh]
+        let sortedDesc = goals.sorted {
+            if $0.savedAmount != $1.savedAmount { return $0.savedAmount > $1.savedAmount }
+            return $0.targetAmount > $1.targetAmount
+        }
+
+        XCTAssertEqual(sortedDesc.first?.id, 2)
+        XCTAssertEqual(sortedDesc.last?.id, 1)
+    }
 }
 
 
