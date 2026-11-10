@@ -1,12 +1,21 @@
 import Foundation
 import Combine
 
+public struct StreakDay: Identifiable {
+    public let id: String
+    public let label: String
+    public let description: String
+    public let saved: Bool
+    public let isToday: Bool
+}
+
 public struct StreakInfo {
     public let currentStreak: Int
     public let bestStreak: Int
     public let lastSavedDate: String?
     public let totalDaysSaved: Int
     public let isStreakActiveToday: Bool
+    public let recentDays: [StreakDay]
 
     public var levelTitle: String {
         if currentStreak >= 100 { return "👑 Savings Titan" }
@@ -37,7 +46,8 @@ public class SavingsStreakManager: ObservableObject {
         bestStreak: 0,
         lastSavedDate: nil,
         totalDaysSaved: 0,
-        isStreakActiveToday: false
+        isStreakActiveToday: false,
+        recentDays: []
     )
 
     private let defaults = UserDefaults.standard
@@ -45,6 +55,7 @@ public class SavingsStreakManager: ObservableObject {
     private let keyBest = "STREAK_BEST"
     private let keyLastDate = "STREAK_LAST_DATE"
     private let keyTotal = "STREAK_TOTAL_DAYS"
+    private let keyRecentDates = "STREAK_RECENT_DATES"
 
     private let formatter: DateFormatter = {
         let f = DateFormatter()
@@ -74,12 +85,28 @@ public class SavingsStreakManager: ObservableObject {
             validStreak = 0
         }
 
+        let days = lastSevenDays()
+        let dates = recentDates(lastDate: lastDate, current: current, days: days)
+        if defaults.stringArray(forKey: keyRecentDates) == nil {
+            defaults.set(Array(dates), forKey: keyRecentDates)
+        }
+        let label = DateFormatter()
+        label.setLocalizedDateFormatFromTemplate("EEE")
+        let description = DateFormatter()
+        description.setLocalizedDateFormatFromTemplate("EEEE MMM d")
+
         streakInfo = StreakInfo(
             currentStreak: validStreak,
             bestStreak: max(best, validStreak),
             lastSavedDate: lastDate,
             totalDaysSaved: total,
-            isStreakActiveToday: (lastDate == today)
+            isStreakActiveToday: (lastDate == today),
+            recentDays: days.map { day in
+                let id = formatter.string(from: day)
+                return StreakDay(id: id, label: label.string(from: day),
+                                 description: description.string(from: day),
+                                 saved: dates.contains(id), isToday: id == today)
+            }
         )
     }
 
@@ -91,6 +118,8 @@ public class SavingsStreakManager: ObservableObject {
         var current = defaults.integer(forKey: keyCurrent)
         var best = defaults.integer(forKey: keyBest)
         var total = defaults.integer(forKey: keyTotal)
+        var dates = recentDates(lastDate: lastDate, current: current, days: lastSevenDays())
+        dates.insert(today)
 
         if lastDate == today {
             // Already counted today
@@ -110,8 +139,31 @@ public class SavingsStreakManager: ObservableObject {
         defaults.set(best, forKey: keyBest)
         defaults.set(today, forKey: keyLastDate)
         defaults.set(total, forKey: keyTotal)
+        defaults.set(Array(dates), forKey: keyRecentDates)
 
         refresh()
     }
+
+    private func lastSevenDays() -> [Date] {
+        let now = Date()
+        return (-6...0).compactMap { Calendar.current.date(byAdding: .day, value: $0, to: now) }
+    }
+
+    private func recentDates(lastDate: String?, current: Int, days: [Date]) -> Set<String> {
+        let dates: Set<String>
+        if let stored = defaults.stringArray(forKey: keyRecentDates) {
+            dates = Set(stored)
+        } else if let lastDate, let lastSaved = formatter.date(from: lastDate) {
+            // Recover only the most recent consecutive run from older installs.
+            dates = Set((0..<min(max(current, 1), 7)).compactMap { offset in
+                Calendar.current.date(byAdding: .day, value: -offset, to: lastSaved)
+                    .map { formatter.string(from: $0) }
+            })
+        } else {
+            dates = []
+        }
+        return dates.intersection(days.map { formatter.string(from: $0) })
+    }
+
 }
 

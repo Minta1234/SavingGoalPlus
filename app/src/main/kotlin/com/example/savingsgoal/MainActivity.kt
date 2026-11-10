@@ -11,6 +11,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import com.example.savingsgoal.data.SavingsStreakManager
 import com.example.savingsgoal.ui.theme.AppThemePalette
 import com.example.savingsgoal.ui.theme.SavingsGoalTheme
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,7 +39,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         ThemeManager.init(this)
-        com.example.savingsgoal.data.SavingsStreakManager.init(this)
 
         enableEdgeToEdge()
         setContent {
@@ -52,5 +52,10 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        SavingsStreakManager.init(this)
     }
 }

@@ -151,7 +151,6 @@ fun MainScreen(
                     }
                 }
 
-                // Daily Savings Streak Banner (Duolingo / TikTok style)
                 item {
                     StreakBanner(streakInfo = streakInfo)
                 }

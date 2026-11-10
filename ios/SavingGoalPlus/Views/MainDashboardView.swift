@@ -2,6 +2,7 @@ import SwiftUI
 
 public struct MainDashboardView: View {
     @ObservedObject var storage = SavingsStorageService.shared
+    @Environment(\.scenePhase) private var scenePhase
     @ObservedObject var streakManager = SavingsStreakManager.shared
     @State private var showingAddGoalSheet = false
     @State private var showingStreakSheet = false
@@ -35,67 +36,8 @@ public struct MainDashboardView: View {
                         .padding(.horizontal)
                         .padding(.top, 8)
 
-                    // Daily Savings Streak Card (Duolingo / TikTok style)
-                    Button(action: { showingStreakSheet = true }) {
-                        HStack(spacing: 12) {
-                            ZStack {
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color.orange, Color.red],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                    .frame(width: 44, height: 44)
-                                Image(systemName: "flame.fill")
-                                    .foregroundColor(.white)
-                                    .font(.system(size: 22))
-                            }
-
-                            VStack(alignment: .leading, spacing: 3) {
-                                HStack(spacing: 6) {
-                                    Text(streakManager.streakInfo.currentStreak > 0 ? "\(streakManager.streakInfo.currentStreak) Day Streak!" : "Start Savings Streak")
-                                        .font(.subheadline)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.primary)
-
-                                    Text(streakManager.streakInfo.isStreakActiveToday ? "Active Today" : "Needs Deposit")
-                                        .font(.system(size: 10, weight: .semibold))
-                                        .padding(.horizontal, 6)
-                                        .padding(.vertical, 2)
-                                        .background(streakManager.streakInfo.isStreakActiveToday ? Color.green.opacity(0.15) : Color.orange.opacity(0.15))
-                                        .foregroundColor(streakManager.streakInfo.isStreakActiveToday ? .green : .orange)
-                                        .cornerRadius(6)
-                                }
-
-                                Text("\(streakManager.streakInfo.levelTitle) • \(streakManager.streakInfo.motivationalText)")
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
-                                    .lineLimit(1)
-                            }
-
-                            Spacer()
-
-                            HStack(spacing: 3) {
-                                Image(systemName: "star.fill")
-                                    .font(.system(size: 10))
-                                    .foregroundColor(.orange)
-                                Text("\(streakManager.streakInfo.bestStreak)d")
-                                    .font(.system(size: 11, weight: .bold))
-                                    .foregroundColor(.orange)
-                            }
-                            .padding(.horizontal, 7)
-                            .padding(.vertical, 3)
-                            .background(Color.orange.opacity(0.12))
-                            .cornerRadius(8)
-                        }
-                        .padding(12)
-                        .background(Color(.secondarySystemBackground))
-                        .cornerRadius(16)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .padding(.horizontal)
+                    streakBanner
+                        .padding(.horizontal)
 
                     // Filter Segmented Control
                     Picker("Filter", selection: $selectedFilter) {
@@ -150,6 +92,9 @@ public struct MainDashboardView: View {
                     }
                 }
             }
+            .onChange(of: scenePhase) { phase in
+                if phase == .active { streakManager.refresh() }
+            }
             .sheet(isPresented: $showingAddGoalSheet) {
                 GoalEditSheet { title, target, date, category, notes in
                     storage.addGoal(title: title, targetAmount: target, targetDate: date, notes: notes, category: category)
@@ -171,6 +116,40 @@ public struct MainDashboardView: View {
             }
         }
     }
+
+    private var streakBanner: some View {
+        let streak = streakManager.streakInfo
+        let status = streak.isStreakActiveToday ? "Saved today" : (streak.currentStreak > 0 ? "Save today" : "Start saving")
+        return Button {
+            showingStreakSheet = true
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "flame.fill")
+                    .font(.title3)
+                    .foregroundColor(streak.currentStreak > 0 ? .orange : .secondary)
+                    .accessibilityHidden(true)
+                Text("\(streak.currentStreak) day streak")
+                    .font(.subheadline.bold())
+                Spacer(minLength: 0)
+                Text(status)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Image(systemName: "chevron.forward")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundColor(.secondary)
+                    .accessibilityHidden(true)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+            .overlay(RoundedRectangle(cornerRadius: 14).strokeBorder(Color.secondary.opacity(0.25)))
+        }
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("Opens streak details")
+    }
+
 }
 
 public struct StreakMilestonesSheet: View {
@@ -191,7 +170,9 @@ public struct StreakMilestonesSheet: View {
             List {
                 Section {
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Build a daily habit of saving! Deposit into any of your goals every day to keep your streak burning bright.")
+                        Text("\(streakInfo.currentStreak) day streak")
+                            .font(.title2.bold())
+                        Text(streakInfo.motivationalText)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
 
@@ -235,6 +216,34 @@ public struct StreakMilestonesSheet: View {
                     .padding(.vertical, 4)
                 } header: {
                     Text("Streak Stats")
+                }
+
+                Section("Last 7 days") {
+                    HStack(spacing: 4) {
+                        ForEach(streakInfo.recentDays) { day in
+                            VStack(spacing: 5) {
+                                Text(day.label)
+                                    .font(.caption2)
+                                    .lineLimit(1)
+                                Circle()
+                                    .fill(day.saved ? Color.orange : Color.secondary.opacity(0.15))
+                                    .overlay(Circle().strokeBorder(day.isToday ? Color.orange : .clear, lineWidth: 2))
+                                    .overlay {
+                                        if day.saved {
+                                            Image(systemName: "checkmark")
+                                                .font(.caption2.bold())
+                                                .foregroundColor(.black)
+                                        }
+                                    }
+                                    .frame(width: 22, height: 22)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .accessibilityElement(children: .ignore)
+                            .accessibilityLabel(day.isToday ? "Today" : day.description)
+                            .accessibilityValue(day.saved ? "Saved" : "No deposit")
+                        }
+                    }
+                    .padding(.vertical, 4)
                 }
 
                 Section {
