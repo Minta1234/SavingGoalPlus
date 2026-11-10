@@ -113,13 +113,7 @@ public struct SettingsView: View {
                 // Updates & Changelog Section
                 Section(header: Text("Updates & Change Log")) {
                     Button(action: { showingChangelogSheet = true }) {
-                        HStack {
-                            Label("What's New / Change Log", systemImage: "clock.arrow.circlepath")
-                            Spacer()
-                            Text("v1.0.1")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
+                        Label("What's New / Change Log", systemImage: "clock.arrow.circlepath")
                     }
 
                     if let url = URL(string: "https://github.com/Minta1234/SavingGoalPlus/releases/latest") {
@@ -273,63 +267,65 @@ private struct ExportDocument: FileDocument {
     }
 }
 
-// Full iOS Change Log Sheet
+private struct GitHubReleaseNote: Decodable, Identifiable {
+    let tag: String
+    let name: String?
+    let body: String?
+    let htmlURL: URL
+
+    var id: String { tag }
+    var title: String { name.flatMap { $0.isEmpty ? nil : $0 } ?? tag }
+
+    enum CodingKeys: String, CodingKey {
+        case tag = "tag_name"
+        case name, body
+        case htmlURL = "html_url"
+    }
+
+    static func load() async throws -> [Self] {
+        let endpoint = URL(string: "https://api.github.com/repos/Minta1234/SavingGoalPlus/releases?per_page=10")!
+        var request = URLRequest(url: endpoint, timeoutInterval: 15)
+        request.setValue("application/vnd.github+json", forHTTPHeaderField: "Accept")
+        request.setValue("SavingGoalPlus", forHTTPHeaderField: "User-Agent")
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+            throw URLError(.badServerResponse)
+        }
+        return try JSONDecoder().decode([Self].self, from: data)
+    }
+}
+
 public struct ChangelogSheetView: View {
     @Environment(\.dismiss) var dismiss
+    @State private var releases: [GitHubReleaseNote]?
+    @State private var failed = false
+    @State private var attempt = 0
 
     public init() {}
 
     public var body: some View {
         NavigationView {
             List {
-                Section(header: Text("v1.0.2 • Latest")) {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("🎨 8 iOS-Style Theme Accent Palettes")
-                            .font(.headline)
-                        Text("Choose from Apple Mint, Cupertino Blue, Indigo Night, Rose Pink, Sunset Orange, Pacific Teal, Royal Purple, and Midnight Slate.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-
-                        Divider().padding(.vertical, 4)
-
-                        Text("🔄 Seamless In-Place Updates")
-                            .font(.headline)
-                        Text("Unified permanent release signing keystore eliminates the need to uninstall before updating Android APKs.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-
-                        Divider().padding(.vertical, 4)
-
-                        Text("📋 In-App Change Log & Update Checker")
-                            .font(.headline)
-                        Text("Easily view release history and check for GitHub Releases in 1 tap.")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                if failed {
+                    Text("Could not load release notes from GitHub.")
+                    Button("Try again") { attempt += 1 }
+                } else if let releases {
+                    if releases.isEmpty {
+                        Text("No published releases yet.")
                     }
-                    .padding(.vertical, 4)
-                }
-
-                Section(header: Text("v1.0.1 • Multi-Platform iOS Release")) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("• 🍏 100% Native Swift 5.9 + SwiftUI (iOS 16.0+)")
-                        Text("• 📦 Sideloadable unsigned .ipa and .xcarchive packages")
-                        Text("• ⚡ Smart path-filtered GitHub Actions CI/CD")
+                    ForEach(releases) { release in
+                        Section {
+                            let notes = release.body?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                            Text(verbatim: notes.isEmpty ? "No notes were published for this release." : notes)
+                            if release.htmlURL.absoluteString.hasPrefix("https://github.com/Minta1234/SavingGoalPlus/releases/tag/") {
+                                Link("View on GitHub", destination: release.htmlURL)
+                            }
+                        } header: {
+                            Text(release.title)
+                        }
                     }
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                }
-
-                Section(header: Text("v1.0.0 • Initial Release")) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("• 🚀 100% Native Kotlin 2.0 + Jetpack Compose rewrite")
-                        Text("• 📊 260° Dynamic Arc Gauge with 3-tier colors")
-                        Text("• 🧮 Daily, Weekly, Bi-Weekly, Monthly projection math")
-                        Text("• 🎉 2D Confetti Particle Physics milestone celebration")
-                        Text("• ⏰ Scheduled daily reminder notifications via AlarmManager")
-                        Text("• 🔒 Offline SQLite storage with JSON/CSV export")
-                    }
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                } else {
+                    ProgressView("Loading release notes from GitHub…")
                 }
             }
             .navigationTitle("Change Log")
@@ -337,6 +333,14 @@ public struct ChangelogSheetView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
+                }
+            }
+            .task(id: attempt) {
+                failed = false
+                do {
+                    releases = try await GitHubReleaseNote.load()
+                } catch {
+                    if !Task.isCancelled { failed = true }
                 }
             }
         }

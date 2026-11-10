@@ -645,55 +645,7 @@ fun SettingsScreen(
         )
     }
 
-    // What's New & Change Log Dialog
     if (showChangelogDialog) {
-        AlertDialog(
-            onDismissRequest = { showChangelogDialog = false },
-            title = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.History, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("SavingGoalPlus Change Log")
-                }
-            },
-            text = {
-                Column(
-                    modifier = Modifier.verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
-                ) {
-                    // v1.0.2
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("v1.0.2", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary, fontSize = 15.sp)
-                        Text("• 🎨 Added 8 iOS-style Theme Accent Palettes (Apple Mint, Cupertino Blue, Indigo Night, Rose Pink, Sunset Orange, Pacific Teal, Royal Purple, Midnight Slate)", fontSize = 13.sp)
-                        Text("• 🔄 Seamless in-place updates: unified release signing keystore eliminates having to uninstall before updating", fontSize = 13.sp)
-                        Text("• 🚀 Added in-app Change Log viewer and 1-click Check for Updates", fontSize = 13.sp)
-                    }
-
-                    // v1.0.1
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("v1.0.1", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary, fontSize = 15.sp)
-                        Text("• 🍏 Native iOS Target in Swift 5.9 + SwiftUI (iOS 16.0+)", fontSize = 13.sp)
-                        Text("• 📦 Sideloadable unsigned .ipa and .xcarchive distribution packages", fontSize = 13.sp)
-                        Text("• ⚡ Smart CI/CD selective compilation workflow", fontSize = 13.sp)
-                    }
-
-                    // v1.0.0
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("v1.0.0", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.tertiary, fontSize = 15.sp)
-                        Text("• 🚀 100% Native Kotlin 2.0 + Jetpack Compose rewrite", fontSize = 13.sp)
-                        Text("• 📊 260° Dynamic Arc Gauge with 3-tier colors", fontSize = 13.sp)
-                        Text("• 🧮 Daily, Weekly, Bi-Weekly, Monthly projection math", fontSize = 13.sp)
-                        Text("• 🎉 2D Confetti Particle Physics milestone celebration", fontSize = 13.sp)
-                        Text("• ⏰ Scheduled daily reminder notifications via AlarmManager", fontSize = 13.sp)
-                        Text("• 🔒 Offline SQLite storage with JSON/CSV export", fontSize = 13.sp)
-                    }
-                }
-            },
-            confirmButton = {
-                Button(onClick = { showChangelogDialog = false }) {
-                    Text("Close")
-                }
-            }
-        )
+        ReleaseNotesDialog(onDismiss = { showChangelogDialog = false })
     }
 }
