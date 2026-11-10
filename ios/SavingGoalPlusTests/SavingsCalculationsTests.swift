@@ -46,8 +46,8 @@ final class SavingsCalculationsTests: XCTestCase {
     }
 
     func testGoalSortingBySavedAmount() {
-        let goalZero = Goal(id: 1, title: "A", targetAmount: 100, savedAmount: 0)
-        let goalHigh = Goal(id: 2, title: "Savings", targetAmount: 10000, savedAmount: 6702.41)
+        let goalZero = Goal(id: 1, title: "A", targetAmount: 100, savedAmount: 0, targetDate: "2027-01-01")
+        let goalHigh = Goal(id: 2, title: "Savings", targetAmount: 10000, savedAmount: 6702.41, targetDate: "2027-01-01")
 
         let goals = [goalZero, goalHigh]
         let sortedDesc = goals.sorted {
