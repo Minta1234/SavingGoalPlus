@@ -260,8 +260,14 @@ jobs:
             "SavingGoalPlus-v${RELEASE_VERSION}-iOS.xcarchive.zip"
           )
           sha256sum -- "${packages[@]}" > SHA256SUMS.txt
+          checksum_notes=$(
+            printf '## SHA-256 checksums\n\n```text\n'
+            cat SHA256SUMS.txt
+            printf '```\n'
+          )
           gh release create "$RELEASE_TAG" \
             "${packages[@]}" SHA256SUMS.txt \
             --target "$GITHUB_SHA" \
             --title "SavingGoalPlus v${RELEASE_VERSION}" \
+            --notes "$checksum_notes" \
             --generate-notes

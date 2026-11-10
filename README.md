@@ -159,7 +159,7 @@ The [release workflow](.github/workflows/build-and-release.yml) builds Android a
 
 Android uses the existing `RELEASE_KEYSTORE_BASE64` secret. For custom credentials, set `KEYSTORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD`. The unsigned iOS IPA must be signed before installation.
 
-Each release also includes `SHA256SUMS.txt`. Download it alongside the packages and run `sha256sum -c SHA256SUMS.txt` on Linux or `shasum -a 256 -c SHA256SUMS.txt` on macOS. On Windows, run `Get-FileHash -Algorithm SHA256 <filename>` in PowerShell and compare the hash with the matching line in the checksum file.
+SHA-256 checksums are shown in each release description and included in `SHA256SUMS.txt`. Download it alongside the packages and run `sha256sum -c SHA256SUMS.txt` on Linux or `shasum -a 256 -c SHA256SUMS.txt` on macOS. On Windows, run `Get-FileHash -Algorithm SHA256 <filename>` in PowerShell and compare the hash with the matching line in the checksum file.
 
 ---
 
