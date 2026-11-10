@@ -1,5 +1,7 @@
 package com.example.savingsgoal.ui.components
 
+import androidx.compose.ui.res.stringResource
+import com.example.savingsgoal.R
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -102,7 +104,7 @@ fun GoalEditDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(if (initialGoal == null) "New Savings Goal" else "Edit Goal")
+            Text(if (initialGoal == null) stringResource(R.string.ui_new_savings_goal) else stringResource(R.string.ui_edit_goal))
         },
         text = {
             Column(
@@ -121,7 +123,7 @@ fun GoalEditDialog(
                     if (displayBitmap != null) {
                         Image(
                             bitmap = displayBitmap.asImageBitmap(),
-                            contentDescription = "Goal Image",
+                            contentDescription = stringResource(R.string.ui_goal_image),
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
                                 .size(68.dp)
@@ -132,7 +134,7 @@ fun GoalEditDialog(
                             selectedBitmap = null
                             removeImage = true
                         }) {
-                            Icon(Icons.Default.Delete, contentDescription = "Remove photo", tint = MaterialTheme.colorScheme.error)
+                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.ui_remove_photo), tint = MaterialTheme.colorScheme.error)
                         }
                     } else {
                         Box(
@@ -145,7 +147,7 @@ fun GoalEditDialog(
                         ) {
                             Icon(
                                 Icons.Default.AddAPhoto,
-                                contentDescription = "Add Photo",
+                                contentDescription = stringResource(R.string.ui_add_photo),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
@@ -153,7 +155,7 @@ fun GoalEditDialog(
 
                     Spacer(modifier = Modifier.width(12.dp))
                     TextButton(onClick = { imagePickerLauncher.launch("image/*") }) {
-                        Text(if (displayBitmap != null) "Change Photo" else "Select Photo")
+                        Text(if (displayBitmap != null) stringResource(R.string.ui_change_photo) else stringResource(R.string.ui_select_photo))
                     }
                 }
 
@@ -161,8 +163,8 @@ fun GoalEditDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Goal Name") },
-                    placeholder = { Text("e.g. Dream Vacation, New Car") },
+                    label = { Text(stringResource(R.string.ui_goal_name)) },
+                    placeholder = { Text(stringResource(R.string.ui_e_g_dream_vacation_new_car)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -171,7 +173,7 @@ fun GoalEditDialog(
                 OutlinedTextField(
                     value = amountText,
                     onValueChange = { amountText = it },
-                    label = { Text("Target Amount") },
+                    label = { Text(stringResource(R.string.ui_target_amount)) },
                     placeholder = { Text("0.00") },
                     leadingIcon = {
                         Text(
@@ -194,7 +196,7 @@ fun GoalEditDialog(
                     Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (!targetDate.isNullOrBlank()) "Target Date: ${SavingsCalculations.formatDateForDisplay(targetDate)}" else "Set Target Date (Optional)"
+                        text = if (!targetDate.isNullOrBlank()) stringResource(R.string.target_date_value, SavingsCalculations.formatDateForDisplay(targetDate)) else stringResource(R.string.ui_set_target_date_optional)
                     )
                     if (!targetDate.isNullOrBlank()) {
                         Spacer(modifier = Modifier.weight(1f))
@@ -202,7 +204,7 @@ fun GoalEditDialog(
                             onClick = { targetDate = null },
                             modifier = Modifier.size(24.dp)
                         ) {
-                            Icon(Icons.Default.Clear, contentDescription = "Clear Date")
+                            Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.ui_clear_date))
                         }
                     }
                 }
@@ -211,8 +213,8 @@ fun GoalEditDialog(
                 OutlinedTextField(
                     value = customCurrency,
                     onValueChange = { customCurrency = it },
-                    label = { Text("Custom Currency Symbol (Optional)") },
-                    placeholder = { Text("Default: $defaultCurrency") },
+                    label = { Text(stringResource(R.string.ui_custom_currency_symbol_optional)) },
+                    placeholder = { Text(stringResource(R.string.default_currency_value, defaultCurrency)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -221,7 +223,7 @@ fun GoalEditDialog(
                 OutlinedTextField(
                     value = note,
                     onValueChange = { note = it },
-                    label = { Text("Notes / Memo (Optional)") },
+                    label = { Text(stringResource(R.string.ui_notes_memo_optional)) },
                     modifier = Modifier.fillMaxWidth(),
                     minLines = 2,
                     maxLines = 4
@@ -245,12 +247,12 @@ fun GoalEditDialog(
                 },
                 enabled = name.isNotBlank() && SavingsCalculations.parseAmount(amountText) > 0.0
             ) {
-                Text("Save")
+                Text(stringResource(R.string.ui_save))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.ui_cancel))
             }
         }
     )
@@ -273,12 +275,12 @@ fun GoalEditDialog(
                     }
                     showDatePicker = false
                 }) {
-                    Text("OK")
+                    Text(stringResource(R.string.ui_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.ui_cancel))
                 }
             }
         ) {

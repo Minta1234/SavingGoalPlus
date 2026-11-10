@@ -1,5 +1,7 @@
 package com.example.savingsgoal.ui.components
 
+import androidx.compose.ui.res.stringResource
+import com.example.savingsgoal.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -55,9 +57,9 @@ fun StreakBanner(
 
     val flameColor = if (streakInfo.currentStreak > 0) StreakOrange else MaterialTheme.colorScheme.onSurfaceVariant
     val status = when {
-        streakInfo.isStreakActiveToday -> "Saved today"
-        streakInfo.currentStreak > 0 -> "Save today"
-        else -> "Start saving"
+        streakInfo.isStreakActiveToday -> stringResource(R.string.ui_saved_today)
+        streakInfo.currentStreak > 0 -> stringResource(R.string.ui_save_today)
+        else -> stringResource(R.string.ui_start_saving)
     }
 
     Row(
@@ -66,14 +68,14 @@ fun StreakBanner(
             .heightIn(min = 48.dp)
             .clip(RoundedCornerShape(14.dp))
             .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(14.dp))
-            .clickable(role = Role.Button, onClickLabel = "View streak details") { showDialog = true }
+            .clickable(role = Role.Button, onClickLabel = stringResource(R.string.ui_view_streak_details)) { showDialog = true }
             .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Icon(Icons.Default.LocalFireDepartment, contentDescription = null, tint = flameColor)
         Text(
-            text = "${streakInfo.currentStreak} day streak",
+            text = stringResource(R.string.streak_days, streakInfo.currentStreak),
             modifier = Modifier.weight(1f),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Bold
@@ -101,12 +103,12 @@ fun StreakMilestonesDialog(
     onDismiss: () -> Unit
 ) {
     val tiers = listOf(
-        Pair("👑 Savings Titan", "100+ Days Streak"),
-        Pair("💎 Month Master", "30 - 99 Days Streak"),
-        Pair("🏆 Fortnight Legend", "14 - 29 Days Streak"),
-        Pair("⚡ Week Champion", "7 - 13 Days Streak"),
-        Pair("🔥 Warming Up", "3 - 6 Days Streak"),
-        Pair("🌱 Habit Spark", "1 - 2 Days Streak")
+        Triple("👑 Savings Titan", R.string.streak_tier_0, R.string.streak_tier_range_0),
+        Triple("💎 Month Master", R.string.streak_tier_1, R.string.streak_tier_range_1),
+        Triple("🏆 Fortnight Legend", R.string.streak_tier_2, R.string.streak_tier_range_2),
+        Triple("⚡ Week Champion", R.string.streak_tier_3, R.string.streak_tier_range_3),
+        Triple("🔥 Warming Up", R.string.streak_tier_4, R.string.streak_tier_range_4),
+        Triple("🌱 Habit Spark", R.string.streak_tier_5, R.string.streak_tier_range_5)
     )
 
     AlertDialog(
@@ -121,7 +123,7 @@ fun StreakMilestonesDialog(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Savings Streak",
+                    text = stringResource(R.string.ui_savings_streak),
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -131,30 +133,36 @@ fun StreakMilestonesDialog(
                 modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState())
             ) {
                 Text(
-                    text = "${streakInfo.currentStreak} day streak",
+                    text = stringResource(R.string.streak_days, streakInfo.currentStreak),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = streakInfo.motivationalText,
+                    text = when {
+                        streakInfo.isStreakActiveToday -> stringResource(R.string.streak_done_today)
+                        streakInfo.currentStreak > 0 -> stringResource(R.string.streak_keep_going, streakInfo.currentStreak)
+                        else -> stringResource(R.string.streak_first_deposit)
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Spacer(modifier = Modifier.height(14.dp))
-                Text("Last 7 days", style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(R.string.ui_last_7_days), style = MaterialTheme.typography.labelLarge)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     streakInfo.recentDays.forEach { day ->
+                        val label = if (day.isToday) stringResource(R.string.ui_today) else day.description
+                        val status = stringResource(if (day.saved) R.string.ui_saved else R.string.ui_no_deposit)
+                        val dayDescription = stringResource(R.string.streak_day_status, label, status)
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(4.dp),
                             modifier = Modifier.semantics(mergeDescendants = true) {
-                                val label = if (day.isToday) "Today" else day.description
-                                contentDescription = "$label, ${if (day.saved) "saved" else "no deposit"}"
+                                contentDescription = dayDescription
                             }
                         ) {
                             Text(day.label, style = MaterialTheme.typography.labelSmall)
@@ -180,15 +188,15 @@ fun StreakMilestonesDialog(
                         .padding(10.dp),
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    StreakStatItem(title = "Current", value = "${streakInfo.currentStreak}d")
-                    StreakStatItem(title = "Best", value = "${streakInfo.bestStreak}d")
-                    StreakStatItem(title = "Total Days", value = "${streakInfo.totalDaysSaved}d")
+                    StreakStatItem(title = stringResource(R.string.ui_current), value = stringResource(R.string.streak_count_days, streakInfo.currentStreak))
+                    StreakStatItem(title = stringResource(R.string.ui_best), value = stringResource(R.string.streak_count_days, streakInfo.bestStreak))
+                    StreakStatItem(title = stringResource(R.string.ui_total_days), value = stringResource(R.string.streak_count_days, streakInfo.totalDaysSaved))
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
 
                 Text(
-                    text = "Motivational Tiers",
+                    text = stringResource(R.string.ui_motivational_tiers),
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurface
@@ -196,7 +204,7 @@ fun StreakMilestonesDialog(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                tiers.forEach { (name, requirement) ->
+                tiers.forEach { (name, titleResource, requirementResource) ->
                     val isCurrentTier = streakInfo.levelTitle == name
                     Row(
                         modifier = Modifier
@@ -212,13 +220,13 @@ fun StreakMilestonesDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = name,
+                            text = stringResource(titleResource),
                             fontWeight = if (isCurrentTier) FontWeight.Bold else FontWeight.Medium,
                             fontSize = 12.sp,
                             color = if (isCurrentTier) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = requirement,
+                            text = stringResource(requirementResource),
                             fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -228,7 +236,7 @@ fun StreakMilestonesDialog(
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("Got It!")
+                Text(stringResource(R.string.ui_got_it))
             }
         }
     )

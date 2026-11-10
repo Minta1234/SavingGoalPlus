@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1090 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 2090 /* Localizable.xcstrings */; };
 		1001 /* SavingGoalPlusApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2001 /* SavingGoalPlusApp.swift */; };
 		1002 /* Goal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2002 /* Goal.swift */; };
 		1003 /* Payment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2003 /* Payment.swift */; };
@@ -41,6 +42,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2090 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		4001 /* SavingGoalPlus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SavingGoalPlus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4002 /* SavingGoalPlusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SavingGoalPlusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2001 /* SavingGoalPlusApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingGoalPlusApp.swift; sourceTree = "<group>"; };
@@ -104,6 +106,7 @@
 				6007 /* Components */,
 				6010 /* Views */,
 				2019 /* Assets.xcassets */,
+				2090 /* Localizable.xcstrings */,
 				2021 /* Info.plist */,
 			);
 			path = SavingGoalPlus;
@@ -249,6 +252,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				th,
 				Base,
 			);
 			mainGroup = 6001;
@@ -268,6 +272,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1019 /* Assets.xcassets in Resources */,
+				1090 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

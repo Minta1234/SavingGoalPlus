@@ -8,6 +8,11 @@ public struct MainDashboardView: View {
     @State private var showingStreakSheet = false
     @State private var selectedFilter: GoalFilter = .all
     @State private var goalToEdit: Goal?
+    @State private var depositGoal: Goal?
+    @State private var selectedGoalID: Int64?
+    @State private var showDepositError = false
+    @State private var showConfetti = false
+    @ScaledMetric(relativeTo: .body) private var carouselHeight: CGFloat = 242
 
     enum GoalFilter: String, CaseIterable {
         case all = "All"
@@ -42,7 +47,7 @@ public struct MainDashboardView: View {
                     // Filter Segmented Control
                     Picker("Filter", selection: $selectedFilter) {
                         ForEach(GoalFilter.allCases, id: \.self) { filter in
-                            Text(filter.rawValue).tag(filter)
+                            Text(LocalizedStringKey(filter.rawValue)).tag(filter)
                         }
                     }
                     .pickerStyle(.segmented)
@@ -64,24 +69,12 @@ public struct MainDashboardView: View {
                         }
                         .padding(.vertical, 40)
                     } else {
-                        LazyVStack(spacing: 14) {
-                            ForEach(filteredGoals) { goal in
-                                NavigationLink(destination: GoalDetailView(goalId: goal.id)) {
-                                    GoalCardView(
-                                        goal: goal,
-                                        onEdit: { goalToEdit = goal },
-                                        onArchive: { storage.toggleArchive(id: goal.id) },
-                                        onDelete: { storage.deleteGoal(id: goal.id) }
-                                    )
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                            }
-                        }
-                        .padding(.horizontal)
+                        goalCarousel
                     }
                 }
                 .padding(.bottom, 80)
             }
+            .overlay { ConfettiView(trigger: $showConfetti).allowsHitTesting(false) }
             .navigationTitle("SavingGoalPlus")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -103,6 +96,20 @@ public struct MainDashboardView: View {
             .sheet(isPresented: $showingStreakSheet) {
                 StreakMilestonesSheet(streakInfo: streakManager.streakInfo)
             }
+            .sheet(item: $depositGoal) { goal in
+                PaymentSheet(goalTitle: goal.title, todayOnly: true) { amount, notes, date in
+                    guard storage.goals.contains(where: { $0.id == goal.id && !$0.isArchived }) else {
+                        showDepositError = true
+                        return
+                    }
+                    showConfetti = storage.addPayment(goalId: goal.id, amount: amount, notes: notes, date: date)
+                }
+            }
+            .alert("Could not save the deposit", isPresented: $showDepositError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("Check that the goal still exists and try again.")
+            }
             .sheet(item: $goalToEdit) { goal in
                 GoalEditSheet(existingGoal: goal) { title, target, date, category, notes in
                     var updated = goal
@@ -117,9 +124,63 @@ public struct MainDashboardView: View {
         }
     }
 
+    private var goalCarousel: some View {
+        let goals = filteredGoals
+        let page = goals.firstIndex { $0.id == selectedGoalID } ?? 0
+        return VStack(spacing: 6) {
+            HStack {
+                Text("Savings goals").font(.headline)
+                Spacer()
+                if goals.count > 1 {
+                    Button {
+                        selectedGoalID = goals[page - 1].id
+                    } label: {
+                        Image(systemName: "chevron.backward").frame(width: 44, height: 44)
+                    }
+                    .accessibilityLabel("Previous goal")
+                    .disabled(page == 0)
+                    Text("\(page + 1) / \(goals.count)")
+                        .font(.caption.monospacedDigit())
+                    Button {
+                        selectedGoalID = goals[page + 1].id
+                    } label: {
+                        Image(systemName: "chevron.forward").frame(width: 44, height: 44)
+                    }
+                    .accessibilityLabel("Next goal")
+                    .disabled(page == goals.count - 1)
+                }
+            }
+            .padding(.horizontal)
+
+            TabView(selection: $selectedGoalID) {
+                ForEach(goals) { goal in
+                    GoalCardView(
+                        goal: goal,
+                        onEdit: { goalToEdit = goal },
+                        onArchive: { storage.toggleArchive(id: goal.id) },
+                        onDelete: { storage.deleteGoal(id: goal.id) },
+                        onSaveToday: { depositGoal = goal }
+                    )
+                    .padding(.horizontal)
+                    .frame(maxHeight: .infinity, alignment: .top)
+                    .tag(Optional(goal.id))
+                }
+            }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .frame(height: carouselHeight)
+        }
+        .onAppear { selectExistingGoal(goals.map(\.id)) }
+        .onChange(of: goals.map(\.id)) { selectExistingGoal($0) }
+    }
+
+    private func selectExistingGoal(_ ids: [Int64]) {
+        if let selectedGoalID, ids.contains(selectedGoalID) { return }
+        selectedGoalID = ids.first
+    }
+
     private var streakBanner: some View {
         let streak = streakManager.streakInfo
-        let status = streak.isStreakActiveToday ? "Saved today" : (streak.currentStreak > 0 ? "Save today" : "Start saving")
+        let status: LocalizedStringKey = streak.isStreakActiveToday ? "Saved today" : (streak.currentStreak > 0 ? "Save today" : "Start saving")
         return Button {
             showingStreakSheet = true
         } label: {
@@ -172,9 +233,17 @@ public struct StreakMilestonesSheet: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("\(streakInfo.currentStreak) day streak")
                             .font(.title2.bold())
-                        Text(streakInfo.motivationalText)
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
+                        Group {
+                            if streakInfo.isStreakActiveToday {
+                                Text("Streak burning bright today! 🔥")
+                            } else if streakInfo.currentStreak > 0 {
+                                Text("Save today to keep your \(streakInfo.currentStreak)-day streak alive! 🔥")
+                            } else {
+                                Text("Make your first deposit to ignite your streak!")
+                            }
+                        }
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
 
                         HStack {
                             Spacer()
@@ -239,8 +308,8 @@ public struct StreakMilestonesSheet: View {
                             }
                             .frame(maxWidth: .infinity)
                             .accessibilityElement(children: .ignore)
-                            .accessibilityLabel(day.isToday ? "Today" : day.description)
-                            .accessibilityValue(day.saved ? "Saved" : "No deposit")
+                            .accessibilityLabel(day.isToday ? Text("Today") : Text(verbatim: day.description))
+                            .accessibilityValue(Text(day.saved ? LocalizedStringKey("Saved") : LocalizedStringKey("No deposit")))
                         }
                     }
                     .padding(.vertical, 4)
@@ -249,12 +318,12 @@ public struct StreakMilestonesSheet: View {
                 Section {
                     ForEach(tiers, id: \.0) { tier, req in
                         HStack {
-                            Text(tier)
+                            Text(LocalizedStringKey(tier))
                                 .font(.body)
                                 .fontWeight(streakInfo.levelTitle == tier ? .bold : .regular)
                                 .foregroundColor(streakInfo.levelTitle == tier ? .orange : .primary)
                             Spacer()
-                            Text(req)
+                            Text(LocalizedStringKey(req))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }

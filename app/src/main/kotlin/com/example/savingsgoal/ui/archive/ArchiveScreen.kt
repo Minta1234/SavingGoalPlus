@@ -1,5 +1,7 @@
 package com.example.savingsgoal.ui.archive
 
+import androidx.compose.ui.res.stringResource
+import com.example.savingsgoal.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -53,10 +55,10 @@ fun ArchiveScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Archived Goals", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.ui_archived_goals), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.ui_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -82,14 +84,14 @@ fun ArchiveScreen(
                     )
                     Spacer(modifier = Modifier.height(14.dp))
                     Text(
-                        text = "No Archived Goals",
+                        text = stringResource(R.string.ui_no_archived_goals),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Completed or paused goals you archive will appear here.",
+                        text = stringResource(R.string.ui_completed_or_paused_goals_you_archive_will_appear_here),
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -122,19 +124,19 @@ fun ArchiveScreen(
     if (deletingGoal != null) {
         AlertDialog(
             onDismissRequest = { deletingGoal = null },
-            title = { Text("Permanently Delete?") },
-            text = { Text("This will permanently remove '${deletingGoal?.name}' and all associated transaction records.") },
+            title = { Text(stringResource(R.string.ui_permanently_delete)) },
+            text = { Text(stringResource(R.string.archive_delete_warning, deletingGoal?.name.orEmpty())) },
             confirmButton = {
                 TextButton(onClick = {
                     deletingGoal?.let { viewModel.deleteGoal(it.id) }
                     deletingGoal = null
                 }) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.ui_delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { deletingGoal = null }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.ui_cancel))
                 }
             }
         )

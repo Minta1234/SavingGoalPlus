@@ -2,8 +2,10 @@ import SwiftUI
 
 public struct PaymentSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @AppStorage(SavingsCalculations.currencyPreferenceKey) private var currencySymbol = "$"
 
     public let goalTitle: String
+    public let todayOnly: Bool
     public var onSave: (Double, String, String) -> Void
 
     @State private var isDeposit: Bool = true
@@ -13,35 +15,47 @@ public struct PaymentSheet: View {
 
     public init(
         goalTitle: String,
+        todayOnly: Bool = false,
         onSave: @escaping (Double, String, String) -> Void
     ) {
         self.goalTitle = goalTitle
+        self.todayOnly = todayOnly
         self.onSave = onSave
+    }
+
+    private var validAmount: Double? {
+        guard let amount = Double(amountString.replacingOccurrences(of: ",", with: "")),
+              amount.isFinite, amount > 0 else { return nil }
+        return amount
     }
 
     public var body: some View {
         NavigationView {
             Form {
-                Section {
-                    Picker("Transaction Type", selection: $isDeposit) {
-                        Text("Deposit (+)").tag(true)
-                        Text("Withdrawal (-)").tag(false)
+                if !todayOnly {
+                    Section {
+                        Picker("Transaction Type", selection: $isDeposit) {
+                            Text("Deposit (+)").tag(true)
+                            Text("Withdrawal (-)").tag(false)
+                        }
+                        .pickerStyle(.segmented)
                     }
-                    .pickerStyle(.segmented)
                 }
 
                 Section(header: Text("Transaction Details for \(goalTitle)")) {
-                    TextField("Amount ($)", text: $amountString)
+                    TextField("Amount (\(currencySymbol))", text: $amountString)
                         .keyboardType(.decimalPad)
                         .font(.system(size: 20, weight: .bold, design: .rounded))
                         .foregroundColor(isDeposit ? ColorTheme.primaryEmerald : ColorTheme.withdrawalRed)
 
-                    DatePicker("Date", selection: $transactionDate, displayedComponents: .date)
+                    if !todayOnly {
+                        DatePicker("Date", selection: $transactionDate, displayedComponents: .date)
+                    }
 
                     TextField("Note (e.g. Monthly salary savings)", text: $notes)
                 }
             }
-            .navigationTitle(isDeposit ? "Add Deposit" : "Record Withdrawal")
+            .navigationTitle(LocalizedStringKey(todayOnly ? "Save today" : (isDeposit ? "Add Deposit" : "Record Withdrawal")))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -49,16 +63,16 @@ public struct PaymentSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        guard let rawAmount = Double(amountString.replacingOccurrences(of: ",", with: "")), rawAmount > 0 else { return }
+                        guard let rawAmount = validAmount else { return }
                         let finalAmount = isDeposit ? rawAmount : -rawAmount
                         let formatter = DateFormatter()
                         formatter.dateFormat = "yyyy-MM-dd"
-                        let dateString = formatter.string(from: transactionDate)
+                        let dateString = todayOnly ? Payment.todayDateString() : formatter.string(from: transactionDate)
 
                         onSave(finalAmount, notes, dateString)
                         dismiss()
                     }
-                    .disabled((Double(amountString) ?? 0) <= 0)
+                    .disabled(validAmount == nil)
                 }
             }
         }

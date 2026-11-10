@@ -1,5 +1,7 @@
 package com.example.savingsgoal.ui.settings
 
+import androidx.compose.ui.res.stringResource
+import com.example.savingsgoal.R
 import android.text.TextUtils
 import android.util.Log
 import android.webkit.WebResourceRequest
@@ -51,7 +53,7 @@ internal fun ReleaseNotesDialog(onDismiss: () -> Unit) {
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Change Log") },
+        title = { Text(stringResource(R.string.ui_change_log)) },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -59,19 +61,19 @@ internal fun ReleaseNotesDialog(onDismiss: () -> Unit) {
                 val notes = releases
                 when {
                     failed -> {
-                        Text("Could not load release notes from GitHub.")
-                        TextButton(onClick = { attempt++ }) { Text("Try again") }
+                        Text(stringResource(R.string.ui_could_not_load_release_notes_from_github))
+                        TextButton(onClick = { attempt++ }) { Text(stringResource(R.string.ui_try_again)) }
                     }
                     notes == null -> {
                         CircularProgressIndicator()
-                        Text("Loading release notes from GitHub…")
+                        Text(stringResource(R.string.ui_loading_release_notes_from_github))
                     }
-                    notes.isEmpty() -> Text("No published releases yet.")
+                    notes.isEmpty() -> Text(stringResource(R.string.ui_no_published_releases_yet))
                     else -> ReleaseNotesContent(notes)
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } }
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.ui_close)) } }
     )
 }
 
@@ -80,7 +82,11 @@ internal fun ReleaseNotesDialog(onDismiss: () -> Unit) {
 private fun ReleaseNotesContent(releases: List<ReleaseNote>) {
     val colors = MaterialTheme.colorScheme
     val uriHandler = LocalUriHandler.current
-    val document = remember(releases, colors) { releaseDocument(releases, colors) }
+    val emptyNote = stringResource(R.string.ui_no_notes_were_published_for_this_release)
+    val viewOnGitHub = stringResource(R.string.ui_view_on_github)
+    val document = remember(releases, colors, emptyNote, viewOnGitHub) {
+        releaseDocument(releases, colors, emptyNote, viewOnGitHub)
+    }
     AndroidView(
         modifier = Modifier.fillMaxWidth().height(420.dp),
         factory = { context ->
@@ -113,7 +119,9 @@ private fun ReleaseNotesContent(releases: List<ReleaseNote>) {
 
 private fun releaseDocument(
     releases: List<ReleaseNote>,
-    colors: androidx.compose.material3.ColorScheme
+    colors: androidx.compose.material3.ColorScheme,
+    emptyNote: String,
+    viewOnGitHub: String
 ): String = buildString {
     append("""
         <!doctype html><html><head><meta charset="utf-8">
@@ -135,9 +143,9 @@ private fun releaseDocument(
     """.trimIndent())
     releases.forEach { release ->
         append("<article><h1>${TextUtils.htmlEncode(release.title)}</h1>")
-        append(release.bodyHtml?.takeIf { it.isNotBlank() } ?: "<p>No notes were published for this release.</p>")
+        append(release.bodyHtml?.takeIf { it.isNotBlank() } ?: "<p>${TextUtils.htmlEncode(emptyNote)}</p>")
         if (release.isGitHubReleaseLink) {
-            append("<p><a href=\"${TextUtils.htmlEncode(release.url)}\">View on GitHub</a></p>")
+            append("<p><a href=\"${TextUtils.htmlEncode(release.url)}\">${TextUtils.htmlEncode(viewOnGitHub)}</a></p>")
         }
         append("</article>")
     }

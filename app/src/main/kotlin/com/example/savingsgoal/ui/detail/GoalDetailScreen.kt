@@ -1,5 +1,7 @@
 package com.example.savingsgoal.ui.detail
 
+import androidx.compose.ui.res.stringResource
+import com.example.savingsgoal.R
 import android.app.Application
 import android.graphics.BitmapFactory
 import androidx.compose.animation.AnimatedVisibility
@@ -70,6 +72,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -91,6 +94,7 @@ import com.example.savingsgoal.ui.components.CircularGoalGauge
 import com.example.savingsgoal.ui.components.ConfettiCelebrationDialog
 import com.example.savingsgoal.ui.components.GoalEditDialog
 import com.example.savingsgoal.ui.components.PaymentAddEditDialog
+import com.example.savingsgoal.ui.components.localizedDeadlineText
 import com.example.savingsgoal.ui.theme.DepositGreen
 import com.example.savingsgoal.ui.theme.ProgressEmerald
 import com.example.savingsgoal.ui.theme.WithdrawRed
@@ -102,7 +106,8 @@ import java.time.ZoneId
 @Composable
 fun GoalDetailScreen(
     goalId: Long,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    saveToday: Boolean = false
 ) {
     val context = LocalContext.current
     val app = context.applicationContext as Application
@@ -119,7 +124,8 @@ fun GoalDetailScreen(
     val goal = uiState.goal
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
-    var showAddPaymentDialog by remember { mutableStateOf(false) }
+    var showAddPaymentDialog by rememberSaveable { mutableStateOf(saveToday) }
+    var todayOnly by rememberSaveable { mutableStateOf(saveToday) }
     var editingPayment by remember { mutableStateOf<Payment?>(null) }
     var deletingPayment by remember { mutableStateOf<Payment?>(null) }
     var showEditGoalDialog by remember { mutableStateOf(false) }
@@ -133,19 +139,19 @@ fun GoalDetailScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = goal?.name ?: "Goal Details",
+                        text = goal?.name ?: stringResource(R.string.ui_goal_details),
                         fontWeight = FontWeight.Bold,
                         maxLines = 1
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.ui_back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { showEditGoalDialog = true }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit Goal")
+                        Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.ui_edit_goal))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -155,11 +161,14 @@ fun GoalDetailScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = { showAddPaymentDialog = true },
+                onClick = {
+                    todayOnly = false
+                    showAddPaymentDialog = true
+                },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Payment")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.ui_add_payment))
             }
         }
     ) { innerPadding ->
@@ -170,7 +179,7 @@ fun GoalDetailScreen(
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Loading goal...")
+                Text(stringResource(R.string.ui_loading_goal))
             }
         } else {
             Column(
@@ -186,12 +195,12 @@ fun GoalDetailScreen(
                     Tab(
                         selected = selectedTabIndex == 0,
                         onClick = { selectedTabIndex = 0 },
-                        text = { Text("Overview", fontWeight = FontWeight.SemiBold) }
+                        text = { Text(stringResource(R.string.ui_overview), fontWeight = FontWeight.SemiBold) }
                     )
                     Tab(
                         selected = selectedTabIndex == 1,
                         onClick = { selectedTabIndex = 1 },
-                        text = { Text("Transactions (${uiState.payments.size})", fontWeight = FontWeight.SemiBold) }
+                        text = { Text(stringResource(R.string.transactions_count, uiState.payments.size), fontWeight = FontWeight.SemiBold) }
                     )
                 }
 
@@ -224,6 +233,7 @@ fun GoalDetailScreen(
     if (showAddPaymentDialog && goal != null) {
         PaymentAddEditDialog(
             currencySymbol = currency,
+            todayDepositGoal = goal.name.takeIf { todayOnly },
             onDismiss = { showAddPaymentDialog = false },
             onSave = { amount, date, isSaving, note ->
                 val prevSaved = goal.totalSaved
@@ -266,8 +276,8 @@ fun GoalDetailScreen(
     if (deletingPayment != null) {
         AlertDialog(
             onDismissRequest = { deletingPayment = null },
-            title = { Text("Delete Transaction?") },
-            text = { Text("Are you sure you want to delete this transaction of ${SavingsCalculations.formatCurrency(deletingPayment?.amount ?: 0.0, currency)}?") },
+            title = { Text(stringResource(R.string.ui_delete_transaction)) },
+            text = { Text(stringResource(R.string.delete_transaction_warning, SavingsCalculations.formatCurrency(deletingPayment?.amount ?: 0.0, currency))) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -275,12 +285,12 @@ fun GoalDetailScreen(
                         deletingPayment = null
                     }
                 ) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.ui_delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { deletingPayment = null }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.ui_cancel))
                 }
             }
         )
@@ -317,12 +327,12 @@ fun GoalDetailScreen(
                     }
                     showDatePickerDialog = false
                 }) {
-                    Text("OK")
+                    Text(stringResource(R.string.ui_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePickerDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.ui_cancel))
                 }
             }
         ) {
@@ -371,7 +381,7 @@ private fun OverviewTabContent(
         // Circular Gauge
         CircularGoalGauge(
             progressPercent = goal.progressPercent,
-            subText = if (goal.isReached) "GOAL REACHED!" else "SAVED"
+            subText = stringResource(if (goal.isReached) R.string.ui_goal_achieved else R.string.ui_saved)
         )
 
         // Celebrate Banner Button if goal is completed
@@ -384,7 +394,7 @@ private fun OverviewTabContent(
             ) {
                 Icon(Icons.Default.EmojiEvents, contentDescription = null, modifier = Modifier.size(20.dp))
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("🎉 Goal Completed! Celebrate", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(stringResource(R.string.ui_goal_completed_celebrate), fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
         }
 
@@ -394,21 +404,21 @@ private fun OverviewTabContent(
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             MetricCard(
-                title = "Target",
+                title = stringResource(R.string.ui_target),
                 amount = SavingsCalculations.formatCurrency(goal.amount, currency),
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
 
             MetricCard(
-                title = "Saved",
+                title = stringResource(R.string.ui_saved),
                 amount = SavingsCalculations.formatCurrency(goal.totalSaved, currency),
                 color = ProgressEmerald,
                 modifier = Modifier.weight(1f)
             )
 
             MetricCard(
-                title = if (goal.excessAmount > 0.0) "Exceeding" else "Remaining",
+                title = if (goal.excessAmount > 0.0) stringResource(R.string.ui_exceeding) else stringResource(R.string.ui_remaining),
                 amount = SavingsCalculations.formatCurrency(
                     if (goal.excessAmount > 0.0) goal.excessAmount else goal.remainingAmount,
                     currency
@@ -435,14 +445,14 @@ private fun OverviewTabContent(
                     Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = if (!goal.date.isNullOrBlank()) "Target: ${SavingsCalculations.formatDateForDisplay(goal.date)}" else "Add Target Date"
+                        text = if (!goal.date.isNullOrBlank()) stringResource(R.string.target_date_short, SavingsCalculations.formatDateForDisplay(goal.date)) else stringResource(R.string.ui_add_target_date)
                     )
                 }
 
                 if (ratePlan != null) {
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = ratePlan.formattedTimeToGo,
+                        text = ratePlan.localizedDeadlineText(),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = if (ratePlan.isExpired && !ratePlan.isReached) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
@@ -468,7 +478,7 @@ private fun OverviewTabContent(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "Recommended Savings Plan",
+                            text = stringResource(R.string.ui_recommended_savings_plan),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -481,18 +491,18 @@ private fun OverviewTabContent(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         ProjectionItem(
-                            label = "Daily",
+                            label = stringResource(R.string.ui_daily),
                             value = SavingsCalculations.formatCurrency(ratePlan.dailyAmount, currency)
                         )
                         ProjectionItem(
-                            label = if (toSaveOption == 2) "Bi-Weekly" else "Weekly",
+                            label = if (toSaveOption == 2) stringResource(R.string.ui_bi_weekly) else stringResource(R.string.ui_weekly),
                             value = SavingsCalculations.formatCurrency(
                                 if (toSaveOption == 2) ratePlan.biWeeklyAmount else ratePlan.weeklyAmount,
                                 currency
                             )
                         )
                         ProjectionItem(
-                            label = "Monthly",
+                            label = stringResource(R.string.ui_monthly),
                             value = SavingsCalculations.formatCurrency(ratePlan.monthlyAmount, currency)
                         )
                     }
@@ -605,7 +615,7 @@ private fun TransactionsTabContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "${payments.size} Records",
+                text = stringResource(R.string.records_count, payments.size),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold
             )
@@ -617,9 +627,9 @@ private fun TransactionsTabContent(
                     label = {
                         Text(
                             when (sortOrder) {
-                                SortOrder.NEWEST_FIRST -> "Newest First"
-                                SortOrder.OLDEST_FIRST -> "Oldest First"
-                                SortOrder.HIGHEST_AMOUNT -> "Highest Amount"
+                                SortOrder.NEWEST_FIRST -> stringResource(R.string.ui_newest_first)
+                                SortOrder.OLDEST_FIRST -> stringResource(R.string.ui_oldest_first)
+                                SortOrder.HIGHEST_AMOUNT -> stringResource(R.string.ui_highest_amount)
                             }
                         )
                     },
@@ -633,21 +643,21 @@ private fun TransactionsTabContent(
                     onDismissRequest = { sortMenuExpanded = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Newest First") },
+                        text = { Text(stringResource(R.string.ui_newest_first)) },
                         onClick = {
                             sortMenuExpanded = false
                             onSortChange(SortOrder.NEWEST_FIRST)
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("Oldest First") },
+                        text = { Text(stringResource(R.string.ui_oldest_first)) },
                         onClick = {
                             sortMenuExpanded = false
                             onSortChange(SortOrder.OLDEST_FIRST)
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("Highest Amount") },
+                        text = { Text(stringResource(R.string.ui_highest_amount)) },
                         onClick = {
                             sortMenuExpanded = false
                             onSortChange(SortOrder.HIGHEST_AMOUNT)
@@ -666,14 +676,14 @@ private fun TransactionsTabContent(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "No Transactions Yet",
+                        text = stringResource(R.string.ui_no_transactions_yet),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "Tap the + button to add your first deposit or withdrawal.",
+                        text = stringResource(R.string.ui_tap_the_button_to_add_your_first_deposit_or_withdrawal),
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -735,7 +745,7 @@ private fun PaymentItemRow(
             ) {
                 Icon(
                     imageVector = if (payment.isSaving) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward,
-                    contentDescription = if (payment.isSaving) "Deposit" else "Withdrawal",
+                    contentDescription = if (payment.isSaving) stringResource(R.string.ui_deposit_alt) else stringResource(R.string.ui_withdrawal),
                     tint = if (payment.isSaving) DepositGreen else WithdrawRed,
                     modifier = Modifier.size(20.dp)
                 )
@@ -776,7 +786,7 @@ private fun PaymentItemRow(
                 IconButton(onClick = { menuExpanded = true }) {
                     Icon(
                         Icons.Default.MoreVert,
-                        contentDescription = "Options",
+                        contentDescription = stringResource(R.string.ui_options),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
@@ -786,7 +796,7 @@ private fun PaymentItemRow(
                     onDismissRequest = { menuExpanded = false }
                 ) {
                     DropdownMenuItem(
-                        text = { Text("Edit") },
+                        text = { Text(stringResource(R.string.ui_edit)) },
                         leadingIcon = { Icon(Icons.Default.Edit, contentDescription = null) },
                         onClick = {
                             menuExpanded = false
@@ -794,7 +804,7 @@ private fun PaymentItemRow(
                         }
                     )
                     DropdownMenuItem(
-                        text = { Text("Delete", color = MaterialTheme.colorScheme.error) },
+                        text = { Text(stringResource(R.string.ui_delete), color = MaterialTheme.colorScheme.error) },
                         leadingIcon = { Icon(Icons.Default.Delete, contentDescription = null, tint = MaterialTheme.colorScheme.error) },
                         onClick = {
                             menuExpanded = false

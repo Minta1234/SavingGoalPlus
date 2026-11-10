@@ -2,21 +2,27 @@ import SwiftUI
 
 public struct GoalCardView: View {
     @AppStorage(SavingsCalculations.currencyPreferenceKey) private var currencySymbol = "$"
+    @AppStorage private var cardColorHex: String
+    @State private var showingCardColor = false
     public let goal: Goal
     public let onEdit: () -> Void
     public let onArchive: () -> Void
     public let onDelete: () -> Void
+    public let onSaveToday: () -> Void
 
     public init(
         goal: Goal,
         onEdit: @escaping () -> Void,
         onArchive: @escaping () -> Void,
-        onDelete: @escaping () -> Void
+        onDelete: @escaping () -> Void,
+        onSaveToday: @escaping () -> Void
     ) {
         self.goal = goal
         self.onEdit = onEdit
         self.onArchive = onArchive
         self.onDelete = onDelete
+        self.onSaveToday = onSaveToday
+        _cardColorHex = AppStorage(wrappedValue: "", "goal_card_color_\(goal.id)_\(goal.createdAt)")
     }
 
     private var plan: SavingsRatePlan {
@@ -68,8 +74,11 @@ public struct GoalCardView: View {
                     Button(action: onEdit) {
                         Label("Edit Goal", systemImage: "pencil")
                     }
+                    Button { showingCardColor = true } label: {
+                        Label("Card color", systemImage: "paintpalette")
+                    }
                     Button(action: onArchive) {
-                        Label(goal.isArchived ? "Unarchive" : "Archive", systemImage: "archivebox")
+                        Label(goal.isArchived ? LocalizedStringKey("Unarchive") : LocalizedStringKey("Archive"), systemImage: "archivebox")
                     }
                     Button(role: .destructive, action: onDelete) {
                         Label("Delete Goal", systemImage: "trash")
@@ -112,10 +121,46 @@ public struct GoalCardView: View {
                     .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundColor(ColorTheme.stageColor(for: goal.progressPercentage))
             }
+
+            HStack(spacing: 12) {
+                Button(action: onSaveToday) {
+                    Label("Save today", systemImage: "plus")
+                        .frame(maxWidth: .infinity, minHeight: 32)
+                }
+                .buttonStyle(.borderedProminent)
+                NavigationLink(destination: GoalDetailView(goalId: goal.id)) {
+                    Text("Details").frame(minHeight: 44)
+                }
+            }
         }
         .padding(16)
-        .background(ColorTheme.cardBackground)
+        .background {
+            ZStack {
+                ColorTheme.cardBackground
+                if let tint = ColorTheme.color(from: cardColorHex) {
+                    tint.opacity(0.18)
+                }
+            }
+        }
         .cornerRadius(16)
+        .sheet(isPresented: $showingCardColor) {
+            NavigationView {
+                Form {
+                    ColorPicker("Card color", selection: Binding(
+                        get: { ColorTheme.color(from: cardColorHex) ?? ColorTheme.primaryEmerald },
+                        set: { if let hex = ColorTheme.hex(from: $0) { cardColorHex = hex } }
+                    ), supportsOpacity: false)
+                    Button("Use default") { cardColorHex = "" }
+                }
+                .navigationTitle("Card color")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { showingCardColor = false }
+                    }
+                }
+            }
+        }
         .shadow(color: Color.black.opacity(0.03), radius: 6, x: 0, y: 2)
     }
 }

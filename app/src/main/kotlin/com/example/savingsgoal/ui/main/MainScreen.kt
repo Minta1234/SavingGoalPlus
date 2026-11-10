@@ -1,5 +1,7 @@
 package com.example.savingsgoal.ui.main
 
+import androidx.compose.ui.res.stringResource
+import com.example.savingsgoal.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,8 +12,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Savings
@@ -32,6 +39,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +60,7 @@ import com.example.savingsgoal.ui.components.TotalSummaryCard
 @Composable
 fun MainScreen(
     onGoalClick: (Long) -> Unit,
+    onSaveToday: (Long) -> Unit,
     onNavigateArchive: () -> Unit,
     onNavigateSettings: () -> Unit,
     viewModel: MainViewModel = viewModel()
@@ -67,7 +77,7 @@ fun MainScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Savings Goal",
+                        text = stringResource(R.string.ui_savings_goal),
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -75,13 +85,13 @@ fun MainScreen(
                     IconButton(onClick = onNavigateArchive) {
                         Icon(
                             imageVector = Icons.Default.Archive,
-                            contentDescription = "Archived Goals"
+                            contentDescription = stringResource(R.string.ui_archived_goals)
                         )
                     }
                     IconButton(onClick = onNavigateSettings) {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings"
+                            contentDescription = stringResource(R.string.ui_settings)
                         )
                     }
                 },
@@ -96,7 +106,7 @@ fun MainScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Add Goal")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.ui_add_goal))
             }
         }
     ) { innerPadding ->
@@ -118,14 +128,14 @@ fun MainScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "No Active Savings Goals",
+                        text = stringResource(R.string.ui_no_active_savings_goals),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "Tap the + button below to create your first goal and start tracking your savings!",
+                        text = stringResource(R.string.ui_tap_the_button_below_to_create_your_first_goal_and_start_tracking_your_savings),
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -155,15 +165,18 @@ fun MainScreen(
                     StreakBanner(streakInfo = streakInfo)
                 }
 
-                items(uiState.goals, key = { it.id }) { goal ->
-                    GoalCard(
-                        goal = goal,
-                        defaultCurrency = uiState.defaultCurrency,
-                        onClick = { onGoalClick(goal.id) },
-                        onEdit = { editingGoal = goal },
-                        onToggleArchive = { viewModel.archiveGoal(goal.id) },
-                        onDelete = { deletingGoal = goal }
-                    )
+                if (uiState.goals.isNotEmpty()) {
+                    item {
+                        GoalCarousel(
+                            goals = uiState.goals,
+                            defaultCurrency = uiState.defaultCurrency,
+                            onGoalClick = onGoalClick,
+                            onSaveToday = onSaveToday,
+                            onEdit = { editingGoal = it },
+                            onArchive = { viewModel.archiveGoal(it.id) },
+                            onDelete = { deletingGoal = it }
+                        )
+                    }
                 }
 
                 item {
@@ -204,9 +217,9 @@ fun MainScreen(
     if (deletingGoal != null) {
         AlertDialog(
             onDismissRequest = { deletingGoal = null },
-            title = { Text("Delete Goal?") },
+            title = { Text(stringResource(R.string.ui_delete_goal)) },
             text = {
-                Text("Are you sure you want to delete '${deletingGoal?.name}'? All recorded transactions and history will be permanently deleted.")
+                Text(stringResource(R.string.delete_goal_warning, deletingGoal?.name.orEmpty()))
             },
             confirmButton = {
                 TextButton(
@@ -215,14 +228,69 @@ fun MainScreen(
                         deletingGoal = null
                     }
                 ) {
-                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.ui_delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { deletingGoal = null }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.ui_cancel))
                 }
             }
         )
+    }
+}
+
+
+@Composable
+private fun GoalCarousel(
+    goals: List<Goal>,
+    defaultCurrency: String,
+    onGoalClick: (Long) -> Unit,
+    onSaveToday: (Long) -> Unit,
+    onEdit: (Goal) -> Unit,
+    onArchive: (Goal) -> Unit,
+    onDelete: (Goal) -> Unit
+) {
+    val pager = rememberPagerState { goals.size }
+    val scope = rememberCoroutineScope()
+    val page = pager.currentPage.coerceIn(goals.indices)
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(stringResource(R.string.ui_savings_goals), style = MaterialTheme.typography.titleMedium)
+            if (goals.size > 1) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(
+                        enabled = page > 0,
+                        onClick = { scope.launch { pager.animateScrollToPage(page - 1) } }
+                    ) { Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.ui_previous_goal)) }
+                    Text(stringResource(R.string.goal_page_position, page + 1, goals.size), style = MaterialTheme.typography.labelMedium)
+                    IconButton(
+                        enabled = page < goals.lastIndex,
+                        onClick = { scope.launch { pager.animateScrollToPage(page + 1) } }
+                    ) { Icon(Icons.AutoMirrored.Filled.ArrowForward, stringResource(R.string.ui_next_goal)) }
+                }
+            }
+        }
+        HorizontalPager(
+            state = pager,
+            key = { goals[it].id },
+            pageSpacing = 12.dp,
+            verticalAlignment = Alignment.Top
+        ) { index ->
+            val goal = goals[index]
+            GoalCard(
+                goal = goal,
+                defaultCurrency = defaultCurrency,
+                onClick = { onGoalClick(goal.id) },
+                onSaveToday = { onSaveToday(goal.id) },
+                onEdit = { onEdit(goal) },
+                onToggleArchive = { onArchive(goal) },
+                onDelete = { onDelete(goal) }
+            )
+        }
     }
 }

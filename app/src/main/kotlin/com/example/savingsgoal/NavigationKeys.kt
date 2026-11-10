@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 data object Main : NavKey
 
 @Serializable
-data class GoalDetail(val goalId: Long) : NavKey
+data class GoalDetail(val goalId: Long, val saveToday: Boolean = false) : NavKey
 
 @Serializable
 data object Archive : NavKey

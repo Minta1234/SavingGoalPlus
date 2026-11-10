@@ -22,6 +22,7 @@ fun MainNavigation() {
                 entry<Main> {
                     MainScreen(
                         onGoalClick = { goalId -> backStack.add(GoalDetail(goalId)) },
+                        onSaveToday = { goalId -> backStack.add(GoalDetail(goalId, saveToday = true)) },
                         onNavigateArchive = { backStack.add(Archive) },
                         onNavigateSettings = { backStack.add(Settings) }
                     )
@@ -30,6 +31,7 @@ fun MainNavigation() {
                 entry<GoalDetail> { key ->
                     GoalDetailScreen(
                         goalId = key.goalId,
+                        saveToday = key.saveToday,
                         onBack = { backStack.removeLastOrNull() }
                     )
                 }

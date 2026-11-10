@@ -1,7 +1,34 @@
 import SwiftUI
 
+enum AppLanguage: String, CaseIterable, Identifiable {
+    case system
+    case english = "en"
+    case thai = "th"
+
+    static let preferenceKey = "app_language"
+    var id: String { rawValue }
+
+    var locale: Locale {
+        switch self {
+        case .system: return .autoupdatingCurrent
+        case .english, .thai: return Locale(identifier: rawValue)
+        }
+    }
+
+    var label: LocalizedStringKey {
+        switch self {
+        case .system: return "System default"
+        case .english: return "English"
+        case .thai: return "ไทย"
+        }
+    }
+}
+
 @main
 struct SavingGoalPlusApp: App {
+    @AppStorage(AppLanguage.preferenceKey) private var language = AppLanguage.system
+    @AppStorage(ColorTheme.accentPresetKey) private var accentPreset = "emerald"
+    @AppStorage(ColorTheme.customAccentKey) private var customAccent = ""
     @StateObject private var storage = SavingsStorageService.shared
     @StateObject private var notifications = NotificationManager.shared
 
@@ -28,7 +55,8 @@ struct SavingGoalPlusApp: App {
                         Label("Settings", systemImage: "gearshape")
                     }
             }
-            .accentColor(ColorTheme.primaryEmerald)
+            .tint(ColorTheme.accent(preset: accentPreset, custom: customAccent))
+            .environment(\.locale, language.locale)
         }
     }
 }

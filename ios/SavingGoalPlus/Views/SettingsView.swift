@@ -9,10 +9,12 @@ private var installedVersion: String? {
 public struct SettingsView: View {
     @ObservedObject var notifications = NotificationManager.shared
     @ObservedObject var storage = SavingsStorageService.shared
+    @AppStorage(AppLanguage.preferenceKey) private var language = AppLanguage.system
     @AppStorage(SavingsCalculations.currencyPreferenceKey) private var currencySymbol = "$"
     @State private var showingCurrencySheet = false
     @State private var showingUpdateSheet = false
-    @AppStorage("app_accent_theme") private var selectedAccent: String = "emerald"
+    @AppStorage(ColorTheme.accentPresetKey) private var selectedAccent = "emerald"
+    @AppStorage(ColorTheme.customAccentKey) private var customAccent = ""
 
     @State private var reminderDate: Date = {
         var comp = DateComponents()
@@ -39,10 +41,18 @@ public struct SettingsView: View {
     public var body: some View {
         NavigationView {
             Form {
+                Section("App language") {
+                    Picker("App language", selection: $language) {
+                        ForEach(AppLanguage.allCases) { option in
+                            Text(option.label).tag(option)
+                        }
+                    }
+                }
+
                 // Theme Accent Section (iOS UI Swatches)
                 Section(header: Text("Theme Accent (iOS Style)")) {
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Active: \(AppAccentTheme(rawValue: selectedAccent)?.displayName ?? "Apple Mint")")
+                        Text("Active: \(customAccent.isEmpty ? Text(AppAccentTheme(rawValue: selectedAccent)?.displayName ?? "Apple Mint") : Text("Custom"))")
                             .font(.caption)
                             .foregroundColor(.secondary)
 
@@ -50,7 +60,7 @@ public struct SettingsView: View {
                             ForEach(AppAccentTheme.allCases) { theme in
                                 Button(action: {
                                     selectedAccent = theme.rawValue
-                                    UserDefaults.standard.set(theme.rawValue, forKey: "app_accent_theme")
+                                    customAccent = ""
                                 }) {
                                     VStack(spacing: 4) {
                                         ZStack {
@@ -59,10 +69,10 @@ public struct SettingsView: View {
                                                 .frame(width: 44, height: 44)
                                                 .overlay(
                                                     Circle()
-                                                        .stroke(Color.primary, lineWidth: selectedAccent == theme.rawValue ? 3 : 0)
+                                                        .stroke(Color.primary, lineWidth: customAccent.isEmpty && selectedAccent == theme.rawValue ? 3 : 0)
                                                 )
 
-                                            if selectedAccent == theme.rawValue {
+                                            if customAccent.isEmpty && selectedAccent == theme.rawValue {
                                                 Image(systemName: "checkmark")
                                                     .font(.system(size: 16, weight: .bold))
                                                     .foregroundColor(.white)
@@ -70,14 +80,21 @@ public struct SettingsView: View {
                                         }
 
                                         Text(theme.displayName.components(separatedBy: " ").first ?? "")
-                                            .font(.system(size: 10, weight: selectedAccent == theme.rawValue ? .bold : .regular))
-                                            .foregroundColor(selectedAccent == theme.rawValue ? .primary : .secondary)
+                                            .font(.system(size: 10, weight: customAccent.isEmpty && selectedAccent == theme.rawValue ? .bold : .regular))
+                                            .foregroundColor(customAccent.isEmpty && selectedAccent == theme.rawValue ? .primary : .secondary)
                                     }
                                 }
                                 .buttonStyle(PlainButtonStyle())
                             }
                         }
                         .padding(.vertical, 6)
+                        ColorPicker("Custom accent color", selection: Binding(
+                            get: { ColorTheme.accent(preset: selectedAccent, custom: customAccent) },
+                            set: { if let hex = ColorTheme.hex(from: $0) { customAccent = hex } }
+                        ), supportsOpacity: false)
+                        if !customAccent.isEmpty {
+                            Button("Use preset accent") { customAccent = "" }
+                        }
                     }
                 }
 
@@ -147,8 +164,10 @@ public struct SettingsView: View {
                     HStack {
                         Text("Version")
                         Spacer()
-                        Text(installedVersion ?? "Unavailable")
-                            .foregroundColor(.secondary)
+                        Group {
+                            if let installedVersion { Text(installedVersion) } else { Text("Unavailable") }
+                        }
+                        .foregroundColor(.secondary)
                     }
 
                     HStack {
@@ -391,7 +410,7 @@ private struct UpdateCheckSheet: View {
         NavigationView {
             List {
                 Section("Installed version") {
-                    Text(installedVersion ?? "Unavailable")
+                    if let installedVersion { Text(installedVersion) } else { Text("Unavailable") }
                 }
                 if failed {
                     Text("Could not check GitHub for updates.")
@@ -424,7 +443,7 @@ private struct UpdateCheckSheet: View {
         }
     }
 
-    private func updateStatus(_ published: String) -> String {
+    private func updateStatus(_ published: String) -> LocalizedStringKey {
         func components(_ version: String) -> [Int]? {
             let value = version.hasPrefix("v") ? version.dropFirst() : version[...]
             let pieces = value.split(separator: ".", omittingEmptySubsequences: false)
@@ -446,6 +465,7 @@ private struct UpdateCheckSheet: View {
 
 public struct ChangelogSheetView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.locale) private var locale
     @State private var releases: [GitHubReleaseNote]?
     @State private var failed = false
     @State private var attempt = 0
@@ -465,7 +485,7 @@ public struct ChangelogSheetView: View {
                     if releases.isEmpty {
                         Text("No published releases yet.")
                     } else {
-                        ReleaseNotesWebView(document: releaseDocument(releases))
+                        ReleaseNotesWebView(document: releaseDocument(releases, locale: locale))
                     }
                 } else {
                     ProgressView("Loading release notes from GitHub…")
@@ -535,13 +555,15 @@ private struct ReleaseNotesWebView: UIViewRepresentable {
     }
 }
 
-private func releaseDocument(_ releases: [GitHubReleaseNote]) -> String {
+private func releaseDocument(_ releases: [GitHubReleaseNote], locale: Locale) -> String {
+    let emptyNote = htmlEscape(String(localized: "No notes were published for this release.", locale: locale))
+    let viewOnGitHub = htmlEscape(String(localized: "View on GitHub", locale: locale))
     let articles = releases.map { release in
         let body = release.bodyHTML.flatMap { $0.isEmpty ? nil : $0 }
-            ?? "<p>No notes were published for this release.</p>"
+            ?? "<p>\(emptyNote)</p>"
         let url = release.htmlURL.absoluteString
         let link = release.isGitHubReleaseLink
-            ? "<p><a href=\"\(htmlEscape(url))\">View on GitHub</a></p>" : ""
+            ? "<p><a href=\"\(htmlEscape(url))\">\(viewOnGitHub)</a></p>" : ""
         return "<article><h1>\(htmlEscape(release.title))</h1>\(body)\(link)</article>"
     }.joined()
     return """

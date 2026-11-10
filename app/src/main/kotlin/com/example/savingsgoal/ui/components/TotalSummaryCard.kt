@@ -1,5 +1,7 @@
 package com.example.savingsgoal.ui.components
 
+import androidx.compose.ui.res.stringResource
+import com.example.savingsgoal.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -60,7 +62,7 @@ fun TotalSummaryCard(
                 ) {
                     Column {
                         Text(
-                            text = "You've already saved",
+                            text = stringResource(R.string.ui_you_ve_already_saved),
                             style = MaterialTheme.typography.labelLarge,
                             color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                         )
@@ -84,7 +86,7 @@ fun TotalSummaryCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Savings,
-                            contentDescription = "Total Saved",
+                            contentDescription = stringResource(R.string.ui_total_saved),
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(28.dp)
                         )
@@ -99,7 +101,7 @@ fun TotalSummaryCard(
                 ) {
                     Column {
                         Text(
-                            text = "Remaining",
+                            text = stringResource(R.string.ui_remaining),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
@@ -113,7 +115,7 @@ fun TotalSummaryCard(
 
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = "Total Goals",
+                            text = stringResource(R.string.ui_total_goals),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

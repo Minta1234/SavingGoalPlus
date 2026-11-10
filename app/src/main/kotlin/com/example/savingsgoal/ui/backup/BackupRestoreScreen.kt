@@ -1,5 +1,7 @@
 package com.example.savingsgoal.ui.backup
 
+import androidx.compose.ui.res.stringResource
+import com.example.savingsgoal.R
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -51,6 +53,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.savingsgoal.data.SavingsGoalDbHelper
@@ -68,6 +71,7 @@ fun BackupRestoreScreen(
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val repository = remember { SavingsRepository(context) }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -109,10 +113,10 @@ fun BackupRestoreScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Backup & Restore", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.ui_backup_restore), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.ui_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -151,13 +155,13 @@ fun BackupRestoreScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.CloudUpload, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(10.dp))
-                        Text("Create Backup", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.ui_create_backup), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = "Backup your entire savings data, including all active goals, archived goals, and transaction histories.",
+                        text = stringResource(R.string.ui_backup_your_entire_savings_data_including_all_active_goals_archived_goals_and_transaction_histories),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -174,7 +178,7 @@ fun BackupRestoreScreen(
                         ) {
                             Icon(Icons.Default.FileUpload, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Export JSON")
+                            Text(stringResource(R.string.ui_export_json))
                         }
 
                         OutlinedButton(
@@ -183,7 +187,7 @@ fun BackupRestoreScreen(
                         ) {
                             Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Export CSV")
+                            Text(stringResource(R.string.ui_export_csv))
                         }
                     }
                 }
@@ -199,13 +203,13 @@ fun BackupRestoreScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.CloudDownload, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(10.dp))
-                        Text("Restore Data", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.ui_restore_data), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
 
                     Text(
-                        text = "Restore data from a JSON backup file or from an existing SAVINGGOALDB SQLite file from the original app.",
+                        text = stringResource(R.string.ui_restore_data_from_a_json_backup_file_or_from_an_existing_savinggoaldb_sqlite_file_from_the_original_app),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -222,7 +226,7 @@ fun BackupRestoreScreen(
                         ) {
                             Icon(Icons.Default.FileDownload, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Restore JSON")
+                            Text(stringResource(R.string.ui_restore_json))
                         }
 
                         OutlinedButton(
@@ -231,7 +235,7 @@ fun BackupRestoreScreen(
                         ) {
                             Icon(Icons.Default.Storage, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Restore DB")
+                            Text(stringResource(R.string.ui_restore_db))
                         }
                     }
                 }
@@ -243,8 +247,8 @@ fun BackupRestoreScreen(
     if (confirmRestoreDialog) {
         AlertDialog(
             onDismissRequest = { confirmRestoreDialog = false },
-            title = { Text("Confirm Database Restore") },
-            text = { Text("Restoring will replace all current data with the selected backup. Are you sure you want to proceed?") },
+            title = { Text(stringResource(R.string.ui_confirm_database_restore)) },
+            text = { Text(stringResource(R.string.ui_restoring_will_replace_all_current_data_with_the_selected_backup_are_you_sure_you_want_to_proceed)) },
             confirmButton = {
                 Button(
                     onClick = {
@@ -279,20 +283,20 @@ fun BackupRestoreScreen(
                                 }
                                 isProcessing = false
                                 if (success) {
-                                    snackbarHostState.showSnackbar("Database restored successfully!")
+                                    snackbarHostState.showSnackbar(resources.getString(R.string.restore_success))
                                 } else {
-                                    snackbarHostState.showSnackbar("Failed to restore backup file.")
+                                    snackbarHostState.showSnackbar(resources.getString(R.string.restore_failed))
                                 }
                             }
                         }
                     }
                 ) {
-                    Text("Restore Now")
+                    Text(stringResource(R.string.ui_restore_now))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { confirmRestoreDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.ui_cancel))
                 }
             }
         )

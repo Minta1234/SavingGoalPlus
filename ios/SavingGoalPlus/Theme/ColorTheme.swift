@@ -44,10 +44,36 @@ public enum AppAccentTheme: String, CaseIterable, Identifiable {
 }
 
 public enum ColorTheme {
+    static let accentPresetKey = "app_accent_theme"
+    static let customAccentKey = "app_custom_accent"
+
     public static var primaryEmerald: Color {
-        let saved = UserDefaults.standard.string(forKey: "app_accent_theme") ?? "emerald"
-        return (AppAccentTheme(rawValue: saved) ?? .emerald).color
+        accent(preset: UserDefaults.standard.string(forKey: accentPresetKey) ?? "emerald",
+               custom: UserDefaults.standard.string(forKey: customAccentKey) ?? "")
     }
+
+    static func accent(preset: String, custom: String) -> Color {
+        color(from: custom) ?? (AppAccentTheme(rawValue: preset) ?? .emerald).color
+    }
+
+    static func color(from hex: String) -> Color? {
+        guard hex.count == 6, let rgb = UInt32(hex, radix: 16) else { return nil }
+        return Color(red: Double((rgb >> 16) & 255) / 255,
+                     green: Double((rgb >> 8) & 255) / 255,
+                     blue: Double(rgb & 255) / 255)
+    }
+
+    #if canImport(UIKit)
+    static func hex(from color: Color) -> String? {
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        guard UIColor(color).getRed(&red, green: &green, blue: &blue, alpha: &alpha) else { return nil }
+        func channel(_ value: CGFloat) -> Int { Int((min(max(value, 0), 1) * 255).rounded()) }
+        return String(format: "%02X%02X%02X", channel(red), channel(green), channel(blue))
+    }
+    #endif
 
     public static let stageCyan = Color(red: 6/255, green: 182/255, blue: 212/255)
     public static let stageAmber = Color(red: 245/255, green: 158/255, blue: 11/255)

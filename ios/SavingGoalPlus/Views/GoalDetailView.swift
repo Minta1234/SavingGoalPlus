@@ -99,7 +99,13 @@ public struct GoalDetailView: View {
                                             .font(.system(size: 24))
 
                                         VStack(alignment: .leading, spacing: 2) {
-                                            Text(p.notes.isEmpty ? (p.isDeposit ? "Deposit" : "Withdrawal") : p.notes)
+                                            Group {
+                                                if p.notes.isEmpty {
+                                                    Text(p.isDeposit ? LocalizedStringKey("Deposit") : LocalizedStringKey("Withdrawal"))
+                                                } else {
+                                                    Text(p.notes)
+                                                }
+                                            }
                                                 .font(.system(size: 15, weight: .semibold))
                                             Text(SavingsCalculations.formatDisplayDate(p.date))
                                                 .font(.system(size: 12))
@@ -173,7 +179,7 @@ private struct RateCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.system(size: 10, weight: .bold))
                 .foregroundColor(.secondary)
                 .tracking(1.0)

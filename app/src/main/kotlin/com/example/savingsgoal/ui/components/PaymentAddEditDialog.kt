@@ -1,5 +1,7 @@
 package com.example.savingsgoal.ui.components
 
+import androidx.compose.ui.res.stringResource
+import com.example.savingsgoal.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,6 +51,7 @@ import java.time.ZoneId
 fun PaymentAddEditDialog(
     currencySymbol: String,
     initialPayment: Payment? = null,
+    todayDepositGoal: String? = null,
     onDismiss: () -> Unit,
     onSave: (amount: Double, date: String, isSaving: Boolean, note: String) -> Unit
 ) {
@@ -57,53 +60,58 @@ fun PaymentAddEditDialog(
     var dateStr by remember { mutableStateOf(initialPayment?.date ?: LocalDate.now().toString()) }
     var note by remember { mutableStateOf(initialPayment?.note ?: "") }
     var showDatePicker by remember { mutableStateOf(false) }
+    val amount = SavingsCalculations.parseAmount(amountText)
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(if (initialPayment == null) "Record Transaction" else "Edit Transaction")
+            Text(if (todayDepositGoal != null) stringResource(R.string.ui_save_today) else if (initialPayment == null) stringResource(R.string.ui_record_transaction) else stringResource(R.string.ui_edit_transaction))
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                // Deposit vs Withdraw Toggle
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    FilterChip(
-                        selected = isSaving,
-                        onClick = { isSaving = true },
-                        label = { Text("Deposit (+)") },
-                        leadingIcon = {
-                            Icon(Icons.Default.Add, contentDescription = null, tint = if (isSaving) DepositGreen else MaterialTheme.colorScheme.onSurfaceVariant)
-                        },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = DepositGreen.copy(alpha = 0.15f),
-                            selectedLabelColor = DepositGreen
-                        ),
-                        modifier = Modifier.weight(1f)
-                    )
+                if (todayDepositGoal != null) {
+                    Text(stringResource(R.string.deposit_into_goal, todayDepositGoal))
+                } else {
+                    // Deposit vs Withdraw Toggle
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        FilterChip(
+                            selected = isSaving,
+                            onClick = { isSaving = true },
+                            label = { Text(stringResource(R.string.ui_deposit)) },
+                            leadingIcon = {
+                                Icon(Icons.Default.Add, contentDescription = null, tint = if (isSaving) DepositGreen else MaterialTheme.colorScheme.onSurfaceVariant)
+                            },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = DepositGreen.copy(alpha = 0.15f),
+                                selectedLabelColor = DepositGreen
+                            ),
+                            modifier = Modifier.weight(1f)
+                        )
 
-                    FilterChip(
-                        selected = !isSaving,
-                        onClick = { isSaving = false },
-                        label = { Text("Withdraw (-)") },
-                        leadingIcon = {
-                            Icon(Icons.Default.Remove, contentDescription = null, tint = if (!isSaving) WithdrawRed else MaterialTheme.colorScheme.onSurfaceVariant)
-                        },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = WithdrawRed.copy(alpha = 0.15f),
-                            selectedLabelColor = WithdrawRed
-                        ),
-                        modifier = Modifier.weight(1f)
-                    )
+                        FilterChip(
+                            selected = !isSaving,
+                            onClick = { isSaving = false },
+                            label = { Text(stringResource(R.string.ui_withdraw)) },
+                            leadingIcon = {
+                                Icon(Icons.Default.Remove, contentDescription = null, tint = if (!isSaving) WithdrawRed else MaterialTheme.colorScheme.onSurfaceVariant)
+                            },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = WithdrawRed.copy(alpha = 0.15f),
+                                selectedLabelColor = WithdrawRed
+                            ),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
 
                 // Amount Field
                 OutlinedTextField(
                     value = amountText,
                     onValueChange = { amountText = it },
-                    label = { Text("Amount") },
+                    label = { Text(stringResource(R.string.ui_amount)) },
                     placeholder = { Text("0.00") },
                     leadingIcon = {
                         Text(
@@ -117,22 +125,24 @@ fun PaymentAddEditDialog(
                     singleLine = true
                 )
 
-                // Date Picker Button
-                OutlinedButton(
-                    onClick = { showDatePicker = true },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "Date: ${SavingsCalculations.formatDateForDisplay(dateStr)}")
+                if (todayDepositGoal == null) {
+                    // Date Picker Button
+                    OutlinedButton(
+                        onClick = { showDatePicker = true },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Default.CalendarToday, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(text = stringResource(R.string.transaction_date_value, SavingsCalculations.formatDateForDisplay(dateStr)))
+                    }
                 }
 
                 // Note Field
                 OutlinedTextField(
                     value = note,
                     onValueChange = { note = it },
-                    label = { Text("Description / Note (Optional)") },
-                    placeholder = { Text("e.g. Birthday gift, monthly allowance") },
+                    label = { Text(stringResource(R.string.ui_description_note_optional)) },
+                    placeholder = { Text(stringResource(R.string.ui_e_g_birthday_gift_monthly_allowance)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -141,20 +151,20 @@ fun PaymentAddEditDialog(
         confirmButton = {
             Button(
                 onClick = {
-                    val amount = SavingsCalculations.parseAmount(amountText)
-                    onSave(amount, dateStr, isSaving, note.trim())
+                    val paymentDate = if (todayDepositGoal != null) LocalDate.now().toString() else dateStr
+                    onSave(amount, paymentDate, isSaving, note.trim())
                 },
-                enabled = SavingsCalculations.parseAmount(amountText) > 0.0,
+                enabled = amount.isFinite() && amount > 0.0,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = if (isSaving) DepositGreen else WithdrawRed
                 )
             ) {
-                Text("Confirm")
+                Text(stringResource(R.string.ui_confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancel")
+                Text(stringResource(R.string.ui_cancel))
             }
         }
     )
@@ -176,12 +186,12 @@ fun PaymentAddEditDialog(
                     }
                     showDatePicker = false
                 }) {
-                    Text("OK")
+                    Text(stringResource(R.string.ui_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDatePicker = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.ui_cancel))
                 }
             }
         ) {

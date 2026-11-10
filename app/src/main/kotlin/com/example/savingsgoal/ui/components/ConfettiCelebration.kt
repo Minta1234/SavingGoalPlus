@@ -1,5 +1,7 @@
 package com.example.savingsgoal.ui.components
 
+import androidx.compose.ui.res.stringResource
+import com.example.savingsgoal.R
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -110,7 +112,7 @@ fun ConfettiCelebrationDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.EmojiEvents,
-                            contentDescription = "Trophy",
+                            contentDescription = stringResource(R.string.ui_trophy),
                             tint = Color(0xFFD97706),
                             modifier = Modifier.size(46.dp)
                         )
@@ -119,7 +121,7 @@ fun ConfettiCelebrationDialog(
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
-                        text = "🎉 Goal Completed!",
+                        text = stringResource(R.string.ui_goal_completed),
                         fontSize = 24.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = ProgressEmerald
@@ -128,7 +130,7 @@ fun ConfettiCelebrationDialog(
                     Spacer(modifier = Modifier.height(8.dp))
 
                     Text(
-                        text = "Congratulations! You have reached your target for",
+                        text = stringResource(R.string.ui_congratulations_you_have_reached_your_target_for),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
@@ -156,7 +158,7 @@ fun ConfettiCelebrationDialog(
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
                         Text(
-                            text = "Total Saved: ${SavingsCalculations.formatCurrency(goal.totalSaved, currencySymbol)}",
+                            text = stringResource(R.string.saved_total_value, SavingsCalculations.formatCurrency(goal.totalSaved, currencySymbol)),
                             fontWeight = FontWeight.Bold,
                             color = DepositGreen,
                             fontSize = 16.sp
@@ -175,7 +177,7 @@ fun ConfettiCelebrationDialog(
                         ) {
                             Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("More Confetti")
+                            Text(stringResource(R.string.ui_more_confetti))
                         }
 
                         Button(
@@ -183,7 +185,7 @@ fun ConfettiCelebrationDialog(
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(containerColor = ProgressEmerald)
                         ) {
-                            Text("Awesome!")
+                            Text(stringResource(R.string.ui_awesome))
                         }
                     }
                 }

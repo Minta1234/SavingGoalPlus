@@ -1,0 +1,1623 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ of %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ จาก %@"
+          }
+        }
+      }
+    },
+    "%lld day streak": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ออมต่อเนื่อง %lld วัน"
+          }
+        }
+      }
+    },
+    "%lldd": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld วัน"
+          }
+        }
+      }
+    },
+    "1 - 2 Days Streak": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ต่อเนื่อง 1–2 วัน"
+          }
+        }
+      }
+    },
+    "100+ Days Streak": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ต่อเนื่อง 100 วันขึ้นไป"
+          }
+        }
+      }
+    },
+    "14 - 29 Days Streak": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ต่อเนื่อง 14–29 วัน"
+          }
+        }
+      }
+    },
+    "3 - 6 Days Streak": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ต่อเนื่อง 3–6 วัน"
+          }
+        }
+      }
+    },
+    "30 - 99 Days Streak": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ต่อเนื่อง 30–99 วัน"
+          }
+        }
+      }
+    },
+    "7 - 13 Days Streak": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ต่อเนื่อง 7–13 วัน"
+          }
+        }
+      }
+    },
+    "AI Architecture": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "การออกแบบระบบด้วย AI"
+          }
+        }
+      }
+    },
+    "About SavingGoalPlus": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เกี่ยวกับ SavingGoalPlus"
+          }
+        }
+      }
+    },
+    "Active: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใช้งานอยู่: %@"
+          }
+        }
+      }
+    },
+    "Add Deposit": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เพิ่มเงินออม"
+          }
+        }
+      }
+    },
+    "All": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ทั้งหมด"
+          }
+        }
+      }
+    },
+    "Already up to date.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใช้รุ่นล่าสุดอยู่แล้ว"
+          }
+        }
+      }
+    },
+    "Amount (%@)": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "จำนวนเงิน (%@)"
+          }
+        }
+      }
+    },
+    "An update is available.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "มีรุ่นใหม่ให้ดาวน์โหลด"
+          }
+        }
+      }
+    },
+    "App language": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ภาษาแอป"
+          }
+        }
+      }
+    },
+    "Archive": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เก็บเข้าคลัง"
+          }
+        }
+      }
+    },
+    "Archived Goals": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เป้าหมายในคลัง"
+          }
+        }
+      }
+    },
+    "BI-WEEKLY": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ทุก 2 สัปดาห์"
+          }
+        }
+      }
+    },
+    "Backup imported successfully!": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กู้คืนข้อมูลสำรองสำเร็จ"
+          }
+        }
+      }
+    },
+    "Best": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สูงสุด"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยกเลิก"
+          }
+        }
+      }
+    },
+    "Card color": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สีการ์ด"
+          }
+        }
+      }
+    },
+    "Category": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "หมวดหมู่"
+          }
+        }
+      }
+    },
+    "Change Currency": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปลี่ยนสกุลเงิน"
+          }
+        }
+      }
+    },
+    "Change Log": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ประวัติการเปลี่ยนแปลง"
+          }
+        }
+      }
+    },
+    "Check for Updates": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เช็กอัปเดต"
+          }
+        }
+      }
+    },
+    "Check that the goal still exists and try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตรวจว่าเป้าหมายยังอยู่ แล้วลองอีกครั้ง"
+          }
+        }
+      }
+    },
+    "Checking GitHub…": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กำลังตรวจสอบ GitHub…"
+          }
+        }
+      }
+    },
+    "Choose a backup file under 16 MB.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เลือกไฟล์สำรองขนาดไม่เกิน 16 MB"
+          }
+        }
+      }
+    },
+    "Completed": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สำเร็จแล้ว"
+          }
+        }
+      }
+    },
+    "Completed or retired goals you archive will appear here safely.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เป้าหมายที่เก็บเข้าคลังจะแสดงที่นี่"
+          }
+        }
+      }
+    },
+    "Could not check GitHub for updates.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตรวจสอบอัปเดตจาก GitHub ไม่สำเร็จ"
+          }
+        }
+      }
+    },
+    "Could not compare the version numbers.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปรียบเทียบเลขเวอร์ชันไม่ได้"
+          }
+        }
+      }
+    },
+    "Could not load release notes from GitHub.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "โหลดประวัติจาก GitHub ไม่สำเร็จ"
+          }
+        }
+      }
+    },
+    "Could not save the deposit": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึกเงินฝากไม่สำเร็จ"
+          }
+        }
+      }
+    },
+    "Currency": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สกุลเงิน"
+          }
+        }
+      }
+    },
+    "Current": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ปัจจุบัน"
+          }
+        }
+      }
+    },
+    "Custom": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กำหนดเอง"
+          }
+        }
+      }
+    },
+    "Custom Symbol / Code": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สัญลักษณ์หรือรหัสที่กำหนดเอง"
+          }
+        }
+      }
+    },
+    "Custom accent color": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เลือกสีธีมเอง"
+          }
+        }
+      }
+    },
+    "DAILY": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รายวัน"
+          }
+        }
+      }
+    },
+    "Daily Savings Reminders": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เตือนออมเงินรายวัน"
+          }
+        }
+      }
+    },
+    "Data Backup & Restore": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สำรองและกู้คืนข้อมูล"
+          }
+        }
+      }
+    },
+    "Date": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "วันที่"
+          }
+        }
+      }
+    },
+    "Delete Goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ลบเป้าหมาย"
+          }
+        }
+      }
+    },
+    "Deposit": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ฝาก"
+          }
+        }
+      }
+    },
+    "Deposit (+)": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ฝาก (+)"
+          }
+        }
+      }
+    },
+    "Details": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รายละเอียด"
+          }
+        }
+      }
+    },
+    "Done": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เสร็จ"
+          }
+        }
+      }
+    },
+    "Edit": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แก้ไข"
+          }
+        }
+      }
+    },
+    "Edit Goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แก้ไขเป้าหมาย"
+          }
+        }
+      }
+    },
+    "English": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "English"
+          }
+        }
+      }
+    },
+    "Export Backup (JSON)": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ส่งออกไฟล์สำรอง JSON"
+          }
+        }
+      }
+    },
+    "Export Data as CSV": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ส่งออกข้อมูลเป็น CSV"
+          }
+        }
+      }
+    },
+    "Export Error": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ส่งออกไม่สำเร็จ"
+          }
+        }
+      }
+    },
+    "Filter": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตัวกรอง"
+          }
+        }
+      }
+    },
+    "Goal Details": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รายละเอียดเป้าหมาย"
+          }
+        }
+      }
+    },
+    "Goal Title (e.g. Dream House)": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ชื่อเป้าหมาย เช่น บ้านในฝัน"
+          }
+        }
+      }
+    },
+    "Goal not found": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไม่พบเป้าหมายนี้"
+          }
+        }
+      }
+    },
+    "Goals": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เป้าหมาย"
+          }
+        }
+      }
+    },
+    "Import Error": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "นำเข้าไม่สำเร็จ"
+          }
+        }
+      }
+    },
+    "In Progress": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กำลังออม"
+          }
+        }
+      }
+    },
+    "Installed version": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เวอร์ชันที่ติดตั้ง"
+          }
+        }
+      }
+    },
+    "Last 7 days": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ย้อนหลัง 7 วัน"
+          }
+        }
+      }
+    },
+    "Latest release": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รุ่นล่าสุด"
+          }
+        }
+      }
+    },
+    "License": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สัญญาอนุญาต"
+          }
+        }
+      }
+    },
+    "Loading release notes from GitHub…": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กำลังโหลดประวัติจาก GitHub…"
+          }
+        }
+      }
+    },
+    "MONTHLY": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รายเดือน"
+          }
+        }
+      }
+    },
+    "Maintainer": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ผู้ดูแลโปรเจกต์"
+          }
+        }
+      }
+    },
+    "Make your first deposit to ignite your streak!": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึกเงินออมครั้งแรกเพื่อเริ่มนับวันต่อเนื่อง!"
+          }
+        }
+      }
+    },
+    "Motivational Tiers": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ระดับการออม"
+          }
+        }
+      }
+    },
+    "New Savings Goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สร้างเป้าหมายออมเงิน"
+          }
+        }
+      }
+    },
+    "Next goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เป้าหมายถัดไป"
+          }
+        }
+      }
+    },
+    "No Archived Goals": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยังไม่มีเป้าหมายในคลัง"
+          }
+        }
+      }
+    },
+    "No Goals Found": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไม่พบเป้าหมาย"
+          }
+        }
+      }
+    },
+    "No deposit": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยังไม่ได้ออม"
+          }
+        }
+      }
+    },
+    "No notes were published for this release.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รุ่นนี้ไม่มีบันทึกการเปลี่ยนแปลง"
+          }
+        }
+      }
+    },
+    "No published releases yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยังไม่มีรุ่นที่เผยแพร่"
+          }
+        }
+      }
+    },
+    "No transactions recorded yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยังไม่มีรายการ"
+          }
+        }
+      }
+    },
+    "Note (e.g. Monthly salary savings)": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึก เช่น ออมจากเงินเดือน"
+          }
+        }
+      }
+    },
+    "Notes (Optional)": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึก (ไม่บังคับ)"
+          }
+        }
+      }
+    },
+    "OK": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตกลง"
+          }
+        }
+      }
+    },
+    "Open GitHub Release": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปิดหน้า Release บน GitHub"
+          }
+        }
+      }
+    },
+    "Opens streak details": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปิดรายละเอียดการออมต่อเนื่อง"
+          }
+        }
+      }
+    },
+    "Popular symbols": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สัญลักษณ์ยอดนิยม"
+          }
+        }
+      }
+    },
+    "Previous goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เป้าหมายก่อนหน้า"
+          }
+        }
+      }
+    },
+    "REMAINING": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เหลืออีก"
+          }
+        }
+      }
+    },
+    "REQUIRED SAVINGS BREAKDOWN": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยอดที่ควรออม"
+          }
+        }
+      }
+    },
+    "Reading backup…": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กำลังอ่านไฟล์สำรอง…"
+          }
+        }
+      }
+    },
+    "Record Withdrawal": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึกการถอน"
+          }
+        }
+      }
+    },
+    "Reminder Time": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เวลาเตือน"
+          }
+        }
+      }
+    },
+    "Replace savings data?": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แทนที่ข้อมูลเงินออมหรือไม่?"
+          }
+        }
+      }
+    },
+    "Restore": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กู้คืน"
+          }
+        }
+      }
+    },
+    "Restore Backup from Files": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กู้คืนไฟล์สำรองจาก Files"
+          }
+        }
+      }
+    },
+    "Save": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึก"
+          }
+        }
+      }
+    },
+    "Save today": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ออมวันนี้"
+          }
+        }
+      }
+    },
+    "Save today to keep your %lld-day streak alive! 🔥": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ออมวันนี้เพื่อรักษาสถิติ %lld วัน! 🔥"
+          }
+        }
+      }
+    },
+    "Saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ออมแล้ว"
+          }
+        }
+      }
+    },
+    "Saved today": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ออมวันนี้แล้ว"
+          }
+        }
+      }
+    },
+    "SavingGoalPlus": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SavingGoalPlus"
+          }
+        }
+      }
+    },
+    "Savings Streak 🔥": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ออมต่อเนื่อง 🔥"
+          }
+        }
+      }
+    },
+    "Savings goals": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เป้าหมายออมเงิน"
+          }
+        }
+      }
+    },
+    "Send Test Notification Now": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ส่งการแจ้งเตือนทดสอบ"
+          }
+        }
+      }
+    },
+    "Settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตั้งค่า"
+          }
+        }
+      }
+    },
+    "Start saving": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เริ่มออม"
+          }
+        }
+      }
+    },
+    "Streak Stats": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สถิติออมต่อเนื่อง"
+          }
+        }
+      }
+    },
+    "Streak burning bright today! 🔥": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ออมวันนี้แล้ว รักษาความต่อเนื่องไว้! 🔥"
+          }
+        }
+      }
+    },
+    "Success": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สำเร็จ"
+          }
+        }
+      }
+    },
+    "System default": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตามภาษาเครื่อง"
+          }
+        }
+      }
+    },
+    "TOTAL SAVED": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยอดออมทั้งหมด"
+          }
+        }
+      }
+    },
+    "TOTAL TARGET": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เป้าหมายรวม"
+          }
+        }
+      }
+    },
+    "TRANSACTION HISTORY (%lld)": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ประวัติรายการ (%lld)"
+          }
+        }
+      }
+    },
+    "Tap the '+' button below to start tracking your first financial goal!": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แตะปุ่ม + เพื่อสร้างเป้าหมายออมเงิน"
+          }
+        }
+      }
+    },
+    "Target Amount ($)": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยอดเป้าหมาย"
+          }
+        }
+      }
+    },
+    "Target: %@ • %lld days left": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เป้าหมาย: %@ · เหลือ %lld วัน"
+          }
+        }
+      }
+    },
+    "The installed version is newer than the latest release.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รุ่นที่ติดตั้งใหม่กว่ารุ่นล่าสุดบน GitHub"
+          }
+        }
+      }
+    },
+    "Theme Accent (iOS Style)": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สีธีม"
+          }
+        }
+      }
+    },
+    "This backup contains %lld goals and %lld transactions. Restoring replaces the current goals and transactions.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไฟล์นี้มี %lld เป้าหมายและ %lld รายการ การกู้คืนจะแทนที่เป้าหมายและรายการปัจจุบัน"
+          }
+        }
+      }
+    },
+    "This changes how amounts are labeled. Amounts are not converted.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปลี่ยนเฉพาะสัญลักษณ์ที่แสดง โดยไม่แปลงจำนวนเงิน"
+          }
+        }
+      }
+    },
+    "This file is not a valid SavingGoalPlus iOS backup.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไฟล์นี้ไม่ใช่ไฟล์สำรอง SavingGoalPlus สำหรับ iOS"
+          }
+        }
+      }
+    },
+    "Today": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "วันนี้"
+          }
+        }
+      }
+    },
+    "Total Days": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "วันออมทั้งหมด"
+          }
+        }
+      }
+    },
+    "Transaction Details for %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รายละเอียดรายการของ %@"
+          }
+        }
+      }
+    },
+    "Transaction Type": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ประเภทรายการ"
+          }
+        }
+      }
+    },
+    "Try again": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ลองอีกครั้ง"
+          }
+        }
+      }
+    },
+    "Unarchive": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "นำออกจากคลัง"
+          }
+        }
+      }
+    },
+    "Unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไม่ทราบ"
+          }
+        }
+      }
+    },
+    "Updates & Change Log": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "อัปเดตและประวัติการเปลี่ยนแปลง"
+          }
+        }
+      }
+    },
+    "Use default": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใช้ค่าเริ่มต้น"
+          }
+        }
+      }
+    },
+    "Use preset accent": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ใช้สีธีมสำเร็จรูป"
+          }
+        }
+      }
+    },
+    "Version": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เวอร์ชัน"
+          }
+        }
+      }
+    },
+    "View on GitHub": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ดูบน GitHub"
+          }
+        }
+      }
+    },
+    "WEEKLY": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "รายสัปดาห์"
+          }
+        }
+      }
+    },
+    "What's New / Change Log": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ประวัติการเปลี่ยนแปลง"
+          }
+        }
+      }
+    },
+    "Withdrawal": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ถอน"
+          }
+        }
+      }
+    },
+    "Withdrawal (-)": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ถอน (−)"
+          }
+        }
+      }
+    },
+    "of %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "จาก %@"
+          }
+        }
+      }
+    },
+    "ไทย": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไทย"
+          }
+        }
+      }
+    },
+    "⚡ Week Champion": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "⚡ แชมป์ออมรายสัปดาห์"
+          }
+        }
+      }
+    },
+    "🌱 Habit Spark": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🌱 จุดเริ่มต้น"
+          }
+        }
+      }
+    },
+    "🏆 Fortnight Legend": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🏆 นักออมสองสัปดาห์"
+          }
+        }
+      }
+    },
+    "👑 Savings Titan": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "👑 สุดยอดนักออม"
+          }
+        }
+      }
+    },
+    "💎 Month Master": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "💎 นักออมรายเดือน"
+          }
+        }
+      }
+    },
+    "🔥 Warming Up": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "🔥 เริ่มเข้าที่"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

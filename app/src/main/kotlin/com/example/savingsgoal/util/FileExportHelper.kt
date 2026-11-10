@@ -5,6 +5,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
+import com.example.savingsgoal.R
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -19,6 +21,7 @@ fun rememberFileExport(
     onResult: suspend (String) -> Unit
 ): () -> Unit {
     val resolver = LocalContext.current.contentResolver
+    val resources = LocalResources.current
     val scope = rememberCoroutineScope()
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(mimeType)) { uri ->
         if (uri != null) {
@@ -30,12 +33,12 @@ fun rememberFileExport(
                             ?: throw IOException("Cannot open the selected file")
                         stream.use { it.write(bytes) }
                     }
-                    "File saved successfully."
+                    resources.getString(R.string.file_saved)
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
                     android.util.Log.e("FileExport", "Could not save export", e)
-                    "Could not save the file. Try a different location."
+                    resources.getString(R.string.file_save_failed)
                 }
                 onResult(message)
             }
@@ -45,7 +48,7 @@ fun rememberFileExport(
         try {
             launcher.launch(fileName)
         } catch (e: android.content.ActivityNotFoundException) {
-            scope.launch { onResult("No file picker is available.") }
+            scope.launch { onResult(resources.getString(R.string.file_picker_unavailable)) }
         }
     }
 }

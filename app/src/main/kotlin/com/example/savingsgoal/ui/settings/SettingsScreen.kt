@@ -1,5 +1,7 @@
 package com.example.savingsgoal.ui.settings
 
+import androidx.compose.ui.res.stringResource
+import com.example.savingsgoal.R
 import android.Manifest
 import android.content.Intent
 import android.os.Build
@@ -8,6 +10,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -75,11 +79,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.savingsgoal.BuildConfig
+import com.example.savingsgoal.ThemeManager
+import com.example.savingsgoal.ui.components.ColorChoiceDialog
+import androidx.compose.ui.graphics.toArgb
+import com.example.savingsgoal.ui.theme.AppLanguage
 import com.example.savingsgoal.ui.theme.AppThemePalette
 import com.example.savingsgoal.util.rememberFileExport
 import kotlinx.coroutines.launch
@@ -92,7 +102,12 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val customAccent by ThemeManager.customAccent.collectAsState()
+    var showAccentPicker by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val resources = LocalResources.current
+    val language by AppLanguage.selected.collectAsState()
+    var showLanguageDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -111,11 +126,11 @@ fun SettingsScreen(
         if (isGranted) {
             viewModel.updateReminderEnabled(true)
             scope.launch {
-                snackbarHostState.showSnackbar("Daily savings reminder enabled for ${uiState.formattedReminderTime}!")
+                snackbarHostState.showSnackbar(resources.getString(R.string.reminder_enabled, uiState.formattedReminderTime))
             }
         } else {
             scope.launch {
-                snackbarHostState.showSnackbar("Notification permission was denied.")
+                snackbarHostState.showSnackbar(resources.getString(R.string.notification_denied))
             }
         }
     }
@@ -123,10 +138,10 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.ui_settings), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.ui_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -144,6 +159,23 @@ fun SettingsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            Card(
+                modifier = Modifier.fillMaxWidth().clickable { showLanguageDialog = true },
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(stringResource(R.string.ui_app_language), style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(language.label), style = MaterialTheme.typography.bodySmall)
+                    }
+                    Icon(Icons.Default.ChevronRight, contentDescription = null)
+                }
+            }
+
             // Daily Reminder Notification Card
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -164,9 +196,9 @@ fun SettingsScreen(
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
-                                Text("Daily Savings Reminder", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.ui_daily_savings_reminder), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                                 Text(
-                                    if (uiState.isReminderEnabled) "Reminding you daily at ${uiState.formattedReminderTime}" else "Off",
+                                    if (uiState.isReminderEnabled) stringResource(R.string.settings_reminder_at, uiState.formattedReminderTime) else stringResource(R.string.settings_off),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -201,19 +233,19 @@ fun SettingsScreen(
                             ) {
                                 Icon(Icons.Default.AccessTime, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Set Time (${uiState.formattedReminderTime})")
+                                Text(stringResource(R.string.set_time_value, uiState.formattedReminderTime))
                             }
 
                             Button(
                                 onClick = {
                                     viewModel.sendTestReminder()
                                     scope.launch {
-                                        snackbarHostState.showSnackbar("Test reminder notification sent!")
+                                        snackbarHostState.showSnackbar(resources.getString(R.string.test_notification_sent))
                                     }
                                 },
                                 modifier = Modifier.weight(1f)
                             ) {
-                                Text("Test Now")
+                                Text(stringResource(R.string.ui_test_now))
                             }
                         }
                     }
@@ -231,9 +263,9 @@ fun SettingsScreen(
                         Icon(Icons.Default.ColorLens, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(10.dp))
                         Column {
-                            Text("Theme Accent (iOS Style)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.ui_theme_accent_ios_style), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                             Text(
-                                "Active: ${uiState.selectedPalette.displayName}",
+                                stringResource(R.string.settings_active_theme, if (customAccent == null) uiState.selectedPalette.displayName else stringResource(R.string.settings_custom_theme)),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -250,7 +282,7 @@ fun SettingsScreen(
                                 horizontalArrangement = Arrangement.SpaceAround
                             ) {
                                 rowPalettes.forEach { palette ->
-                                    val isSelected = uiState.selectedPalette == palette
+                                    val isSelected = customAccent == null && uiState.selectedPalette == palette
                                     Column(
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         modifier = Modifier
@@ -290,6 +322,7 @@ fun SettingsScreen(
                             }
                         }
                     }
+                    TextButton(onClick = { showAccentPicker = true }) { Text(stringResource(R.string.ui_custom_accent_color)) }
                 }
             }
 
@@ -303,17 +336,17 @@ fun SettingsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.AttachMoney, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(10.dp))
-                        Text("Default Currency", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.ui_default_currency), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "Current default symbol: ${uiState.defaultCurrency}",
+                        text = stringResource(R.string.current_currency_value, uiState.defaultCurrency),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Button(onClick = { showCurrencyDialog = true }) {
-                        Text("Change Currency")
+                        Text(stringResource(R.string.ui_change_currency))
                     }
                 }
             }
@@ -328,11 +361,11 @@ fun SettingsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Calculate, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(10.dp))
-                        Text("Savings Rate Interval", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.ui_savings_rate_interval), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "Choose your intermediate savings breakdown target:",
+                        text = stringResource(R.string.ui_choose_your_intermediate_savings_breakdown_target),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -349,7 +382,7 @@ fun SettingsScreen(
                             onClick = { viewModel.updateToSaveOption(1) }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Weekly Target (Daily, Weekly, Monthly)")
+                        Text(stringResource(R.string.ui_weekly_target_daily_weekly_monthly))
                     }
 
                     Row(
@@ -363,7 +396,7 @@ fun SettingsScreen(
                             onClick = { viewModel.updateToSaveOption(2) }
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Bi-Weekly Target (Daily, Bi-Weekly, Monthly)")
+                        Text(stringResource(R.string.ui_bi_weekly_target_daily_bi_weekly_monthly))
                     }
                 }
             }
@@ -385,9 +418,9 @@ fun SettingsScreen(
                         Icon(Icons.Default.Visibility, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text("Total Goals Card", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.ui_total_goals_card), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                             Text(
-                                "Display summary header card on dashboard",
+                                stringResource(R.string.settings_summary_hint),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -420,9 +453,9 @@ fun SettingsScreen(
                         Icon(Icons.Default.Backup, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text("Backup & Restore", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.ui_backup_restore), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                             Text(
-                                "Export/import JSON, SQLite & CSV",
+                                stringResource(R.string.settings_backup_formats),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -452,9 +485,9 @@ fun SettingsScreen(
                         Icon(Icons.Default.FileDownload, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text("Export Goals to CSV", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.ui_export_goals_to_csv), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                             Text(
-                                "Share or open in spreadsheet applications",
+                                stringResource(R.string.settings_csv_hint),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -481,9 +514,9 @@ fun SettingsScreen(
                             Icon(Icons.Default.SystemUpdate, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                             Spacer(modifier = Modifier.width(10.dp))
                             Column {
-                                Text("App Version & Updates", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.ui_app_version_updates), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                                 Text(
-                                    "Version ${BuildConfig.VERSION_NAME}",
+                                    stringResource(R.string.app_version_value, BuildConfig.VERSION_NAME),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -503,7 +536,7 @@ fun SettingsScreen(
                         ) {
                             Icon(Icons.Default.History, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Change Log")
+                            Text(stringResource(R.string.ui_change_log))
                         }
 
                         Button(
@@ -512,7 +545,7 @@ fun SettingsScreen(
                         ) {
                             Icon(Icons.Default.SystemUpdate, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Check Updates")
+                            Text(stringResource(R.string.ui_check_updates))
                         }
                     }
                 }
@@ -528,11 +561,11 @@ fun SettingsScreen(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Info, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("About Savings Goal", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.ui_about_savings_goal), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "Savings Goal 2.0 Modern Re-implementation\n100% Feature-Complete, Zero Ads, 100% Free & Open-Source.",
+                        text = stringResource(R.string.settings_about_summary),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -551,7 +584,7 @@ fun SettingsScreen(
 
         AlertDialog(
             onDismissRequest = { showTimePickerDialog = false },
-            title = { Text("Set Reminder Time") },
+            title = { Text(stringResource(R.string.ui_set_reminder_time)) },
             text = {
                 Box(
                     modifier = Modifier.fillMaxWidth(),
@@ -565,12 +598,12 @@ fun SettingsScreen(
                     viewModel.updateReminderTime(timePickerState.hour, timePickerState.minute)
                     showTimePickerDialog = false
                 }) {
-                    Text("OK")
+                    Text(stringResource(R.string.ui_ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showTimePickerDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.ui_cancel))
                 }
             }
         )
@@ -584,13 +617,13 @@ fun SettingsScreen(
 
         AlertDialog(
             onDismissRequest = { showCurrencyDialog = false },
-            title = { Text("Choose Currency Symbol") },
+            title = { Text(stringResource(R.string.ui_choose_currency_symbol)) },
             text = {
                 Column(
                     modifier = Modifier.verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text("Select a popular currency or type your own:")
+                    Text(stringResource(R.string.ui_select_a_popular_currency_or_type_your_own))
 
                     FlowRow(
                         modifier = Modifier.fillMaxWidth(),
@@ -612,8 +645,8 @@ fun SettingsScreen(
                     OutlinedTextField(
                         value = customInput,
                         onValueChange = { customInput = it },
-                        label = { Text("Custom Symbol / Code") },
-                        placeholder = { Text("e.g. USD, EUR, THB") },
+                        label = { Text(stringResource(R.string.ui_custom_symbol_code)) },
+                        placeholder = { Text(stringResource(R.string.ui_e_g_usd_eur_thb)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
@@ -625,13 +658,56 @@ fun SettingsScreen(
                     viewModel.updateDefaultCurrency(finalSymbol)
                     showCurrencyDialog = false
                 }) {
-                    Text("Save")
+                    Text(stringResource(R.string.ui_save))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showCurrencyDialog = false }) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.ui_cancel))
                 }
+            }
+        )
+    }
+
+    if (showLanguageDialog) {
+        AlertDialog(
+            onDismissRequest = { showLanguageDialog = false },
+            title = { Text(stringResource(R.string.ui_app_language)) },
+            text = {
+                Column(Modifier.selectableGroup()) {
+                    AppLanguage.entries.forEach { option ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth().selectable(
+                                selected = option == language,
+                                role = Role.RadioButton,
+                                onClick = {
+                                    AppLanguage.set(context, option)
+                                    showLanguageDialog = false
+                                }
+                            ).padding(vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            RadioButton(selected = option == language, onClick = null)
+                            Text(stringResource(option.label))
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showLanguageDialog = false }) { Text(stringResource(R.string.ui_cancel)) }
+            }
+        )
+    }
+
+    if (showAccentPicker) {
+        ColorChoiceDialog(
+            title = stringResource(R.string.ui_custom_accent_color),
+            initialColor = customAccent ?: uiState.selectedPalette.primary.toArgb(),
+            onDismiss = { showAccentPicker = false },
+            onSave = { color ->
+                ThemeManager.setCustomAccent(context, color)
+                showAccentPicker = false
             }
         )
     }

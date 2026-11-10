@@ -50,7 +50,7 @@ public struct GoalEditSheet: View {
                         .frame(minHeight: 80)
                 }
             }
-            .navigationTitle(existingGoal == nil ? "New Savings Goal" : "Edit Goal")
+            .navigationTitle(existingGoal == nil ? LocalizedStringKey("New Savings Goal") : LocalizedStringKey("Edit Goal"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

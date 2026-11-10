@@ -1,5 +1,7 @@
 package com.example.savingsgoal.ui.settings
 
+import androidx.compose.ui.res.stringResource
+import com.example.savingsgoal.R
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -42,38 +44,38 @@ internal fun UpdateCheckDialog(installedVersion: String, onDismiss: () -> Unit) 
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Check for Updates") },
+        title = { Text(stringResource(R.string.ui_check_for_updates)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Installed: $installedVersion")
+                Text(stringResource(R.string.installed_version_value, installedVersion))
                 val release = latest
                 when {
                     failed -> {
-                        Text("Could not check GitHub for updates.")
-                        TextButton(onClick = { attempt++ }) { Text("Try again") }
+                        Text(stringResource(R.string.ui_could_not_check_github_for_updates))
+                        TextButton(onClick = { attempt++ }) { Text(stringResource(R.string.ui_try_again)) }
                     }
                     release == null -> {
                         CircularProgressIndicator()
-                        Text("Checking GitHub…")
+                        Text(stringResource(R.string.ui_checking_github))
                     }
                     else -> {
-                        Text("Latest release: ${release.tag}")
+                        Text(stringResource(R.string.latest_release_value, release.tag))
                         val comparison = compareReleaseVersions(installedVersion, release.tag)
                         Text(
                             when {
-                                comparison == null -> "Could not compare the version numbers."
-                                comparison < 0 -> "An update is available."
-                                comparison == 0 -> "Already up to date."
-                                else -> "The installed version is newer than the latest release."
+                                comparison == null -> stringResource(R.string.ui_could_not_compare_the_version_numbers)
+                                comparison < 0 -> stringResource(R.string.ui_an_update_is_available)
+                                comparison == 0 -> stringResource(R.string.ui_already_up_to_date)
+                                else -> stringResource(R.string.ui_the_installed_version_is_newer_than_the_latest_release)
                             }
                         )
                         if (release.isGitHubReleaseLink) {
-                            TextButton(onClick = { uriHandler.openUri(release.url) }) { Text("Open GitHub Release") }
+                            TextButton(onClick = { uriHandler.openUri(release.url) }) { Text(stringResource(R.string.ui_open_github_release)) }
                         }
                     }
                 }
             }
         },
-        confirmButton = { TextButton(onClick = onDismiss) { Text("Close") } }
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.ui_close)) } }
     )
 }
