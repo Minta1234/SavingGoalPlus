@@ -251,12 +251,17 @@ jobs:
         with:
           name: SavingGoalPlus-iOS
           path: release_dist
-      - name: Publish all three packages
+      - name: Publish packages with SHA-256 checksums
+        working-directory: release_dist
         run: |
+          packages=(
+            "SavingGoalPlus-v${RELEASE_VERSION}.apk"
+            "SavingGoalPlus-v${RELEASE_VERSION}-unsigned.ipa"
+            "SavingGoalPlus-v${RELEASE_VERSION}-iOS.xcarchive.zip"
+          )
+          sha256sum -- "${packages[@]}" > SHA256SUMS.txt
           gh release create "$RELEASE_TAG" \
-            "release_dist/SavingGoalPlus-v${RELEASE_VERSION}.apk" \
-            "release_dist/SavingGoalPlus-v${RELEASE_VERSION}-unsigned.ipa" \
-            "release_dist/SavingGoalPlus-v${RELEASE_VERSION}-iOS.xcarchive.zip" \
+            "${packages[@]}" SHA256SUMS.txt \
             --target "$GITHUB_SHA" \
             --title "SavingGoalPlus v${RELEASE_VERSION}" \
             --generate-notes
