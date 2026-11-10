@@ -8,14 +8,14 @@ public struct GoalCardView: View {
     public let onEdit: () -> Void
     public let onArchive: () -> Void
     public let onDelete: () -> Void
-    public let onSaveToday: () -> Void
+    public let onSaveToday: (() -> Void)?
 
     public init(
         goal: Goal,
         onEdit: @escaping () -> Void,
         onArchive: @escaping () -> Void,
         onDelete: @escaping () -> Void,
-        onSaveToday: @escaping () -> Void
+        onSaveToday: (() -> Void)? = nil
     ) {
         self.goal = goal
         self.onEdit = onEdit
@@ -120,17 +120,6 @@ public struct GoalCardView: View {
                 Text("\(goal.progressPercentage)%")
                     .font(.system(size: 14, weight: .bold, design: .rounded))
                     .foregroundColor(ColorTheme.stageColor(for: goal.progressPercentage))
-            }
-
-            HStack(spacing: 12) {
-                Button(action: onSaveToday) {
-                    Label("Save today", systemImage: "plus")
-                        .frame(maxWidth: .infinity, minHeight: 32)
-                }
-                .buttonStyle(.borderedProminent)
-                NavigationLink(destination: GoalDetailView(goalId: goal.id)) {
-                    Text("Details").frame(minHeight: 44)
-                }
             }
         }
         .padding(16)

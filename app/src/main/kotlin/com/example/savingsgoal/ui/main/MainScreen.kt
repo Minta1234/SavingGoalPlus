@@ -171,7 +171,6 @@ fun MainScreen(
                         goal = goal,
                         defaultCurrency = uiState.defaultCurrency,
                         onClick = { onGoalClick(goal.id) },
-                        onSaveToday = { onSaveToday(goal.id) },
                         onEdit = { editingGoal = goal },
                         onToggleArchive = { viewModel.archiveGoal(goal.id) },
                         onDelete = { deletingGoal = goal }

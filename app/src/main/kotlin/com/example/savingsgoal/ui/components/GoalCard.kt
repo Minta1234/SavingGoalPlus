@@ -277,12 +277,6 @@ fun GoalCard(
                     )
                 }
             }
-            if (onSaveToday != null) {
-                Spacer(Modifier.height(12.dp))
-                Button(onClick = onSaveToday, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.ui_save_today))
-                }
-            }
         }
     }
 

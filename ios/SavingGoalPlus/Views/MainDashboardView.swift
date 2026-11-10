@@ -74,8 +74,7 @@ public struct MainDashboardView: View {
                                         goal: goal,
                                         onEdit: { goalToEdit = goal },
                                         onArchive: { storage.toggleArchive(id: goal.id) },
-                                        onDelete: { storage.deleteGoal(id: goal.id) },
-                                        onSaveToday: { depositGoal = goal }
+                                        onDelete: { storage.deleteGoal(id: goal.id) }
                                     )
                                 }
                                 .buttonStyle(PlainButtonStyle())
