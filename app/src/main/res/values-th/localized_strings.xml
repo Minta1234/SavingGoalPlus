@@ -204,4 +204,7 @@
     <string name="ui_withdraw">ถอน (−)</string>
     <string name="ui_withdrawal">ถอน</string>
     <string name="ui_you_ve_already_saved">ออมไปแล้ว</string>
+    <string name="widget_select_goal_title">เลือกเป้าหมายการออม</string>
+    <string name="widget_select_goal_desc">เลือกเป้าหมายที่คุณต้องการแสดงบนวิดเจ็ตนี้</string>
+    <string name="widget_no_goals">ยังไม่มีเป้าหมายการออม</string>
 </resources>

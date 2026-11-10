@@ -1,4 +1,4 @@
-﻿package com.minta1234.savingsgoal.data
+package com.minta1234.savingsgoal.data
 
 import android.content.ContentValues
 import android.content.Context
@@ -7,6 +7,7 @@ import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import com.minta1234.savingsgoal.widget.SavingsGoalWidgetProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -31,6 +32,10 @@ class SavingsRepository(private val context: Context) {
 
     private fun notifyChanged() {
         _dataRevision.value += 1
+        try {
+            SavingsGoalWidgetProvider.triggerUpdate(context)
+        } catch (_: Exception) {
+        }
     }
 
     // --- Preferences ---

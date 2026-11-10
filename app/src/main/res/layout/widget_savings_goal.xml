@@ -4,35 +4,83 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:background="@android:drawable/dialog_holo_light_frame"
-    android:padding="16dp">
+    android:background="@drawable/widget_card_background"
+    android:padding="14dp">
 
+    <!-- Top header row -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
+        <ImageView
+            android:id="@+id/widget_btn_prev"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:src="@drawable/ic_widget_chevron_left"
+            android:contentDescription="Previous Goal"
+            android:scaleType="centerInside"
+            android:clickable="true"
+            android:focusable="true" />
+
         <TextView
             android:id="@+id/widget_goal_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             android:text="Savings Goal"
-            android:textSize="16sp"
+            android:textSize="15sp"
             android:textStyle="bold"
-            android:textColor="#191C1F" />
+            android:textColor="#0F172A"
+            android:maxLines="1"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/widget_goal_counter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="4dp"
+            android:text="1/1"
+            android:textSize="11sp"
+            android:textColor="#64748B" />
+
+        <ImageView
+            android:id="@+id/widget_btn_next"
+            android:layout_width="26dp"
+            android:layout_height="26dp"
+            android:src="@drawable/ic_widget_chevron_right"
+            android:contentDescription="Next Goal"
+            android:scaleType="centerInside"
+            android:clickable="true"
+            android:focusable="true" />
 
         <TextView
             android:id="@+id/widget_goal_percent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="6dp"
             android:text="0%"
             android:textSize="14sp"
             android:textStyle="bold"
-            android:textColor="#005C7D" />
+            android:textColor="#059669" />
+
+        <ImageView
+            android:id="@+id/widget_btn_select"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_widget_tune"
+            android:contentDescription="Select Goal"
+            android:scaleType="centerInside"
+            android:clickable="true"
+            android:focusable="true" />
+
     </LinearLayout>
 
+    <!-- Progress bar -->
     <ProgressBar
         android:id="@+id/widget_progress_bar"
         style="?android:attr/progressBarStyleHorizontal"
@@ -41,12 +89,15 @@
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         android:max="100"
-        android:progress="0" />
+        android:progress="0"
+        android:progressDrawable="@drawable/widget_progress_drawable" />
 
+    <!-- Amounts row -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
         <TextView
             android:id="@+id/widget_saved_amount"
@@ -55,7 +106,10 @@
             android:layout_weight="1"
             android:text="Saved: $0.00"
             android:textSize="12sp"
-            android:textColor="#10B981" />
+            android:textStyle="bold"
+            android:textColor="#059669"
+            android:maxLines="1"
+            android:ellipsize="end" />
 
         <TextView
             android:id="@+id/widget_target_amount"
@@ -63,7 +117,9 @@
             android:layout_height="wrap_content"
             android:text="Target: $0.00"
             android:textSize="12sp"
-            android:textColor="#70787E" />
+            android:textColor="#64748B"
+            android:maxLines="1"
+            android:ellipsize="end" />
     </LinearLayout>
-</LinearLayout>
 
+</LinearLayout>

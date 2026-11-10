@@ -204,4 +204,7 @@
     <string name="ui_withdraw">Withdraw (-)</string>
     <string name="ui_withdrawal">Withdrawal</string>
     <string name="ui_you_ve_already_saved">You\'ve already saved</string>
+    <string name="widget_select_goal_title">Select Savings Goal</string>
+    <string name="widget_select_goal_desc">Choose which savings goal you want to track on this widget</string>
+    <string name="widget_no_goals">No savings goals available</string>
 </resources>

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -24,11 +24,23 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".widget.SavingsGoalWidgetConfigureActivity"
+            android:exported="true"
+            android:theme="@style/Theme.SavingsGoal">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
         <receiver
             android:name=".widget.SavingsGoalWidgetProvider"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="com.minta1234.savingsgoal.widget.ACTION_PREV_GOAL" />
+                <action android:name="com.minta1234.savingsgoal.widget.ACTION_NEXT_GOAL" />
+                <action android:name="com.minta1234.savingsgoal.widget.ACTION_TRIGGER_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"

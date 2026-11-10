@@ -1,4 +1,4 @@
-﻿package com.minta1234.savingsgoal
+package com.minta1234.savingsgoal
 
 import com.minta1234.savingsgoal.data.Goal
 import com.minta1234.savingsgoal.data.SavingsCalculations
