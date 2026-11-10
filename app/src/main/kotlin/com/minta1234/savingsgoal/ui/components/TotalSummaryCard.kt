@@ -95,6 +95,7 @@ fun TotalSummaryCard(
                 remainingAmount = goal.remainingAmount,
                 progressFraction = goal.progressFraction,
                 statusBadge = "${page + 1}/${goals.size} (${goal.progressPercent}%)",
+                statusLabel = stringResource(R.string.ui_progress),
                 currencySymbol = currency,
                 imagePath = goal.imagePath,
                 onClick = { onGoalClick(goal.id) },
@@ -155,6 +156,7 @@ fun SingleSummaryCardView(
     statusBadge: String,
     currencySymbol: String,
     imagePath: String? = null,
+    statusLabel: String? = null,
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
@@ -306,7 +308,7 @@ fun SingleSummaryCardView(
                     // Goals / Progress Indicator
                     Column(horizontalAlignment = Alignment.End) {
                         Text(
-                            text = stringResource(R.string.ui_total_goals),
+                            text = statusLabel ?: stringResource(R.string.ui_total_goals),
                             style = MaterialTheme.typography.bodySmall,
                             color = Color(0xFF94A3B8)
                         )
