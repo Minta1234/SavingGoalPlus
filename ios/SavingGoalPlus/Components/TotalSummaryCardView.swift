@@ -2,30 +2,92 @@ import SwiftUI
 
 public struct TotalSummaryCardView: View {
     @AppStorage(SavingsCalculations.currencyPreferenceKey) private var currencySymbol = "$"
+    public let goals: [Goal]
     public let summary: TotalSummary
 
-    public init(summary: TotalSummary) {
+    @State private var selectedIndex = 0
+
+    public init(
+        goals: [Goal] = [],
+        summary: TotalSummary
+    ) {
+        self.goals = goals
         self.summary = summary
     }
 
     public var body: some View {
+        if goals.isEmpty {
+            singleCard(
+                title: "You've already saved",
+                saved: summary.totalSavedAmount,
+                target: summary.totalTargetAmount,
+                remaining: summary.totalRemainingAmount,
+                percent: summary.overallPercentage,
+                badge: "\(summary.activeGoalCount) Goals"
+            )
+        } else {
+            VStack(spacing: 10) {
+                TabView(selection: $selectedIndex) {
+                    ForEach(Array(goals.enumerated()), id: \.element.id) { index, goal in
+                        singleCard(
+                            title: goal.title,
+                            saved: goal.savedAmount,
+                            target: goal.targetAmount,
+                            remaining: goal.remainingAmount,
+                            percent: goal.progressPercentage,
+                            badge: "\(index + 1)/\(goals.count) (\(goal.progressPercentage)%)"
+                        )
+                        .tag(index)
+                    }
+                }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .frame(height: 170)
+
+                if goals.count > 1 {
+                    HStack(spacing: 6) {
+                        ForEach(0..<goals.count, id: \.self) { idx in
+                            Capsule()
+                                .fill(selectedIndex == idx ? ColorTheme.primaryEmerald : Color.secondary.opacity(0.3))
+                                .frame(width: selectedIndex == idx ? 22 : 6, height: 6)
+                                .animation(.spring(response: 0.35, dampingFraction: 0.7), value: selectedIndex)
+                        }
+                    }
+                    .padding(.top, 2)
+                }
+            }
+        }
+    }
+
+    private func singleCard(
+        title: String,
+        saved: Double,
+        target: Double,
+        remaining: Double,
+        percent: Int,
+        badge: String
+    ) -> some View {
         VStack(spacing: 14) {
-            // Top Row: "You've already saved" & Piggy Bank Badge
+            // Top Row: Goal Title & Saved Amount + Badge
             HStack(alignment: .center) {
                 VStack(alignment: .leading, spacing: 3) {
+                    Text(title)
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+
                     Text("You've already saved")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 10, weight: .medium))
                         .foregroundColor(Color(white: 0.7))
                         .tracking(0.5)
 
-                    Text(SavingsCalculations.formatCurrency(summary.totalSavedAmount, currencySymbol: currencySymbol))
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                    Text(SavingsCalculations.formatCurrency(saved, currencySymbol: currencySymbol))
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
                 }
 
                 Spacer()
 
-                // Piggy Bank Icon in rounded container
+                // Piggy Bank Icon badge
                 ZStack {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.white.opacity(0.12))
@@ -46,19 +108,19 @@ public struct TotalSummaryCardView: View {
 
                     Capsule()
                         .fill(ColorTheme.primaryEmerald)
-                        .frame(width: geo.size.width * CGFloat(summary.overallPercentage) / 100.0, height: 6)
+                        .frame(width: geo.size.width * CGFloat(min(100, max(0, percent))) / 100.0, height: 6)
                 }
             }
             .frame(height: 6)
 
-            // Bottom Stats Row: Target, Remaining, Total Goals & Percent (All in 1 Card!)
+            // Bottom Stats Row: Target, Remaining, Total Goals & Percent
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Target")
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(Color(white: 0.65))
-                    Text(SavingsCalculations.formatCurrency(summary.totalTargetAmount, currencySymbol: currencySymbol))
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                    Text(SavingsCalculations.formatCurrency(target, currencySymbol: currencySymbol))
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
                 }
 
@@ -68,19 +130,19 @@ public struct TotalSummaryCardView: View {
                     Text("Remaining")
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(Color(white: 0.65))
-                    Text(SavingsCalculations.formatCurrency(summary.totalRemainingAmount, currencySymbol: currencySymbol))
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                    Text(SavingsCalculations.formatCurrency(remaining, currencySymbol: currencySymbol))
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
                 }
 
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 2) {
-                    Text("Total Goals")
+                    Text("Progress")
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(Color(white: 0.65))
-                    Text("\(summary.activeGoalCount) (\(summary.overallPercentage)%)")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                    Text(badge)
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundColor(ColorTheme.primaryEmerald)
                 }
             }

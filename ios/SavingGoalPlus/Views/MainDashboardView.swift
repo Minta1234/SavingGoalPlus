@@ -34,8 +34,11 @@ public struct MainDashboardView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Total Summary Card (Unlocked)
-                    TotalSummaryCardView(summary: storage.computeTotalSummary())
+                    // Total Summary Carousel (Swipeable K-Plus Cards per Goal)
+                    TotalSummaryCardView(
+                        goals: filteredGoals,
+                        summary: storage.computeTotalSummary()
+                    )
                         .padding(.horizontal)
                         .padding(.top, 8)
 
