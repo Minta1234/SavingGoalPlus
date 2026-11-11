@@ -60,6 +60,22 @@ class SavingsCalculationsTest {
     }
 
     @Test
+    fun testRatePlanToday() {
+        val today = LocalDate.now()
+        val plan = SavingsCalculations.calculateRatePlan(
+            targetDateStr = today.toString(),
+            remainingAmount = 500.0,
+            isReached = false
+        )
+
+        assertNotNull(plan)
+        assertFalse(plan!!.isExpired)
+        assertEquals("Today", plan.formattedTimeToGo)
+        assertEquals(500.0, plan.dailyAmount, 0.01)
+        assertEquals(1L, plan.daysToGo)
+    }
+
+    @Test
     fun testCurrencyFormatting() {
         val formatted = SavingsCalculations.formatCurrency(1234.5, "$")
         assertEquals("$ 1,234.50", formatted)

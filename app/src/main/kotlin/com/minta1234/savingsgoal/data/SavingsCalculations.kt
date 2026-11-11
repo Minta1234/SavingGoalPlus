@@ -17,13 +17,17 @@ object SavingsCalculations {
         if (dateStr.isNullOrBlank() || dateStr == "null" || dateStr == "NULL") return null
         return try {
             if (dateStr.contains("-")) {
-                LocalDate.parse(dateStr)
+                try {
+                    LocalDate.parse(dateStr)
+                } catch (_: DateTimeParseException) {
+                    LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("dd-MM-yyyy"))
+                }
             } else if (dateStr.contains("/")) {
                 LocalDate.parse(dateStr, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
             } else {
                 LocalDate.parse(dateStr, displayDateFormatter)
             }
-        } catch (_: DateTimeParseException) {
+        } catch (_: Exception) {
             null
         }
     }
@@ -45,7 +49,7 @@ object SavingsCalculations {
         val targetDate = parseDate(targetDateStr) ?: return null
         val today = LocalDate.now()
 
-        val isExpired = !targetDate.isAfter(today)
+        val isExpired = targetDate.isBefore(today)
         val period = Period.between(today, targetDate)
         val years = period.years.coerceAtLeast(0)
         val months = period.months.coerceAtLeast(0)

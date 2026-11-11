@@ -51,7 +51,7 @@ object SavingsStreakManager {
     private val _streakState = MutableStateFlow(StreakInfo())
     val streakState: StateFlow<StreakInfo> = _streakState.asStateFlow()
 
-    private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
 
     @Synchronized
     fun init(context: Context) {

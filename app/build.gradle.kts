@@ -19,7 +19,7 @@ android {
 
   defaultConfig {
     applicationId = "com.minta1234.savingsgoal"
-    minSdk = 24
+    minSdk = 26
     targetSdk = 36
     versionCode = appVersionCode
     versionName = appVersionName

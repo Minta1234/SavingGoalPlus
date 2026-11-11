@@ -24,6 +24,7 @@ class SavingsReminderReceiver : BroadcastReceiver() {
         }
 
         // Show reminder notification with streak encouragement
+        com.minta1234.savingsgoal.data.SavingsStreakManager.init(context)
         val streakInfo = com.minta1234.savingsgoal.data.SavingsStreakManager.streakState.value
         val (title, message) = if (streakInfo.currentStreak > 0) {
             Pair(

@@ -170,8 +170,12 @@ fun PaymentAddEditDialog(
     )
 
     if (showDatePicker) {
+        val initialMillis = remember(dateStr) {
+            SavingsCalculations.parseDate(dateStr)?.atStartOfDay(ZoneId.of("UTC"))?.toInstant()?.toEpochMilli()
+                ?: System.currentTimeMillis()
+        }
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = System.currentTimeMillis()
+            initialSelectedDateMillis = initialMillis
         )
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },

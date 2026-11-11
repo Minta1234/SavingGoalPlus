@@ -1,4 +1,4 @@
-﻿package com.minta1234.savingsgoal.ui.components
+package com.minta1234.savingsgoal.ui.components
 
 import androidx.compose.ui.res.stringResource
 import com.minta1234.savingsgoal.R
@@ -302,18 +302,6 @@ fun GoalCard(
 
 @Composable
 internal fun SavingsRatePlan.localizedDeadlineText(): String {
-    val configuration = LocalConfiguration.current
-    val isThai = try {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-            configuration.locales.takeIf { !it.isEmpty }?.get(0)?.language == "th"
-        } else {
-            @Suppress("DEPRECATION")
-            configuration.locale?.language == "th"
-        }
-    } catch (_: Exception) {
-        java.util.Locale.getDefault().language == "th"
-    }
-    if (!isThai) return formattedTimeToGo
     return when {
         isReached -> stringResource(R.string.ui_goal_achieved)
         isExpired -> stringResource(R.string.goal_deadline_passed)

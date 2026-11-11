@@ -26,7 +26,7 @@ data class SettingsUiState(
         get() {
             val h = if (reminderHour == 0) 12 else if (reminderHour > 12) reminderHour - 12 else reminderHour
             val amPm = if (reminderHour >= 12) "PM" else "AM"
-            return String.format("%02d:%02d %s", h, reminderMinute, amPm)
+            return String.format(java.util.Locale.getDefault(), "%02d:%02d %s", h, reminderMinute, amPm)
         }
 }
 

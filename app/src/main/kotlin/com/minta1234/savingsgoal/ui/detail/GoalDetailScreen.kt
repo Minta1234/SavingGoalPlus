@@ -312,8 +312,12 @@ fun GoalDetailScreen(
 
     // Date Picker for Target Date
     if (showDatePickerDialog) {
+        val initialMillis = remember(goal?.date) {
+            SavingsCalculations.parseDate(goal?.date)?.atStartOfDay(ZoneId.of("UTC"))?.toInstant()?.toEpochMilli()
+                ?: System.currentTimeMillis()
+        }
         val datePickerState = rememberDatePickerState(
-            initialSelectedDateMillis = System.currentTimeMillis()
+            initialSelectedDateMillis = initialMillis
         )
         DatePickerDialog(
             onDismissRequest = { showDatePickerDialog = false },

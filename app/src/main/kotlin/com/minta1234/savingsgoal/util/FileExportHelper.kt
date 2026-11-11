@@ -1,4 +1,4 @@
-﻿package com.minta1234.savingsgoal.util
+package com.minta1234.savingsgoal.util
 
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts

@@ -57,8 +57,8 @@ fun TotalSummaryCard(
     goals: List<Goal>,
     summary: TotalSummary,
     currencySymbol: String,
-    onGoalClick: (Long) -> Unit = {},
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onGoalClick: (Long) -> Unit = {}
 ) {
     if (goals.isEmpty()) {
         val fraction = if (summary.totalTarget > 0) (summary.totalSaved / summary.totalTarget).toFloat().coerceIn(0f, 1f) else 0f
@@ -71,13 +71,14 @@ fun TotalSummaryCard(
             progressFraction = fraction,
             statusBadge = "${summary.totalGoals} ($percent%)",
             currencySymbol = currencySymbol,
-            onClick = null,
-            modifier = modifier
+            modifier = modifier,
+            onClick = null
         )
         return
     }
 
-    val pagerState = rememberPagerState(pageCount = { goals.size })
+    val pageCount = goals.size + 1
+    val pagerState = rememberPagerState(pageCount = { pageCount })
     val scope = rememberCoroutineScope()
 
     Column(modifier = modifier.fillMaxWidth()) {
@@ -86,24 +87,43 @@ fun TotalSummaryCard(
             pageSpacing = 12.dp,
             modifier = Modifier.fillMaxWidth()
         ) { page ->
-            val goal = goals.getOrNull(page) ?: return@HorizontalPager
-            val currency = if (goal.currency.isNullOrBlank() || goal.currency == "null") currencySymbol else goal.currency
-            SingleSummaryCardView(
-                title = goal.name,
-                savedAmount = goal.totalSaved,
-                targetAmount = goal.amount,
-                remainingAmount = goal.remainingAmount,
-                progressFraction = goal.progressFraction,
-                statusBadge = "${page + 1}/${goals.size} (${goal.progressPercent}%)",
-                statusLabel = stringResource(R.string.ui_progress),
-                currencySymbol = currency,
-                imagePath = goal.imagePath,
-                onClick = { onGoalClick(goal.id) },
-                modifier = Modifier.fillMaxWidth()
-            )
+            if (page == 0) {
+                // Page 0: Total Summary across all active goals
+                val fraction = if (summary.totalTarget > 0) (summary.totalSaved / summary.totalTarget).toFloat().coerceIn(0f, 1f) else 0f
+                val percent = (fraction * 100).toInt()
+                SingleSummaryCardView(
+                    title = stringResource(R.string.ui_total_saved),
+                    savedAmount = summary.totalSaved,
+                    targetAmount = summary.totalTarget,
+                    remainingAmount = summary.totalRemaining,
+                    progressFraction = fraction,
+                    statusBadge = "${summary.totalGoals} ($percent%)",
+                    statusLabel = stringResource(R.string.ui_total_goals),
+                    currencySymbol = currencySymbol,
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = null
+                )
+            } else {
+                // Pages 1..N: Individual Goal Cards
+                val goal = goals.getOrNull(page - 1) ?: return@HorizontalPager
+                val currency = if (goal.currency.isNullOrBlank() || goal.currency == "null") currencySymbol else goal.currency
+                SingleSummaryCardView(
+                    title = goal.name,
+                    savedAmount = goal.totalSaved,
+                    targetAmount = goal.amount,
+                    remainingAmount = goal.remainingAmount,
+                    progressFraction = goal.progressFraction,
+                    statusBadge = "$page/${goals.size} (${goal.progressPercent}%)",
+                    statusLabel = stringResource(R.string.ui_progress),
+                    currencySymbol = currency,
+                    imagePath = goal.imagePath,
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = { onGoalClick(goal.id) }
+                )
+            }
         }
 
-        if (goals.size > 1) {
+        if (pageCount > 1) {
             Spacer(modifier = Modifier.height(10.dp))
 
             // K PLUS Style Page Indicator Dots
@@ -114,7 +134,7 @@ fun TotalSummaryCard(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                repeat(goals.size) { index ->
+                repeat(pageCount) { index ->
                     val isSelected = pagerState.currentPage == index
                     val width by animateDpAsState(
                         targetValue = if (isSelected) 22.dp else 6.dp,
@@ -155,10 +175,10 @@ fun SingleSummaryCardView(
     progressFraction: Float,
     statusBadge: String,
     currencySymbol: String,
+    modifier: Modifier = Modifier,
     imagePath: String? = null,
     statusLabel: String? = null,
-    onClick: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    onClick: (() -> Unit)? = null
 ) {
     Card(
         modifier = modifier
