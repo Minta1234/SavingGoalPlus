@@ -1,4 +1,4 @@
-﻿package com.minta1234.savingsgoal.notification
+package com.minta1234.savingsgoal.notification
 
 import android.content.BroadcastReceiver
 import android.content.Context
