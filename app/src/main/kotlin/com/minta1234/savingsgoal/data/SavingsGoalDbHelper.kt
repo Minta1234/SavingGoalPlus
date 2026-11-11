@@ -45,10 +45,15 @@ class SavingsGoalDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
         db.disableWriteAheadLogging()
     }
 
+    override fun onOpen(db: SQLiteDatabase) {
+        super.onOpen(db)
+        ensureSchema(db)
+    }
+
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
             """
-            CREATE TABLE $TABLE_MAINLIST(
+            CREATE TABLE IF NOT EXISTS $TABLE_MAINLIST(
                 $COL_ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 $COL_NAME TEXT,
                 $COL_AMOUNT DOUBLE,
@@ -63,7 +68,7 @@ class SavingsGoalDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
 
         db.execSQL(
             """
-            CREATE TABLE $TABLE_PAYMENTLIST(
+            CREATE TABLE IF NOT EXISTS $TABLE_PAYMENTLIST(
                 $COL_PAY_ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 $COL_PAY_MAINID INTEGER,
                 $COL_PAY_DATE TEXT,
@@ -73,6 +78,18 @@ class SavingsGoalDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
             );
             """.trimIndent()
         )
+    }
+
+    private fun ensureSchema(db: SQLiteDatabase) {
+        try {
+            onCreate(db)
+        } catch (_: Exception) {
+        }
+        safeAddColumn(db, TABLE_PAYMENTLIST, COL_PAY_NOTE, "TEXT DEFAULT ''")
+        safeAddColumn(db, TABLE_MAINLIST, COL_FOLDER, "TEXT DEFAULT 'MAIN'")
+        safeAddColumn(db, TABLE_MAINLIST, COL_NOTE, "TEXT DEFAULT ''")
+        safeAddColumn(db, TABLE_MAINLIST, COL_CURRENCY, "TEXT DEFAULT 'null'")
+        safeAddColumn(db, TABLE_PAYMENTLIST, COL_PAY_DOSAVING, "VARCHAR(1) DEFAULT 'true'")
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {

@@ -73,20 +73,31 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private suspend fun loadData() {
-        rawGoals = repository.getActiveGoals()
-        val summary = repository.summarizeGoals(rawGoals)
-        val defaultCurrency = repository.getDefaultCurrency()
-        val showTotal = repository.getShowTotalGoalsCard()
-        val currentSort = getSavedSortOrder()
+        try {
+            rawGoals = repository.getActiveGoals()
+            val summary = repository.summarizeGoals(rawGoals)
+            val defaultCurrency = repository.getDefaultCurrency()
+            val showTotal = repository.getShowTotalGoalsCard()
+            val currentSort = getSavedSortOrder()
 
-        _uiState.value = MainUiState(
-            goals = sortGoals(rawGoals, currentSort),
-            summary = summary,
-            defaultCurrency = defaultCurrency,
-            showTotalGoalsCard = showTotal,
-            sortOrder = currentSort,
-            isLoading = false
-        )
+            _uiState.value = MainUiState(
+                goals = sortGoals(rawGoals, currentSort),
+                summary = summary,
+                defaultCurrency = defaultCurrency,
+                showTotalGoalsCard = showTotal,
+                sortOrder = currentSort,
+                isLoading = false
+            )
+        } catch (_: Exception) {
+            _uiState.value = MainUiState(
+                goals = emptyList(),
+                summary = TotalSummary(),
+                defaultCurrency = "$",
+                showTotalGoalsCard = true,
+                sortOrder = GoalSortOrder.HIGHEST_TO_LOWEST,
+                isLoading = false
+            )
+        }
     }
 
     fun addGoal(

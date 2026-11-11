@@ -86,7 +86,7 @@ fun TotalSummaryCard(
             pageSpacing = 12.dp,
             modifier = Modifier.fillMaxWidth()
         ) { page ->
-            val goal = goals[page]
+            val goal = goals.getOrNull(page) ?: return@HorizontalPager
             val currency = if (goal.currency.isNullOrBlank() || goal.currency == "null") currencySymbol else goal.currency
             SingleSummaryCardView(
                 title = goal.name,
@@ -216,9 +216,13 @@ fun SingleSummaryCardView(
                     }
 
                     val imageBitmap = remember(imagePath) {
-                        imagePath?.let { path ->
-                            val file = File(path)
-                            if (file.exists()) BitmapFactory.decodeFile(path)?.asImageBitmap() else null
+                        try {
+                            imagePath?.let { path ->
+                                val file = File(path)
+                                if (file.exists() && file.length() > 0) BitmapFactory.decodeFile(path)?.asImageBitmap() else null
+                            }
+                        } catch (_: Throwable) {
+                            null
                         }
                     }
 

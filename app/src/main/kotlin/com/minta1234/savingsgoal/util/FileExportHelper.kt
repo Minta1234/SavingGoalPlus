@@ -5,7 +5,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalResources
 import com.minta1234.savingsgoal.R
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -20,8 +19,9 @@ fun rememberFileExport(
     content: suspend () -> String,
     onResult: suspend (String) -> Unit
 ): () -> Unit {
-    val resolver = LocalContext.current.contentResolver
-    val resources = LocalResources.current
+    val context = LocalContext.current
+    val resolver = context.contentResolver
+    val resources = context.resources
     val scope = rememberCoroutineScope()
     val launcher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument(mimeType)) { uri ->
         if (uri != null) {

@@ -52,8 +52,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -121,9 +121,13 @@ fun GoalCard(
             ) {
                 // Goal Image / Thumbnail
                 val imageBitmap = remember(goal.imagePath) {
-                    goal.imagePath?.let { path ->
-                        val file = File(path)
-                        if (file.exists()) BitmapFactory.decodeFile(path)?.asImageBitmap() else null
+                    try {
+                        goal.imagePath?.let { path ->
+                            val file = File(path)
+                            if (file.exists() && file.length() > 0) BitmapFactory.decodeFile(path)?.asImageBitmap() else null
+                        }
+                    } catch (_: Throwable) {
+                        null
                     }
                 }
 
@@ -298,7 +302,18 @@ fun GoalCard(
 
 @Composable
 internal fun SavingsRatePlan.localizedDeadlineText(): String {
-    if (LocalResources.current.configuration.locales[0].language != "th") return formattedTimeToGo
+    val configuration = LocalConfiguration.current
+    val isThai = try {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            configuration.locales.takeIf { !it.isEmpty }?.get(0)?.language == "th"
+        } else {
+            @Suppress("DEPRECATION")
+            configuration.locale?.language == "th"
+        }
+    } catch (_: Exception) {
+        java.util.Locale.getDefault().language == "th"
+    }
+    if (!isThai) return formattedTimeToGo
     return when {
         isReached -> stringResource(R.string.ui_goal_achieved)
         isExpired -> stringResource(R.string.goal_deadline_passed)

@@ -125,14 +125,14 @@ class SavingsRepository(private val context: Context) {
     }
 
     private fun cursorToGoal(c: Cursor): Goal {
-        val id = c.getLong(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_ID))
-        val name = c.getString(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_NAME)) ?: "untitled"
-        val amount = c.getDouble(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_AMOUNT))
-        val date = c.getString(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_DATE))
-        val folder = c.getString(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_FOLDER)) ?: "MAIN"
-        val position = c.getInt(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_POSITION))
-        val note = c.getString(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_NOTE)) ?: ""
-        val currency = c.getString(c.getColumnIndexOrThrow(SavingsGoalDbHelper.COL_CURRENCY))
+        val id = c.getColumnIndex(SavingsGoalDbHelper.COL_ID).takeIf { it >= 0 }?.let(c::getLong) ?: 0L
+        val name = c.getColumnIndex(SavingsGoalDbHelper.COL_NAME).takeIf { it >= 0 }?.let(c::getString) ?: "untitled"
+        val amount = c.getColumnIndex(SavingsGoalDbHelper.COL_AMOUNT).takeIf { it >= 0 }?.let(c::getDouble) ?: 0.0
+        val date = c.getColumnIndex(SavingsGoalDbHelper.COL_DATE).takeIf { it >= 0 }?.let(c::getString)
+        val folder = c.getColumnIndex(SavingsGoalDbHelper.COL_FOLDER).takeIf { it >= 0 }?.let(c::getString) ?: "MAIN"
+        val position = c.getColumnIndex(SavingsGoalDbHelper.COL_POSITION).takeIf { it >= 0 }?.let(c::getInt) ?: 0
+        val note = c.getColumnIndex(SavingsGoalDbHelper.COL_NOTE).takeIf { it >= 0 }?.let(c::getString) ?: ""
+        val currency = c.getColumnIndex(SavingsGoalDbHelper.COL_CURRENCY).takeIf { it >= 0 }?.let(c::getString)
 
         // Check image file existence
         val imageFile = File(context.filesDir, id.toString())
@@ -157,32 +157,61 @@ class SavingsRepository(private val context: Context) {
     }
 
     private fun getPaymentTotalsForGoal(goalId: Long): Pair<Double, Int> {
-        val db = dbHelper.readableDatabase
-        val cursor = db.query(
-            SavingsGoalDbHelper.TABLE_PAYMENTLIST,
-            arrayOf(SavingsGoalDbHelper.COL_PAY_AMOUNT, SavingsGoalDbHelper.COL_PAY_DOSAVING),
-            "${SavingsGoalDbHelper.COL_PAY_MAINID} = ?",
-            arrayOf(goalId.toString()),
-            null,
-            null,
-            null
-        )
-        var total = 0.0
-        var count = 0
-        cursor.use { c ->
-            while (c.moveToNext()) {
-                val amt = c.getDouble(0)
-                val isSavingStr = c.getString(1)
-                val isSaving = isSavingStr.equals("true", ignoreCase = true)
-                if (isSaving) {
-                    total += amt
-                } else {
-                    total -= amt
+        return try {
+            val db = dbHelper.readableDatabase
+            val hasDoSaving = try {
+                db.rawQuery("PRAGMA table_info(${SavingsGoalDbHelper.TABLE_PAYMENTLIST})", null).use { cursor ->
+                    var found = false
+                    while (cursor.moveToNext()) {
+                        val colName = cursor.getString(1)
+                        if (colName.equals(SavingsGoalDbHelper.COL_PAY_DOSAVING, ignoreCase = true)) {
+                            found = true
+                            break
+                        }
+                    }
+                    found
                 }
-                count++
+            } catch (_: Exception) {
+                false
             }
+
+            val columns = if (hasDoSaving) {
+                arrayOf(SavingsGoalDbHelper.COL_PAY_AMOUNT, SavingsGoalDbHelper.COL_PAY_DOSAVING)
+            } else {
+                arrayOf(SavingsGoalDbHelper.COL_PAY_AMOUNT)
+            }
+
+            val cursor = db.query(
+                SavingsGoalDbHelper.TABLE_PAYMENTLIST,
+                columns,
+                "${SavingsGoalDbHelper.COL_PAY_MAINID} = ?",
+                arrayOf(goalId.toString()),
+                null,
+                null,
+                null
+            )
+            var total = 0.0
+            var count = 0
+            cursor.use { c ->
+                while (c.moveToNext()) {
+                    val amt = c.getDouble(0)
+                    val isSaving = if (hasDoSaving && c.columnCount > 1) {
+                        c.getString(1)?.let { it.equals("true", ignoreCase = true) || it == "1" } ?: (amt >= 0)
+                    } else {
+                        amt >= 0
+                    }
+                    if (isSaving) {
+                        total += amt
+                    } else {
+                        total -= amt
+                    }
+                    count++
+                }
+            }
+            Pair(total, count)
+        } catch (_: Exception) {
+            Pair(0.0, 0)
         }
-        return Pair(total, count)
     }
 
     suspend fun insertGoal(

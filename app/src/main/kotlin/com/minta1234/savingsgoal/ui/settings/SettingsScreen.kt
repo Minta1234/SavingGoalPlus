@@ -79,7 +79,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -107,7 +106,7 @@ fun SettingsScreen(
     val appearance by ThemeManager.appearance.collectAsState()
     var showAccentPicker by remember { mutableStateOf(false) }
     val context = LocalContext.current
-    val resources = LocalResources.current
+    val resources = context.resources
     val language by AppLanguage.selected.collectAsState()
     var showLanguageDialog by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()

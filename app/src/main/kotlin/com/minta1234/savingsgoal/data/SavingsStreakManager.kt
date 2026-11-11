@@ -1,4 +1,4 @@
-﻿package com.minta1234.savingsgoal.data
+package com.minta1234.savingsgoal.data
 
 import android.content.Context
 import android.content.SharedPreferences
