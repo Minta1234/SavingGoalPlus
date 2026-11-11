@@ -55,40 +55,44 @@ object SavingsStreakManager {
 
     @Synchronized
     fun init(context: Context) {
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val current = prefs.getInt(KEY_CURRENT_STREAK, 0)
-        val best = prefs.getInt(KEY_BEST_STREAK, 0)
-        val lastDate = prefs.getString(KEY_LAST_DATE, null)
-        val total = prefs.getInt(KEY_TOTAL_DAYS, 0)
+        try {
+            val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            val current = try { prefs.getInt(KEY_CURRENT_STREAK, 0) } catch (_: Exception) { 0 }
+            val best = try { prefs.getInt(KEY_BEST_STREAK, 0) } catch (_: Exception) { 0 }
+            val lastDate = try { prefs.getString(KEY_LAST_DATE, null) } catch (_: Exception) { null }
+            val total = try { prefs.getInt(KEY_TOTAL_DAYS, 0) } catch (_: Exception) { 0 }
 
-        val today = getTodayDateString()
-        val yesterday = getYesterdayDateString()
+            val today = getTodayDateString()
+            val yesterday = getYesterdayDateString()
 
-        val dates = recentDates(prefs, lastDate, current)
-        if (!prefs.contains(KEY_RECENT_DATES)) {
-            prefs.edit().putStringSet(KEY_RECENT_DATES, dates).apply()
+            val dates = recentDates(prefs, lastDate, current)
+            if (!prefs.contains(KEY_RECENT_DATES)) {
+                try { prefs.edit().putStringSet(KEY_RECENT_DATES, dates).apply() } catch (_: Exception) {}
+            }
+
+            // Check if streak broke because yesterday was missed
+            val validatedStreak = when {
+                lastDate == null -> 0
+                lastDate == today -> current
+                lastDate == yesterday -> current
+                else -> 0 // Missed a day! Streak resets
+            }
+
+            if (validatedStreak != current) {
+                try { prefs.edit().putInt(KEY_CURRENT_STREAK, validatedStreak).apply() } catch (_: Exception) {}
+            }
+
+            _streakState.value = StreakInfo(
+                currentStreak = validatedStreak,
+                bestStreak = maxOf(best, validatedStreak),
+                lastSavedDate = lastDate,
+                totalDaysSaved = total,
+                isStreakActiveToday = (lastDate == today),
+                recentDays = recentDays(dates)
+            )
+        } catch (_: Exception) {
+            _streakState.value = StreakInfo()
         }
-
-        // Check if streak broke because yesterday was missed
-        val validatedStreak = when {
-            lastDate == null -> 0
-            lastDate == today -> current
-            lastDate == yesterday -> current
-            else -> 0 // Missed a day! Streak resets
-        }
-
-        if (validatedStreak != current) {
-            prefs.edit().putInt(KEY_CURRENT_STREAK, validatedStreak).apply()
-        }
-
-        _streakState.value = StreakInfo(
-            currentStreak = validatedStreak,
-            bestStreak = maxOf(best, validatedStreak),
-            lastSavedDate = lastDate,
-            totalDaysSaved = total,
-            isStreakActiveToday = (lastDate == today),
-            recentDays = recentDays(dates)
-        )
     }
 
     @Synchronized

@@ -18,7 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalContext
 import com.minta1234.savingsgoal.data.SavingsStreakManager
 import com.minta1234.savingsgoal.ui.theme.AppLanguage
 import com.minta1234.savingsgoal.ui.theme.AppThemePalette
@@ -37,32 +37,51 @@ object ThemeManager {
     internal val appearance = _appearance.asStateFlow()
 
     fun init(context: Context) {
-        val prefs = context.getSharedPreferences("com.rmystudio.savingsgoal.PREFERENCE_FILE_KEY", Context.MODE_PRIVATE)
-        val mode = prefs.getString("THEME_MODE", AppThemeMode.SYSTEM.id)
-        _appearance.value = AppThemeMode.entries.firstOrNull { it.id == mode } ?: AppThemeMode.SYSTEM
-        val savedId = prefs.getString("THEME_PALETTE_ID", "emerald")
-        _currentPalette.value = AppThemePalette.fromId(savedId)
-        _customAccent.value = if (prefs.contains("THEME_CUSTOM_ACCENT")) prefs.getInt("THEME_CUSTOM_ACCENT", 0) else null
+        try {
+            val prefs = context.getSharedPreferences("com.rmystudio.savingsgoal.PREFERENCE_FILE_KEY", Context.MODE_PRIVATE)
+            val mode = try { prefs.getString("THEME_MODE", AppThemeMode.SYSTEM.id) } catch (_: Exception) { AppThemeMode.SYSTEM.id }
+            _appearance.value = AppThemeMode.entries.firstOrNull { it.id == mode } ?: AppThemeMode.SYSTEM
+            val savedId = try { prefs.getString("THEME_PALETTE_ID", "emerald") } catch (_: Exception) { "emerald" }
+            _currentPalette.value = AppThemePalette.fromId(savedId)
+            _customAccent.value = try {
+                if (prefs.contains("THEME_CUSTOM_ACCENT")) prefs.getInt("THEME_CUSTOM_ACCENT", 0) else null
+            } catch (_: Exception) {
+                null
+            }
+        } catch (_: Exception) {
+            _appearance.value = AppThemeMode.SYSTEM
+            _currentPalette.value = AppThemePalette.EMERALD_MINT
+            _customAccent.value = null
+        }
     }
 
     internal fun setAppearance(context: Context, mode: AppThemeMode) {
-        context.getSharedPreferences("com.rmystudio.savingsgoal.PREFERENCE_FILE_KEY", Context.MODE_PRIVATE)
-            .edit().putString("THEME_MODE", mode.id).apply()
+        try {
+            context.getSharedPreferences("com.rmystudio.savingsgoal.PREFERENCE_FILE_KEY", Context.MODE_PRIVATE)
+                .edit().putString("THEME_MODE", mode.id).apply()
+        } catch (_: Exception) {
+        }
         _appearance.value = mode
     }
 
     fun setPalette(context: Context, palette: AppThemePalette) {
         _currentPalette.value = palette
-        val prefs = context.getSharedPreferences("com.rmystudio.savingsgoal.PREFERENCE_FILE_KEY", Context.MODE_PRIVATE)
-        prefs.edit().putString("THEME_PALETTE_ID", palette.id).remove("THEME_CUSTOM_ACCENT").apply()
+        try {
+            val prefs = context.getSharedPreferences("com.rmystudio.savingsgoal.PREFERENCE_FILE_KEY", Context.MODE_PRIVATE)
+            prefs.edit().putString("THEME_PALETTE_ID", palette.id).remove("THEME_CUSTOM_ACCENT").apply()
+        } catch (_: Exception) {
+        }
         _customAccent.value = null
     }
 
     fun setCustomAccent(context: Context, value: Int?) {
-        val prefs = context.getSharedPreferences("com.rmystudio.savingsgoal.PREFERENCE_FILE_KEY", Context.MODE_PRIVATE)
-        val editor = prefs.edit()
-        if (value == null) editor.remove("THEME_CUSTOM_ACCENT") else editor.putInt("THEME_CUSTOM_ACCENT", value)
-        editor.apply()
+        try {
+            val prefs = context.getSharedPreferences("com.rmystudio.savingsgoal.PREFERENCE_FILE_KEY", Context.MODE_PRIVATE)
+            val editor = prefs.edit()
+            if (value == null) editor.remove("THEME_CUSTOM_ACCENT") else editor.putInt("THEME_CUSTOM_ACCENT", value)
+            editor.apply()
+        } catch (_: Exception) {
+        }
         _customAccent.value = value
     }
 }
@@ -73,7 +92,11 @@ class MainActivity : ComponentActivity() {
         ThemeManager.init(this)
         AppLanguage.load(this)
 
-        enableEdgeToEdge()
+        try {
+            enableEdgeToEdge()
+        } catch (_: Exception) {
+        }
+
         setContent {
             val appearance by ThemeManager.appearance.collectAsState()
             val darkTheme = when (appearance) {
@@ -82,19 +105,31 @@ class MainActivity : ComponentActivity() {
                 AppThemeMode.DARK -> true
             }
             LaunchedEffect(darkTheme) {
-                enableEdgeToEdge(
-                    statusBarStyle = SystemBarStyle.auto(0, 0) { darkTheme },
-                    navigationBarStyle = SystemBarStyle.auto(0xE6FFFFFF.toInt(), 0x801B1B1B.toInt()) { darkTheme }
-                )
+                try {
+                    enableEdgeToEdge(
+                        statusBarStyle = SystemBarStyle.auto(
+                            android.graphics.Color.TRANSPARENT,
+                            android.graphics.Color.TRANSPARENT
+                        ) { darkTheme },
+                        navigationBarStyle = SystemBarStyle.auto(
+                            android.graphics.Color.TRANSPARENT,
+                            android.graphics.Color.TRANSPARENT
+                        ) { darkTheme }
+                    )
+                } catch (_: Exception) {
+                }
             }
             val palette by ThemeManager.currentPalette.collectAsState()
             val customAccent by ThemeManager.customAccent.collectAsState()
             val language by AppLanguage.selected.collectAsState()
             val configuration = LocalConfiguration.current
-            val resources = remember(language, configuration) {
-                language.localizedContext(this, configuration).resources
+            val localizedContext = remember(language, configuration) {
+                language.localizedContext(this, configuration)
             }
-            CompositionLocalProvider(LocalResources provides resources) {
+            CompositionLocalProvider(
+                LocalContext provides localizedContext,
+                LocalConfiguration provides localizedContext.resources.configuration
+            ) {
                 SavingsGoalTheme(darkTheme = darkTheme, palette = palette, customAccent = customAccent?.let { Color(it) }) {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
@@ -109,6 +144,9 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
-        SavingsStreakManager.init(this)
+        try {
+            SavingsStreakManager.init(this)
+        } catch (_: Exception) {
+        }
     }
 }

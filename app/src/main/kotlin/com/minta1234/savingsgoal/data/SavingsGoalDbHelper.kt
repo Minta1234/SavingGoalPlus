@@ -76,21 +76,33 @@ class SavingsGoalDbHelper(context: Context) : SQLiteOpenHelper(context, DATABASE
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        // Preserves existing data when upgrading from any older version
+        // Preserves existing data safely when upgrading from any older version
         if (oldVersion < 2) {
-            db.execSQL("ALTER TABLE $TABLE_PAYMENTLIST ADD COLUMN $COL_PAY_NOTE TEXT DEFAULT ''")
+            safeAddColumn(db, TABLE_PAYMENTLIST, COL_PAY_NOTE, "TEXT DEFAULT ''")
         }
         if (oldVersion < 3) {
-            db.execSQL("ALTER TABLE $TABLE_MAINLIST ADD COLUMN $COL_FOLDER TEXT DEFAULT 'MAIN'")
+            safeAddColumn(db, TABLE_MAINLIST, COL_FOLDER, "TEXT DEFAULT 'MAIN'")
         }
         if (oldVersion < 4) {
-            db.execSQL("ALTER TABLE $TABLE_MAINLIST ADD COLUMN $COL_NOTE TEXT DEFAULT ''")
+            safeAddColumn(db, TABLE_MAINLIST, COL_NOTE, "TEXT DEFAULT ''")
         }
         if (oldVersion < 5) {
-            db.execSQL("ALTER TABLE $TABLE_MAINLIST ADD COLUMN $COL_CURRENCY TEXT DEFAULT 'null'")
+            safeAddColumn(db, TABLE_MAINLIST, COL_CURRENCY, "TEXT DEFAULT 'null'")
         }
         if (oldVersion < 6) {
-            db.execSQL("ALTER TABLE $TABLE_PAYMENTLIST ADD COLUMN $COL_PAY_DOSAVING VARCHAR(1) DEFAULT 'true'")
+            safeAddColumn(db, TABLE_PAYMENTLIST, COL_PAY_DOSAVING, "VARCHAR(1) DEFAULT 'true'")
+        }
+    }
+
+    override fun onDowngrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
+        // Safely no-op on downgrade to prevent SQLiteException crashes
+    }
+
+    private fun safeAddColumn(db: SQLiteDatabase, table: String, column: String, type: String) {
+        try {
+            db.execSQL("ALTER TABLE $table ADD COLUMN $column $type")
+        } catch (_: Exception) {
+            // Column already exists or table updated, keep existing data safely
         }
     }
 }

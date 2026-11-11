@@ -25,25 +25,40 @@ internal enum class AppLanguage(val tag: String, @param:StringRes val label: Int
         val selected = current.asStateFlow()
 
         fun load(context: Context) {
-            current.value = read(context)
+            try {
+                current.value = read(context)
+            } catch (_: Exception) {
+                current.value = SYSTEM
+            }
         }
 
         fun set(context: Context, language: AppLanguage) {
-            context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
-                .edit().putString(KEY, language.tag).apply()
+            try {
+                context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE)
+                    .edit().putString(KEY, language.tag).apply()
+            } catch (_: Exception) {
+            }
             current.value = language
         }
 
         private fun read(context: Context): AppLanguage {
-            val saved = context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).getString(KEY, "")
+            val saved = try {
+                context.getSharedPreferences(PREFERENCES, Context.MODE_PRIVATE).getString(KEY, "")
+            } catch (_: Exception) {
+                ""
+            }
             return entries.firstOrNull { it.tag == saved } ?: SYSTEM
         }
     }
 
     fun localizedContext(context: Context, configuration: Configuration): Context {
         if (this == SYSTEM) return context
-        val localized = Configuration(configuration)
-        localized.setLocales(LocaleList.forLanguageTags(tag))
-        return context.createConfigurationContext(localized)
+        return try {
+            val localized = Configuration(configuration)
+            localized.setLocales(LocaleList.forLanguageTags(tag))
+            context.createConfigurationContext(localized)
+        } catch (_: Exception) {
+            context
+        }
     }
 }
