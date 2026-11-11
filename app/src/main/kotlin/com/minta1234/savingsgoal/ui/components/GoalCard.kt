@@ -119,15 +119,10 @@ fun GoalCard(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Goal Image / Thumbnail
+                // Goal Image / Thumbnail (Downsampled to prevent OutOfMemoryError)
                 val imageBitmap = remember(goal.imagePath) {
-                    try {
-                        goal.imagePath?.let { path ->
-                            val file = File(path)
-                            if (file.exists() && file.length() > 0) BitmapFactory.decodeFile(path)?.asImageBitmap() else null
-                        }
-                    } catch (_: Throwable) {
-                        null
+                    goal.imagePath?.let { path ->
+                        decodeSampledBitmapFromFile(path)?.asImageBitmap()
                     }
                 }
 

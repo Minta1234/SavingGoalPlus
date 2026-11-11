@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Savings
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -167,7 +168,16 @@ fun MainScreen(
             }
         }
     ) { innerPadding ->
-        if (uiState.goals.isEmpty() && !uiState.isLoading) {
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else if (uiState.goals.isEmpty()) {
             // Empty State
             Box(
                 modifier = Modifier
@@ -209,7 +219,7 @@ fun MainScreen(
             ) {
                 // Header Summary Carousel (Swipeable K-Plus Style Cards per Goal)
                 if (uiState.showTotalGoalsCard) {
-                    item {
+                    item(key = "total_summary_card") {
                         TotalSummaryCard(
                             goals = uiState.goals,
                             summary = uiState.summary,
@@ -220,7 +230,7 @@ fun MainScreen(
                     }
                 }
 
-                item {
+                item(key = "streak_banner") {
                     StreakBanner(streakInfo = streakInfo)
                 }
 
@@ -235,7 +245,7 @@ fun MainScreen(
                     )
                 }
 
-                item {
+                item(key = "fab_bottom_spacer") {
                     Spacer(modifier = Modifier.height(72.dp)) // padding for FAB
                 }
             }

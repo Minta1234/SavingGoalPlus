@@ -1,5 +1,6 @@
 package com.minta1234.savingsgoal.ui.components
 
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -29,7 +30,9 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -52,6 +55,38 @@ import com.minta1234.savingsgoal.data.TotalSummary
 import kotlinx.coroutines.launch
 import java.io.File
 
+/**
+ * Safely decodes an image file as a downsampled thumbnail to avoid OutOfMemoryError.
+ */
+fun decodeSampledBitmapFromFile(path: String, reqWidth: Int = 180, reqHeight: Int = 180): Bitmap? {
+    return try {
+        val file = File(path)
+        if (!file.exists() || file.length() == 0L) return null
+
+        val options = BitmapFactory.Options().apply {
+            inJustDecodeBounds = true
+        }
+        BitmapFactory.decodeFile(path, options)
+
+        var inSampleSize = 1
+        if (options.outHeight > reqHeight || options.outWidth > reqWidth) {
+            val halfHeight = options.outHeight / 2
+            val halfWidth = options.outWidth / 2
+            while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+
+        val decodeOptions = BitmapFactory.Options().apply {
+            this.inSampleSize = inSampleSize
+            inPreferredConfig = Bitmap.Config.RGB_565
+        }
+        BitmapFactory.decodeFile(path, decodeOptions)
+    } catch (_: Throwable) {
+        null
+    }
+}
+
 @Composable
 fun TotalSummaryCard(
     goals: List<Goal>,
@@ -60,30 +95,32 @@ fun TotalSummaryCard(
     modifier: Modifier = Modifier,
     onGoalClick: (Long) -> Unit = {}
 ) {
-    if (goals.isEmpty()) {
-        val fraction = if (summary.totalTarget > 0) (summary.totalSaved / summary.totalTarget).toFloat().coerceIn(0f, 1f) else 0f
-        val percent = (fraction * 100).toInt()
-        SingleSummaryCardView(
-            title = stringResource(R.string.ui_total_saved),
-            savedAmount = summary.totalSaved,
-            targetAmount = summary.totalTarget,
-            remainingAmount = summary.totalRemaining,
-            progressFraction = fraction,
-            statusBadge = "${summary.totalGoals} ($percent%)",
-            currencySymbol = currencySymbol,
-            modifier = modifier,
-            onClick = null
-        )
-        return
-    }
+    val pageCount = maxOf(1, goals.size + 1)
 
-    val pageCount = goals.size + 1
-    val pagerState = rememberPagerState(pageCount = { pageCount })
+    // Keying by goals.size safely re-creates the PagerState whenever goals count changes
+    // (e.g. deletion, archive, addition), completely preventing out-of-bounds IllegalArgumentException.
+    val pagerState = key(goals.size) {
+        rememberPagerState(
+            initialPage = 0,
+            pageCount = { pageCount }
+        )
+    }
     val scope = rememberCoroutineScope()
+
+    // Clamp pagerState to safe range if goals list dynamically shrinks
+    LaunchedEffect(pageCount) {
+        if (pagerState.currentPage >= pageCount && pageCount > 0) {
+            pagerState.scrollToPage(pageCount - 1)
+        }
+    }
 
     Column(modifier = modifier.fillMaxWidth()) {
         HorizontalPager(
             state = pagerState,
+            key = { page ->
+                if (page == 0) "total_summary"
+                else goals.getOrNull(page - 1)?.id ?: "page_$page"
+            },
             pageSpacing = 12.dp,
             modifier = Modifier.fillMaxWidth()
         ) { page ->
@@ -105,21 +142,25 @@ fun TotalSummaryCard(
                 )
             } else {
                 // Pages 1..N: Individual Goal Cards
-                val goal = goals.getOrNull(page - 1) ?: return@HorizontalPager
-                val currency = if (goal.currency.isNullOrBlank() || goal.currency == "null") currencySymbol else goal.currency
-                SingleSummaryCardView(
-                    title = goal.name,
-                    savedAmount = goal.totalSaved,
-                    targetAmount = goal.amount,
-                    remainingAmount = goal.remainingAmount,
-                    progressFraction = goal.progressFraction,
-                    statusBadge = "$page/${goals.size} (${goal.progressPercent}%)",
-                    statusLabel = stringResource(R.string.ui_progress),
-                    currencySymbol = currency,
-                    imagePath = goal.imagePath,
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = { onGoalClick(goal.id) }
-                )
+                val goal = goals.getOrNull(page - 1)
+                if (goal != null) {
+                    val currency = if (goal.currency.isNullOrBlank() || goal.currency == "null") currencySymbol else goal.currency
+                    SingleSummaryCardView(
+                        title = goal.name,
+                        savedAmount = goal.totalSaved,
+                        targetAmount = goal.amount,
+                        remainingAmount = goal.remainingAmount,
+                        progressFraction = goal.progressFraction,
+                        statusBadge = "$page/${goals.size} (${goal.progressPercent}%)",
+                        statusLabel = stringResource(R.string.ui_progress),
+                        currencySymbol = currency,
+                        imagePath = goal.imagePath,
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = { onGoalClick(goal.id) }
+                    )
+                } else {
+                    Box(modifier = Modifier.fillMaxWidth().height(180.dp))
+                }
             }
         }
 
@@ -134,8 +175,9 @@ fun TotalSummaryCard(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                val safeCurrentPage = pagerState.currentPage.coerceIn(0, (pageCount - 1).coerceAtLeast(0))
                 repeat(pageCount) { index ->
-                    val isSelected = pagerState.currentPage == index
+                    val isSelected = safeCurrentPage == index
                     val width by animateDpAsState(
                         targetValue = if (isSelected) 22.dp else 6.dp,
                         animationSpec = tween(durationMillis = 300),
@@ -156,7 +198,9 @@ fun TotalSummaryCard(
                             .background(color)
                             .clickable {
                                 scope.launch {
-                                    pagerState.animateScrollToPage(index)
+                                    if (index in 0 until pageCount) {
+                                        pagerState.animateScrollToPage(index)
+                                    }
                                 }
                             }
                     )
@@ -236,13 +280,8 @@ fun SingleSummaryCardView(
                     }
 
                     val imageBitmap = remember(imagePath) {
-                        try {
-                            imagePath?.let { path ->
-                                val file = File(path)
-                                if (file.exists() && file.length() > 0) BitmapFactory.decodeFile(path)?.asImageBitmap() else null
-                            }
-                        } catch (_: Throwable) {
-                            null
+                        imagePath?.let { path ->
+                            decodeSampledBitmapFromFile(path)?.asImageBitmap()
                         }
                     }
 
