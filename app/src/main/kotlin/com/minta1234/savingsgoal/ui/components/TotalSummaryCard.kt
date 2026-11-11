@@ -52,40 +52,15 @@ import com.minta1234.savingsgoal.R
 import com.minta1234.savingsgoal.data.Goal
 import com.minta1234.savingsgoal.data.SavingsCalculations
 import com.minta1234.savingsgoal.data.TotalSummary
+import com.minta1234.savingsgoal.util.ImageUtils
 import kotlinx.coroutines.launch
 import java.io.File
 
 /**
  * Safely decodes an image file as a downsampled thumbnail to avoid OutOfMemoryError.
  */
-fun decodeSampledBitmapFromFile(path: String, reqWidth: Int = 180, reqHeight: Int = 180): Bitmap? {
-    return try {
-        val file = File(path)
-        if (!file.exists() || file.length() == 0L) return null
-
-        val options = BitmapFactory.Options().apply {
-            inJustDecodeBounds = true
-        }
-        BitmapFactory.decodeFile(path, options)
-
-        var inSampleSize = 1
-        if (options.outHeight > reqHeight || options.outWidth > reqWidth) {
-            val halfHeight = options.outHeight / 2
-            val halfWidth = options.outWidth / 2
-            while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
-                inSampleSize *= 2
-            }
-        }
-
-        val decodeOptions = BitmapFactory.Options().apply {
-            this.inSampleSize = inSampleSize
-            inPreferredConfig = Bitmap.Config.RGB_565
-        }
-        BitmapFactory.decodeFile(path, decodeOptions)
-    } catch (_: Throwable) {
-        null
-    }
-}
+fun decodeSampledBitmapFromFile(path: String, reqWidth: Int = 180, reqHeight: Int = 180): Bitmap? =
+    ImageUtils.decodeSampledBitmapFromFile(path, reqWidth, reqHeight)
 
 @Composable
 fun TotalSummaryCard(

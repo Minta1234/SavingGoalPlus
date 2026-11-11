@@ -57,6 +57,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.minta1234.savingsgoal.data.Goal
 import com.minta1234.savingsgoal.data.SavingsCalculations
+import com.minta1234.savingsgoal.util.ImageUtils
 import java.io.File
 import java.time.Instant
 import java.time.LocalDate
@@ -83,8 +84,7 @@ fun GoalEditDialog(
 
     val initialImageBitmap = remember(initialGoal?.imagePath) {
         initialGoal?.imagePath?.let { path ->
-            val file = File(path)
-            if (file.exists()) BitmapFactory.decodeFile(path) else null
+            ImageUtils.decodeSampledBitmapFromFile(path, reqWidth = 250, reqHeight = 250)
         }
     }
 
@@ -92,12 +92,10 @@ fun GoalEditDialog(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         if (uri != null) {
-            try {
-                context.contentResolver.openInputStream(uri)?.use { stream ->
-                    selectedBitmap = BitmapFactory.decodeStream(stream)
-                    removeImage = false
-                }
-            } catch (_: Exception) {}
+            selectedBitmap = ImageUtils.decodeSampledBitmapFromUri(context, uri, reqWidth = 350, reqHeight = 350)
+            if (selectedBitmap != null) {
+                removeImage = false
+            }
         }
     }
 

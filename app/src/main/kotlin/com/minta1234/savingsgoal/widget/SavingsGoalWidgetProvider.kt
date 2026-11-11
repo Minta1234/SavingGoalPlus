@@ -26,7 +26,10 @@ class SavingsGoalWidgetProvider : AppWidgetProvider() {
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             for (widgetId in appWidgetIds) {
-                updateSingleWidget(context, appWidgetManager, widgetId)
+                try {
+                    updateSingleWidget(context, appWidgetManager, widgetId)
+                } catch (_: Exception) {
+                }
             }
         }
     }
@@ -40,26 +43,29 @@ class SavingsGoalWidgetProvider : AppWidgetProvider() {
             if (widgetId == AppWidgetManager.INVALID_APPWIDGET_ID) return
 
             CoroutineScope(Dispatchers.IO).launch {
-                val repository = SavingsRepository(context)
-                val goals = repository.getActiveGoals()
-                if (goals.isEmpty()) return@launch
+                try {
+                    val repository = SavingsRepository(context)
+                    val goals = repository.getActiveGoals()
+                    if (goals.isEmpty()) return@launch
 
-                val currentGoalId = getWidgetGoalId(context, widgetId)
-                val currentIndex = goals.indexOfFirst { it.id == currentGoalId }.let {
-                    if (it >= 0) it else 0
+                    val currentGoalId = getWidgetGoalId(context, widgetId)
+                    val currentIndex = goals.indexOfFirst { it.id == currentGoalId }.let {
+                        if (it >= 0) it else 0
+                    }
+
+                    val nextIndex = if (action == ACTION_NEXT_GOAL) {
+                        (currentIndex + 1) % goals.size
+                    } else {
+                        (currentIndex - 1 + goals.size) % goals.size
+                    }
+
+                    val targetGoal = goals[nextIndex]
+                    setWidgetGoalId(context, widgetId, targetGoal.id)
+
+                    val appWidgetManager = AppWidgetManager.getInstance(context)
+                    updateSingleWidget(context, appWidgetManager, widgetId)
+                } catch (_: Exception) {
                 }
-
-                val nextIndex = if (action == ACTION_NEXT_GOAL) {
-                    (currentIndex + 1) % goals.size
-                } else {
-                    (currentIndex - 1 + goals.size) % goals.size
-                }
-
-                val targetGoal = goals[nextIndex]
-                setWidgetGoalId(context, widgetId, targetGoal.id)
-
-                val appWidgetManager = AppWidgetManager.getInstance(context)
-                updateSingleWidget(context, appWidgetManager, widgetId)
             }
         } else if (action == ACTION_TRIGGER_UPDATE) {
             triggerUpdate(context)
@@ -96,15 +102,18 @@ class SavingsGoalWidgetProvider : AppWidgetProvider() {
         }
 
         fun triggerUpdate(context: Context) {
-            val appWidgetManager = AppWidgetManager.getInstance(context)
-            val component = ComponentName(context, SavingsGoalWidgetProvider::class.java)
-            val ids = appWidgetManager.getAppWidgetIds(component) ?: intArrayOf()
-            if (ids.isNotEmpty()) {
-                val intent = Intent(context, SavingsGoalWidgetProvider::class.java).apply {
-                    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
-                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+            try {
+                val appWidgetManager = AppWidgetManager.getInstance(context)
+                val component = ComponentName(context, SavingsGoalWidgetProvider::class.java)
+                val ids = appWidgetManager.getAppWidgetIds(component) ?: intArrayOf()
+                if (ids.isNotEmpty()) {
+                    val intent = Intent(context, SavingsGoalWidgetProvider::class.java).apply {
+                        action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                        putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+                    }
+                    context.sendBroadcast(intent)
                 }
-                context.sendBroadcast(intent)
+            } catch (_: Exception) {
             }
         }
 

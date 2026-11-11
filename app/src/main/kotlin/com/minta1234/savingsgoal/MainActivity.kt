@@ -91,7 +91,13 @@ class MainActivity : ComponentActivity() {
             try {
                 val sw = java.io.StringWriter()
                 throwable.printStackTrace(java.io.PrintWriter(sw))
-                android.util.Log.e("SavingGoalApp", "FATAL CRASH: $sw", throwable)
+                val stackTrace = sw.toString()
+                android.util.Log.e("SavingGoalApp", "FATAL CRASH: $stackTrace", throwable)
+                try {
+                    val crashFile = java.io.File(filesDir, "last_crash.txt")
+                    crashFile.writeText(stackTrace)
+                } catch (_: Throwable) {
+                }
             } catch (_: Throwable) {
             }
             defaultHandler?.uncaughtException(thread, throwable)

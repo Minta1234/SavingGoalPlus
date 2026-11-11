@@ -56,7 +56,11 @@ internal enum class AppLanguage(val tag: String, @param:StringRes val label: Int
         return try {
             val localized = Configuration(configuration)
             localized.setLocales(LocaleList.forLanguageTags(tag))
-            context.createConfigurationContext(localized)
+            val configContext = context.createConfigurationContext(localized)
+            object : android.content.ContextWrapper(context) {
+                override fun getResources(): android.content.res.Resources = configContext.resources
+                override fun getAssets(): android.content.res.AssetManager = configContext.assets
+            }
         } catch (_: Exception) {
             context
         }

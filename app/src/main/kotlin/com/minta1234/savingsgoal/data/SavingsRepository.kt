@@ -7,6 +7,7 @@ import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import com.minta1234.savingsgoal.util.ImageUtils
 import com.minta1234.savingsgoal.widget.SavingsGoalWidgetProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -345,13 +346,7 @@ class SavingsRepository(private val context: Context) {
     }
 
     fun loadBitmapFromUri(uri: Uri): Bitmap? {
-        return try {
-            context.contentResolver.openInputStream(uri)?.use { stream ->
-                BitmapFactory.decodeStream(stream)
-            }
-        } catch (_: Exception) {
-            null
-        }
+        return ImageUtils.decodeSampledBitmapFromUri(context, uri, reqWidth = 400, reqHeight = 400)
     }
 
     // --- Payments CRUD ---

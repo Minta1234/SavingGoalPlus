@@ -113,6 +113,7 @@ fun GoalDetailScreen(
     val context = LocalContext.current
     val app = context.applicationContext as Application
     val viewModel: GoalDetailViewModel = viewModel(
+        key = "goal_detail_$goalId",
         factory = object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 @Suppress("UNCHECKED_CAST")

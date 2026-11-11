@@ -1,4 +1,4 @@
-﻿package com.minta1234.savingsgoal.ui.main
+package com.minta1234.savingsgoal.ui.main
 
 import androidx.compose.ui.res.stringResource
 import com.minta1234.savingsgoal.R
