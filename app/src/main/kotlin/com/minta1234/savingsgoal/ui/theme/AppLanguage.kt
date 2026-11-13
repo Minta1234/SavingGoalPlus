@@ -51,18 +51,10 @@ internal enum class AppLanguage(val tag: String, @param:StringRes val label: Int
         }
     }
 
-    fun localizedContext(context: Context, configuration: Configuration): Context {
-        if (this == SYSTEM) return context
-        return try {
-            val localized = Configuration(configuration)
-            localized.setLocales(LocaleList.forLanguageTags(tag))
-            val configContext = context.createConfigurationContext(localized)
-            object : android.content.ContextWrapper(context) {
-                override fun getResources(): android.content.res.Resources = configContext.resources
-                override fun getAssets(): android.content.res.AssetManager = configContext.assets
-            }
-        } catch (_: Exception) {
-            context
-        }
+    fun localizedResources(context: Context, configuration: Configuration): android.content.res.Resources {
+        if (this == SYSTEM) return context.resources
+        val localized = Configuration(configuration)
+        localized.setLocales(LocaleList.forLanguageTags(tag))
+        return context.createConfigurationContext(localized).resources
     }
 }

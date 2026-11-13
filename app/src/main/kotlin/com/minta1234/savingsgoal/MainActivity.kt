@@ -16,7 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import com.minta1234.savingsgoal.data.SavingsStreakManager
 import com.minta1234.savingsgoal.ui.theme.AppLanguage
 import com.minta1234.savingsgoal.ui.theme.AppThemePalette
@@ -123,13 +123,10 @@ class MainActivity : ComponentActivity() {
             val customAccent by ThemeManager.customAccent.collectAsState()
             val language by AppLanguage.selected.collectAsState()
             val configuration = LocalConfiguration.current
-            val localizedContext = remember(language, configuration) {
-                language.localizedContext(this, configuration)
+            val localizedResources = remember(language, configuration) {
+                language.localizedResources(this, configuration)
             }
-            CompositionLocalProvider(
-                LocalContext provides localizedContext,
-                LocalConfiguration provides localizedContext.resources.configuration
-            ) {
+            CompositionLocalProvider(LocalResources provides localizedResources) {
                 SavingsGoalTheme(darkTheme = darkTheme, palette = palette, customAccent = customAccent?.let { Color(it) }) {
                     Surface(
                         modifier = Modifier.fillMaxSize(),
