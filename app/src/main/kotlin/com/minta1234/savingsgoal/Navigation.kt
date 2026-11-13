@@ -4,6 +4,13 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.ContextWrapper
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
@@ -24,6 +31,12 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
     is ContextWrapper -> baseContext.findActivity()
     else -> null
 }
+
+private fun screenTransition(direction: Int): ContentTransform =
+    (fadeIn(tween(240)) + slideInHorizontally(tween(240)) { direction * it / 8 })
+        .togetherWith(
+            fadeOut(tween(180)) + slideOutHorizontally(tween(240)) { -direction * it / 8 }
+        )
 
 @Composable
 fun MainNavigation() {
@@ -47,6 +60,8 @@ fun MainNavigation() {
             rememberViewModelStoreNavEntryDecorator()
         ),
         onBack = safeOnBack,
+        transitionSpec = { screenTransition(direction = 1) },
+        popTransitionSpec = { screenTransition(direction = -1) },
         entryProvider =
             entryProvider {
                 entry<Main> {
