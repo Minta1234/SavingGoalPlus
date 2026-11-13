@@ -1,10 +1,13 @@
-﻿package com.minta1234.savingsgoal
+package com.minta1234.savingsgoal
 
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.content.ContextWrapper
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -25,6 +28,8 @@ private tailrec fun Context.findActivity(): Activity? = when (this) {
 @Composable
 fun MainNavigation() {
     val context = LocalContext.current
+    val application = context.applicationContext as Application
+    val viewModelFactory = AndroidViewModelFactory.getInstance(application)
     val backStack = rememberNavBackStack(Main)
 
     val safeOnBack: () -> Unit = {
@@ -46,6 +51,7 @@ fun MainNavigation() {
             entryProvider {
                 entry<Main> {
                     MainScreen(
+                        viewModel = viewModel(factory = viewModelFactory),
                         onGoalClick = { goalId -> backStack.add(GoalDetail(goalId)) },
                         onSaveToday = { goalId -> backStack.add(GoalDetail(goalId, saveToday = true)) },
                         onNavigateArchive = { backStack.add(Archive) },
@@ -63,6 +69,7 @@ fun MainNavigation() {
 
                 entry<Archive> {
                     ArchiveScreen(
+                        viewModel = viewModel(factory = viewModelFactory),
                         onBack = safeOnBack,
                         onGoalClick = { goalId -> backStack.add(GoalDetail(goalId)) }
                     )
@@ -70,6 +77,7 @@ fun MainNavigation() {
 
                 entry<Settings> {
                     SettingsScreen(
+                        viewModel = viewModel(factory = viewModelFactory),
                         onBack = safeOnBack,
                         onNavigateBackup = { backStack.add(BackupRestore) }
                     )
