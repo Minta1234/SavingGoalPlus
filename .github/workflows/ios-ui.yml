@@ -1,0 +1,44 @@
+name: iOS UI Smoke Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ios-ui-test]
+
+permissions:
+  contents: read
+
+jobs:
+  simulator:
+    runs-on: macos-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Boot iPhone Simulator
+        run: |
+          device=$(xcrun simctl list devices available -j | jq -er '[.devices[][] | select(.name | startswith("iPhone"))] | first | .udid')
+          echo "SIMULATOR_ID=$device" >> "$GITHUB_ENV"
+          xcrun simctl boot "$device"
+          xcrun simctl bootstatus "$device" -b
+      - name: Run unit tests and build app
+        working-directory: ios
+        run: |
+          xcodebuild test -project SavingGoalPlus.xcodeproj \
+            -scheme SavingGoalPlus -destination "platform=iOS Simulator,id=$SIMULATOR_ID" \
+            -derivedDataPath build -parallel-testing-enabled NO \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_ENTITLEMENTS=""
+      - name: Launch app and capture home screen
+        working-directory: ios
+        run: |
+          mkdir -p ui-preview
+          bundle=com.minta1234.savinggoalplus
+          xcrun simctl install "$SIMULATOR_ID" build/Build/Products/Debug-iphonesimulator/SavingGoalPlus.app
+          launch=$(xcrun simctl launch "$SIMULATOR_ID" "$bundle")
+          sleep 4
+          xcrun simctl io "$SIMULATOR_ID" screenshot ui-preview/home.png
+          kill -0 "${launch##*: }"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-ui-preview
+          path: ios/ui-preview/
