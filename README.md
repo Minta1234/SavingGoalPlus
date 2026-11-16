@@ -186,7 +186,14 @@ Copyright (c) 2026 Minta1234
 On Android and iOS, open the **☰ menu at the top left → Savings spreadsheet**
 (**ตารางออมเงิน Excel** in Thai). Use **Savings goals** in the same menu to return.
 
-- Enter a daily amount and target in Thai baht, then create the table.
+- Tap **+ New table**, enter a name, daily amount and target in Thai baht, then create it.
+  You can keep multiple tables, including tables with identical amounts, and switch using
+  the table chooser. Each table has its own saved-day history and CSV export.
+- Use **Save table** to rename or edit the selected table. Renaming preserves progress;
+  changing its amounts asks before clearing its checks. Deleting a table also asks for
+  confirmation and leaves other tables intact.
+- Existing single-table data is migrated automatically on the first visit. Deleting all
+  tables will not bring the old table back.
 - Amounts support two decimal places. Plans allow up to 10,000 days and
   999,999,999.99 baht per amount. The last installment is reduced to reach the target exactly.
 - Check off saved days to update the actual saved total. Changes are stored on the device.
@@ -197,4 +204,4 @@ On Android and iOS, open the **☰ menu at the top left → Savings spreadsheet*
 - The table is independent of existing goals and transactions. It is not included in
   the existing JSON backup/import feature.
 
-Calculation/export tests: `SavingsTablePlanTest` (Android) and `SavingsTablePlanTests` (iOS).
+Calculation/export tests: `SavingsTablePlanTest` and `SavingsTableEntryTest` (Android) and `SavingsTablePlanTests` (iOS).

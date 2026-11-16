@@ -42,3 +42,28 @@ struct SavingsTablePlan: Codable, Equatable {
         return "\u{FEFF}" + ([header] + rows).joined(separator: "\r\n") + "\r\n"
     }
 }
+
+struct SavingsTableEntry: Codable, Identifiable, Equatable {
+    let id: UUID
+    var name: String
+    var plan: SavingsTablePlan
+    var completed: Set<Int>
+
+    init(id: UUID = UUID(), name: String, plan: SavingsTablePlan, completed: Set<Int> = []) {
+        self.id = id
+        self.name = name
+        self.plan = plan
+        self.completed = completed
+    }
+
+    func withDetails(name: String, plan: SavingsTablePlan) -> SavingsTableEntry {
+        SavingsTableEntry(id: id, name: name.trimmingCharacters(in: .whitespacesAndNewlines),
+                          plan: plan, completed: plan == self.plan ? completed : [])
+    }
+    func withDay(_ day: Int, saved: Bool) -> SavingsTableEntry {
+        var result = self
+        guard (1...plan.dayCount).contains(day) else { return result }
+        if saved { result.completed.insert(day) } else { result.completed.remove(day) }
+        return result
+    }
+}

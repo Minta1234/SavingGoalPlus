@@ -30,4 +30,31 @@ final class SavingsTablePlanTests: XCTestCase {
         XCTAssertTrue(csv.hasPrefix("\u{FEFF}\"วันที่\""))
         XCTAssertTrue(csv.hasSuffix("1,0.30,0.30,0.20,0\r\n2,0.20,0.50,0.00,1\r\n"))
     }
+    func testMultipleTablesAndRenamingPreserveIndependentHistory() throws {
+        let plan = try XCTUnwrap(SavingsTablePlan(daily: 3000, target: 10000))
+        let first = SavingsTableEntry(name: "Travel", plan: plan)
+        let other = SavingsTableEntry(name: "Emergency", plan: plan)
+        XCTAssertNotEqual(first.id, other.id)
+        let checked = first.withDay(1, saved: true).withDay(4, saved: true)
+        XCTAssertEqual(checked.plan.saved(checked.completed), 4000)
+        XCTAssertTrue(other.completed.isEmpty)
+        let renamed = checked.withDetails(name: "  Holiday  ", plan: plan)
+        XCTAssertEqual(renamed.id, first.id)
+        XCTAssertEqual(renamed.name, "Holiday")
+        XCTAssertEqual(renamed.completed, checked.completed)
+        let changed = renamed.withDetails(name: renamed.name, plan: try XCTUnwrap(SavingsTablePlan(daily: 500, target: 2000)))
+        XCTAssertTrue(changed.completed.isEmpty)
+        XCTAssertEqual(checked.completed, [1, 4])
+    }
+
+    func testMultipleTablesSurviveSerializationAndDeletion() throws {
+        let plan = try XCTUnwrap(SavingsTablePlan(daily: 100, target: 500))
+        let entries = [SavingsTableEntry(name: "First", plan: plan, completed: [1]),
+                       SavingsTableEntry(name: "Second", plan: plan, completed: [2])]
+        let restored = try JSONDecoder().decode([SavingsTableEntry].self, from: JSONEncoder().encode(entries))
+        XCTAssertEqual(restored, entries)
+        XCTAssertEqual(restored.filter { $0.id != entries[0].id }, [entries[1]])
+        let empty = try JSONDecoder().decode([SavingsTableEntry].self, from: JSONEncoder().encode([SavingsTableEntry]()))
+        XCTAssertTrue(empty.isEmpty)
+    }
 }

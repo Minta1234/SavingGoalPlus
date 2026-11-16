@@ -20,43 +20,93 @@ private struct SavedSavingsTable: Codable {
 
 struct SavingsTableView: View {
     @Environment(\.dismiss) private var dismiss
-    @AppStorage("savings_spreadsheet") private var stored = Data()
+    @AppStorage("savings_spreadsheet") private var legacyStored = Data()
+    @AppStorage("savings_spreadsheets_v2") private var stored = Data()
+    @State private var selectedId: UUID?
+    @State private var name = ""
+    @State private var initialized = false
     @State private var daily = ""
     @State private var target = ""
     @State private var error = false
-    @State private var pending: SavingsTablePlan?
+    @State private var pending: SavingsTableEntry?
+    @State private var deleting: SavingsTableEntry?
     @State private var exporting = false
     @State private var document = SavingsTableDocument(text: "")
     @State private var exportError = false
 
-    private var table: SavedSavingsTable? {
-        guard let value = try? JSONDecoder().decode(SavedSavingsTable.self, from: stored),
-              SavingsTablePlan(daily: value.plan.daily, target: value.plan.target) != nil else { return nil }
-        return value
+    private var tables: [SavingsTableEntry] {
+        (try? JSONDecoder().decode([SavingsTableEntry].self, from: stored)) ?? []
     }
-    private func save(_ plan: SavingsTablePlan, completed: Set<Int>) {
-        if let data = try? JSONEncoder().encode(SavedSavingsTable(plan: plan, completed: completed)) {
-            stored = data
+    private var table: SavingsTableEntry? { tables.first { $0.id == selectedId } }
+    private func persist(_ entries: [SavingsTableEntry]) {
+        if let data = try? JSONEncoder().encode(entries) { stored = data }
+    }
+    private func select(_ entry: SavingsTableEntry?) {
+        selectedId = entry?.id
+        name = entry?.name ?? ""
+        daily = entry.map { SavingsTablePlan.format($0.plan.daily) } ?? ""
+        target = entry.map { SavingsTablePlan.format($0.plan.target) } ?? ""
+        error = false
+    }
+    private func save(_ entry: SavingsTableEntry) {
+        if tables.contains(where: { $0.id == entry.id }) {
+            persist(tables.map { $0.id == entry.id ? entry : $0 })
+        } else { persist(tables + [entry]) }
+        select(entry)
+    }
+    private func initialize() {
+        guard !initialized else { return }
+        if stored.isEmpty {
+            var entries: [SavingsTableEntry] = []
+            if let legacy = try? JSONDecoder().decode(SavedSavingsTable.self, from: legacyStored),
+               SavingsTablePlan(daily: legacy.plan.daily, target: legacy.plan.target) != nil {
+                entries = [SavingsTableEntry(name: NSLocalizedString("Savings spreadsheet", comment: "Migrated table"),
+                                             plan: legacy.plan, completed: legacy.completed)]
+            }
+            persist(entries)
         }
+        select(tables.first)
+        initialized = true
     }
 
     var body: some View {
         Form {
             Section {
+                if !tables.isEmpty {
+                    Menu {
+                        ForEach(tables) { entry in
+                            Button(entry.name) { select(entry) }
+                        }
+                    } label: {
+                        HStack {
+                            Text(table?.name ?? NSLocalizedString("Select table", comment: "Table chooser"))
+                            Spacer()
+                            Image(systemName: "chevron.down")
+                        }
+                    }
+                }
+                Button("+ New table") { select(nil) }
+            }
+            Section {
+                TextField("Table name", text: $name)
                 Text("Choose your daily savings and target in baht. The final day saves only the remaining amount.")
                 TextField("Save / day (THB)", text: $daily).keyboardType(.decimalPad)
                 TextField("Target (THB)", text: $target).keyboardType(.decimalPad)
                 if error {
-                    Text("Enter positive amounts with at most 2 decimal places (up to 999,999,999.99 baht). Maximum 10,000 days.")
+                    Text("Enter a table name and positive amounts with at most 2 decimal places (up to 999,999,999.99 baht). Maximum 10,000 days.")
                         .foregroundColor(.red)
                 }
-                Button("Create table") {
-                    guard let d = SavingsTablePlan.parse(daily), let t = SavingsTablePlan.parse(target),
+                Button(LocalizedStringKey(table == nil ? "Create table" : "Save table")) {
+                    guard !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty, let d = SavingsTablePlan.parse(daily), let t = SavingsTablePlan.parse(target),
                           let next = SavingsTablePlan(daily: d, target: t) else { error = true; return }
                     error = false
-                    guard next != table?.plan else { return }
-                    if let existing = table, !existing.completed.isEmpty { pending = next }
-                    else { save(next, completed: []) }
+                    let entry = table?.withDetails(name: name, plan: next)
+                        ?? SavingsTableEntry(name: name.trimmingCharacters(in: .whitespacesAndNewlines), plan: next)
+                    if let existing = table, next != existing.plan, !existing.completed.isEmpty { pending = entry }
+                    else { save(entry) }
+                }
+                if let table = table {
+                    Button("Delete table", role: .destructive) { deleting = table }
                 }
             }
             if let table = table {
@@ -75,9 +125,9 @@ struct SavingsTableView: View {
                 Section {
                     ForEach(1...table.plan.dayCount, id: \.self) { day in
                         Toggle(isOn: Binding(get: { table.completed.contains(day) }, set: { checked in
-                            var days = table.completed
-                            if checked { days.insert(day) } else { days.remove(day) }
-                            save(table.plan, completed: days)
+                            guard let current = tables.first(where: { $0.id == table.id }) else { return }
+                            let updated = current.withDay(day, saved: checked)
+                            persist(tables.map { $0.id == updated.id ? updated : $0 })
                         })) {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Day \(day)").font(.headline)
@@ -101,20 +151,26 @@ struct SavingsTableView: View {
                 } label: { Image(systemName: "line.3.horizontal").accessibilityLabel("Functions") }
             }
         }
-        .onAppear {
-            if let plan = table?.plan {
-                daily = SavingsTablePlan.format(plan.daily)
-                target = SavingsTablePlan.format(plan.target)
-            }
-        }
+        .onAppear { initialize() }
         .alert("Replace table?", isPresented: Binding(get: { pending != nil }, set: { if !$0 { pending = nil } })) {
-            Button("Create table", role: .destructive) {
-                if let plan = pending { save(plan, completed: []) }
+            Button("Save table", role: .destructive) {
+                if let entry = pending { save(entry) }
                 pending = nil
             }
             Button("Cancel", role: .cancel) { pending = nil }
         } message: { Text("Creating a new plan clears the saved-day checks in this table.") }
-        .fileExporter(isPresented: $exporting, document: document, contentType: .commaSeparatedText, defaultFilename: "savings-table.csv") { result in
+        .alert("Delete table", isPresented: Binding(get: { deleting != nil }, set: { if !$0 { deleting = nil } })) {
+            Button("Delete table", role: .destructive) {
+                let remaining = tables.filter { $0.id != deleting?.id }
+                persist(remaining)
+                select(remaining.first)
+                deleting = nil
+            }
+            Button("Cancel", role: .cancel) { deleting = nil }
+        } message: {
+            Text(String.localizedStringWithFormat(NSLocalizedString("Delete “%@” and its saved-day history? Other tables will be kept.", comment: "Delete confirmation"), deleting?.name ?? ""))
+        }
+        .fileExporter(isPresented: $exporting, document: document, contentType: .commaSeparatedText, defaultFilename: "savings-table-\(selectedId?.uuidString ?? "new").csv") { result in
             if case .failure = result { exportError = true }
         }
         .alert("Could not export file", isPresented: $exportError) { Button("OK", role: .cancel) {} }
