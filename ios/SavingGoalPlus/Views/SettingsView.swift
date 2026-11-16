@@ -428,6 +428,8 @@ private struct UpdateCheckSheet: View {
                 Section("Installed version") {
                     if let installedVersion { Text(installedVersion) } else { Text("Unavailable") }
                 }
+                Text("iOS updates require a signed build or App Store/TestFlight. The unsigned GitHub IPA cannot be installed directly from this app.")
+                    .font(.footnote).foregroundColor(.secondary)
                 if failed {
                     Text("Could not check GitHub for updates.")
                     Button("Try again") { attempt += 1 }

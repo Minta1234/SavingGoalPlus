@@ -14,12 +14,37 @@ internal data class ReleaseNote(
     @SerialName("tag_name") val tag: String,
     val name: String? = null,
     @SerialName("body_html") val bodyHtml: String? = null,
-    @SerialName("html_url") val url: String
+    @SerialName("html_url") val url: String,
+    val assets: List<ReleaseAsset> = emptyList()
 ) {
+    val androidApk: ReleaseAsset? get() = assets.filter { it.isApk }.singleOrNull()
     val title: String get() = name?.takeIf { it.isNotBlank() } ?: tag
     val isGitHubReleaseLink: Boolean
         get() = url.startsWith("https://github.com/Minta1234/SavingGoalPlus/releases/tag/")
 }
+
+@Serializable
+internal data class ReleaseAsset(
+    val name: String,
+    @SerialName("browser_download_url") val downloadUrl: String,
+    val size: Long,
+    val digest: String? = null
+) {
+    val isApk: Boolean get() = name.endsWith(".apk", ignoreCase = true) && size in 1..MAX_APK_BYTES && isRepositoryAssetUrl(downloadUrl)
+    companion object { const val MAX_APK_BYTES = 500L * 1024 * 1024 }
+}
+
+internal fun isRepositoryAssetUrl(value: String): Boolean = runCatching {
+    val uri = java.net.URI(value)
+    uri.scheme == "https" && uri.host == "github.com" && uri.userInfo == null && uri.port == -1 &&
+        uri.path.startsWith("/Minta1234/SavingGoalPlus/releases/download/")
+}.getOrDefault(false)
+
+internal fun isUpdateDownloadUrl(value: String): Boolean = runCatching {
+    val uri = java.net.URI(value)
+    uri.scheme == "https" && uri.userInfo == null && uri.port == -1 &&
+        uri.host in setOf("github.com", "release-assets.githubusercontent.com", "objects.githubusercontent.com")
+}.getOrDefault(false)
 
 internal object GitHubReleaseNotes {
     private const val RELEASES_API = "https://api.github.com/repos/Minta1234/SavingGoalPlus/releases"

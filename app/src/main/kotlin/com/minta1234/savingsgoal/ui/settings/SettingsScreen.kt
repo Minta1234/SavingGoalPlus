@@ -567,7 +567,7 @@ fun SettingsScreen(
                         ) {
                             Icon(Icons.Default.SystemUpdate, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text(stringResource(R.string.ui_check_updates))
+                            Text(stringResource(R.string.update_check_install))
                         }
                     }
                 }

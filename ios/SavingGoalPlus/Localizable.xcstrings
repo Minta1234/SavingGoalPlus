@@ -6568,6 +6568,17 @@
           }
         }
       }
+    },
+    "iOS updates require a signed build or App Store/TestFlight. The unsigned GitHub IPA cannot be installed directly from this app.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "การอัปเดต iOS ต้องใช้ไฟล์ที่ลงนามแล้ว หรือผ่าน App Store/TestFlight ไฟล์ IPA จาก GitHub ยังไม่ได้ลงนาม จึงติดตั้งจากแอปนี้โดยตรงไม่ได้"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

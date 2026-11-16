@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="update_title">App update</string>
+    <string name="update_check_install">Check / install update</string>
+    <string name="update_download_install">Download &amp; install</string>
+    <string name="update_install">Install update</string>
+    <string name="update_explanation">Download the APK from this app’s GitHub release, then confirm installation in Android. Your existing data stays on the device.</string>
+    <string name="update_no_apk">This release has no single compatible APK download. Open the release page to see available files.</string>
+    <string name="update_downloading">Downloading update… %1$d%%</string>
+    <string name="update_download_failed">Download or APK verification failed. Check your connection and try again.</string>
+    <string name="update_ready">Download verified. Ready to open the Android installer.</string>
+    <string name="update_permission">Allow “Install unknown apps” for SavingGoalPlus in Android settings, then tap Install update again.</string>
+    <string name="update_install_failed">Could not open the Android installer. Check that the downloaded file and an installer are available.</string>
+    <string name="update_installer_opened">Confirm the update in the Android installer. If you cancelled, tap Install update to try again.</string>
+</resources>

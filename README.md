@@ -209,3 +209,23 @@ to the table list. Use **Savings goals** in the list’s menu to return to goals
   the existing JSON backup/import feature.
 
 Calculation/export tests: `SavingsTablePlanTest` and `SavingsTableEntryTest` (Android) and `SavingsTablePlanTests` (iOS).
+
+
+## Install updates from the app (Android)
+
+Open **☰ → App update** or **Settings → Check / install update**. When a newer
+GitHub release has one APK, tap **Download & install**. The app shows download
+progress, checks the file size, GitHub SHA-256 digest when supplied, package ID,
+release version and increasing Android version code, then opens the installation flow.
+If you cancel installation, **Install update** lets you retry using the verified download.
+
+Android may ask you to allow **Install unknown apps** for SavingGoalPlus. After
+permission is granted, the system installer opens; confirm the update there.
+Android verifies the signing certificate and requires a compatible signed APK.
+Existing app data is retained during an in-place update. Closing the dialog during
+an active download cancels it; rotating the screen keeps the download running.
+
+Install a build containing this feature once before using it for future updates.
+iOS continues to link to GitHub releases: the published unsigned IPA cannot be
+installed directly by the app and requires signing or distribution through
+App Store/TestFlight.

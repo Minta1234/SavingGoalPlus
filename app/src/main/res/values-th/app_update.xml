@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="update_title">อัปเดตแอป</string>
+    <string name="update_check_install">ตรวจสอบ / ติดตั้งอัปเดต</string>
+    <string name="update_download_install">ดาวน์โหลดและติดตั้ง</string>
+    <string name="update_install">ติดตั้งอัปเดต</string>
+    <string name="update_explanation">ดาวน์โหลด APK จาก GitHub ของแอปนี้ แล้วกดยืนยันติดตั้งในหน้าของ Android ข้อมูลเดิมยังอยู่ในเครื่อง</string>
+    <string name="update_no_apk">รุ่นนี้ไม่มี APK ที่เลือกติดตั้งได้โดยตรง กรุณาเปิดหน้ารีลีสเพื่อดูไฟล์</string>
+    <string name="update_downloading">กำลังดาวน์โหลดอัปเดต… %1$d%%</string>
+    <string name="update_download_failed">ดาวน์โหลดหรือตรวจสอบ APK ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่</string>
+    <string name="update_ready">ดาวน์โหลดและตรวจสอบแล้ว พร้อมเปิดหน้าติดตั้งของ Android</string>
+    <string name="update_permission">อนุญาต “ติดตั้งแอปที่ไม่รู้จัก” ให้ SavingGoalPlus ในการตั้งค่า Android แล้วกดติดตั้งอัปเดตอีกครั้ง</string>
+    <string name="update_install_failed">เปิดหน้าติดตั้งของ Android ไม่สำเร็จ กรุณาตรวจสอบไฟล์และตัวติดตั้งในเครื่อง</string>
+    <string name="update_installer_opened">กรุณายืนยันอัปเดตในหน้าติดตั้งของ Android หากยกเลิก สามารถกดติดตั้งอัปเดตเพื่อลองใหม่ได้</string>
+</resources>
