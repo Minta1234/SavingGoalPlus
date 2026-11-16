@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="table_menu">Functions</string>
+    <string name="table_home">Savings goals</string>
+    <string name="table_title">Savings spreadsheet</string>
+    <string name="table_description">Choose your daily savings and target in baht. The final day saves only the remaining amount.</string>
+    <string name="table_daily">Save / day (THB)</string>
+    <string name="table_target">Target (THB)</string>
+    <string name="table_day">Day</string>
+    <string name="table_cumulative">Planned total (THB)</string>
+    <string name="table_remaining">Remaining (THB)</string>
+    <string name="table_done">Saved (1/0)</string>
+    <string name="table_invalid">Enter positive amounts with at most 2 decimal places (up to 999,999,999.99 baht). Maximum 10,000 days.</string>
+    <string name="table_create">Create table</string>
+    <string name="table_summary">%1$d days · Saved %2$s / %3$s THB</string>
+    <string name="table_independent">Check off each day after saving. This table is stored on this device, separately from goal transactions and JSON backups.</string>
+    <string name="table_export">Export CSV for Excel</string>
+    <string name="table_replace">Replace table?</string>
+    <string name="table_replace_warning">Creating a new plan clears the saved-day checks in this table.</string>
+</resources>

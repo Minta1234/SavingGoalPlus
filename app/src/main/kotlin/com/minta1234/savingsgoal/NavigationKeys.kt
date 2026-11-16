@@ -17,3 +17,6 @@ data object Settings : NavKey
 
 @Serializable
 data object BackupRestore : NavKey
+
+@Serializable
+data object SavingsTable : NavKey

@@ -180,3 +180,21 @@ This project is open-source and released under the terms of the **[MIT License](
 Copyright (c) 2026 Minta1234
 ```
 
+
+## Daily savings spreadsheet / ตารางออมเงิน Excel
+
+On Android and iOS, open the **☰ menu at the top left → Savings spreadsheet**
+(**ตารางออมเงิน Excel** in Thai). Use **Savings goals** in the same menu to return.
+
+- Enter a daily amount and target in Thai baht, then create the table.
+- Amounts support two decimal places. Plans allow up to 10,000 days and
+  999,999,999.99 baht per amount. The last installment is reduced to reach the target exactly.
+- Check off saved days to update the actual saved total. Changes are stored on the device.
+  Replacing a plan asks before clearing its checks.
+- **Export CSV for Excel** saves a UTF-8 CSV with Thai-compatible headings, daily amounts,
+  planned cumulative totals, remaining amounts and saved flags (`1`/`0`). Open the CSV
+  in Excel or Google Sheets; this export is not an `.xlsx` workbook.
+- The table is independent of existing goals and transactions. It is not included in
+  the existing JSON backup/import feature.
+
+Calculation/export tests: `SavingsTablePlanTest` (Android) and `SavingsTablePlanTests` (iOS).

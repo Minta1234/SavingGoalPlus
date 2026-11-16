@@ -69,9 +69,14 @@ fun MainNavigation() {
                         viewModel = viewModel(factory = viewModelFactory),
                         onGoalClick = { goalId -> backStack.add(GoalDetail(goalId)) },
                         onSaveToday = { goalId -> backStack.add(GoalDetail(goalId, saveToday = true)) },
+                        onNavigateTable = { backStack.add(SavingsTable) },
                         onNavigateArchive = { backStack.add(Archive) },
                         onNavigateSettings = { backStack.add(Settings) }
                     )
+                }
+
+                entry<SavingsTable> {
+                    com.minta1234.savingsgoal.ui.table.SavingsTableScreen(onBack = safeOnBack)
                 }
 
                 entry<GoalDetail> { key ->

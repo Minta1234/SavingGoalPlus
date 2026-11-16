@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1042 /* SavingsTablePlanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2042 /* SavingsTablePlanTests.swift */; };
+		1041 /* SavingsTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2041 /* SavingsTableView.swift */; };
+		1040 /* SavingsTablePlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2040 /* SavingsTablePlan.swift */; };
 		1090 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = 2090 /* Localizable.xcstrings */; };
 		1001 /* SavingGoalPlusApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2001 /* SavingGoalPlusApp.swift */; };
 		1002 /* Goal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2002 /* Goal.swift */; };
@@ -42,6 +45,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2042 /* SavingsTablePlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsTablePlanTests.swift; sourceTree = "<group>"; };
+		2041 /* SavingsTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsTableView.swift; sourceTree = "<group>"; };
+		2040 /* SavingsTablePlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsTablePlan.swift; sourceTree = "<group>"; };
 		2090 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; path = Localizable.xcstrings; sourceTree = "<group>"; };
 		4001 /* SavingGoalPlus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SavingGoalPlus.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4002 /* SavingGoalPlusTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SavingGoalPlusTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -124,6 +130,7 @@
 			isa = PBXGroup;
 			children = (
 				2002 /* Goal.swift */,
+				2040 /* SavingsTablePlan.swift */,
 				2003 /* Payment.swift */,
 				2004 /* SavingsRatePlan.swift */,
 			);
@@ -166,6 +173,7 @@
 			isa = PBXGroup;
 			children = (
 				2015 /* MainDashboardView.swift */,
+				2041 /* SavingsTableView.swift */,
 				2016 /* GoalDetailView.swift */,
 				2017 /* ArchiveView.swift */,
 				2018 /* SettingsView.swift */,
@@ -177,6 +185,7 @@
 			isa = PBXGroup;
 			children = (
 				2020 /* SavingsCalculationsTests.swift */,
+				2042 /* SavingsTablePlanTests.swift */,
 			);
 			path = SavingGoalPlusTests;
 			sourceTree = "<group>";
@@ -299,6 +308,8 @@
 				1013 /* GoalEditSheet.swift in Sources */,
 				1014 /* PaymentSheet.swift in Sources */,
 				1015 /* MainDashboardView.swift in Sources */,
+				1041 /* SavingsTableView.swift in Sources */,
+				1040 /* SavingsTablePlan.swift in Sources */,
 				1016 /* GoalDetailView.swift in Sources */,
 				1017 /* ArchiveView.swift in Sources */,
 				1018 /* SettingsView.swift in Sources */,
@@ -310,6 +321,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1020 /* SavingsCalculationsTests.swift in Sources */,
+				1042 /* SavingsTablePlanTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

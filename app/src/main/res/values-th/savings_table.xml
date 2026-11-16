@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="table_menu">เมนูฟังก์ชัน</string>
+    <string name="table_home">เป้าหมายออมเงิน</string>
+    <string name="table_title">ตารางออมเงิน Excel</string>
+    <string name="table_description">กำหนดเงินออมต่อวันและเป้าหมายเป็นบาท วันสุดท้ายจะออมเฉพาะยอดที่เหลือ</string>
+    <string name="table_daily">ออมต่อวัน (บาท)</string>
+    <string name="table_target">เป้าหมาย (บาท)</string>
+    <string name="table_day">วันที่</string>
+    <string name="table_cumulative">ยอดตามแผน (บาท)</string>
+    <string name="table_remaining">คงเหลือ (บาท)</string>
+    <string name="table_done">ออมแล้ว (1/0)</string>
+    <string name="table_invalid">กรอกจำนวนมากกว่า 0 ทศนิยมไม่เกิน 2 ตำแหน่ง (สูงสุด 999,999,999.99 บาท) แผนไม่เกิน 10,000 วัน</string>
+    <string name="table_create">สร้างตาราง</string>
+    <string name="table_summary">%1$d วัน · ออมแล้ว %2$s / %3$s บาท</string>
+    <string name="table_independent">ติ๊กแต่ละวันเมื่อออมแล้ว ตารางเก็บในเครื่องนี้ แยกจากธุรกรรมเป้าหมายและไฟล์สำรอง JSON</string>
+    <string name="table_export">ส่งออก CSV สำหรับ Excel</string>
+    <string name="table_replace">สร้างตารางใหม่?</string>
+    <string name="table_replace_warning">การสร้างแผนใหม่จะล้างเครื่องหมายวันที่ออมแล้วของตารางนี้</string>
+</resources>

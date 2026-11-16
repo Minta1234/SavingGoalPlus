@@ -119,13 +119,18 @@ public struct MainDashboardView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Menu {
+                        NavigationLink(destination: SavingsTableView()) {
+                            Label("Savings spreadsheet", systemImage: "tablecells")
+                        }
+                        Label("Savings goals", systemImage: "target")
                         Picker("Sort", selection: $sortOrder) {
                             ForEach(GoalSortOrder.allCases) { order in
                                 Text(LocalizedStringKey(order.rawValue)).tag(order)
                             }
                         }
                     } label: {
-                        Image(systemName: "arrow.up.arrow.down")
+                        Image(systemName: "line.3.horizontal")
+                            .accessibilityLabel("Functions")
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(ColorTheme.primaryEmerald)
                     }

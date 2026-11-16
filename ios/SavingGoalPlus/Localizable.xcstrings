@@ -6150,6 +6150,215 @@
           }
         }
       }
+    },
+    "Functions": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เมนูฟังก์ชัน"
+          }
+        }
+      }
+    },
+    "Savings spreadsheet": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตารางออมเงิน Excel"
+          }
+        }
+      }
+    },
+    "Choose your daily savings and target in baht. The final day saves only the remaining amount.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กำหนดเงินออมต่อวันและเป้าหมายเป็นบาท วันสุดท้ายจะออมเฉพาะยอดที่เหลือ"
+          }
+        }
+      }
+    },
+    "Save / day (THB)": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ออมต่อวัน (บาท)"
+          }
+        }
+      }
+    },
+    "Target (THB)": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เป้าหมาย (บาท)"
+          }
+        }
+      }
+    },
+    "Enter positive amounts with at most 2 decimal places (up to 999,999,999.99 baht). Maximum 10,000 days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กรอกจำนวนมากกว่า 0 ทศนิยมไม่เกิน 2 ตำแหน่ง (สูงสุด 999,999,999.99 บาท) แผนไม่เกิน 10,000 วัน"
+          }
+        }
+      }
+    },
+    "Create table": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สร้างตาราง"
+          }
+        }
+      }
+    },
+    "%lld days · Saved %@ / %@ THB": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld วัน · ออมแล้ว %@ / %@ บาท"
+          }
+        }
+      }
+    },
+    "Check off each day after saving. This table is stored on this device, separately from goal transactions and JSON backups.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ติ๊กแต่ละวันเมื่อออมแล้ว ตารางเก็บในเครื่องนี้ แยกจากธุรกรรมเป้าหมายและไฟล์สำรอง JSON"
+          }
+        }
+      }
+    },
+    "Export CSV for Excel": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ส่งออก CSV สำหรับ Excel"
+          }
+        }
+      }
+    },
+    "Day": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "วันที่"
+          }
+        }
+      }
+    },
+    "Planned total (THB)": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยอดตามแผน (บาท)"
+          }
+        }
+      }
+    },
+    "Remaining (THB)": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "คงเหลือ (บาท)"
+          }
+        }
+      }
+    },
+    "Saved (1/0)": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ออมแล้ว (1/0)"
+          }
+        }
+      }
+    },
+    "Day %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "วันที่ %lld"
+          }
+        }
+      }
+    },
+    "Planned total: %@ THB": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยอดตามแผน: %@ บาท"
+          }
+        }
+      }
+    },
+    "Replace table?": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "สร้างตารางใหม่?"
+          }
+        }
+      }
+    },
+    "Creating a new plan clears the saved-day checks in this table.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "การสร้างแผนใหม่จะล้างเครื่องหมายวันที่ออมแล้วของตารางนี้"
+          }
+        }
+      }
+    },
+    "Could not export file": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ไม่สามารถส่งออกไฟล์ได้"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

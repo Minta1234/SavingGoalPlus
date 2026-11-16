@@ -69,6 +69,7 @@ fun MainScreen(
     onSaveToday: (Long) -> Unit,
     onNavigateArchive: () -> Unit,
     onNavigateSettings: () -> Unit,
+    onNavigateTable: () -> Unit,
     viewModel: MainViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -81,6 +82,9 @@ fun MainScreen(
     Scaffold(
         topBar = {
             TopAppBar(
+                navigationIcon = {
+                    com.minta1234.savingsgoal.ui.components.FunctionMenu(onHome = {}, onTable = onNavigateTable)
+                },
                 title = {
                     Text(
                         text = stringResource(R.string.ui_savings_goal),
