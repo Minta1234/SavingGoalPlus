@@ -6436,6 +6436,138 @@
           }
         }
       }
+    },
+    "All tables": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตารางทั้งหมด"
+          }
+        }
+      }
+    },
+    "No savings tables yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยังไม่มีตารางออมเงิน"
+          }
+        }
+      }
+    },
+    "Tap + to create your first savings table.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กด + เพื่อสร้างตารางออมเงินแรกของคุณ"
+          }
+        }
+      }
+    },
+    "Savings overview": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ภาพรวมการออม"
+          }
+        }
+      }
+    },
+    "Target: %@ THB": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เป้าหมาย: %@ บาท"
+          }
+        }
+      }
+    },
+    "%lld tables": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld ตาราง"
+          }
+        }
+      }
+    },
+    "Remaining: %@ THB": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เหลืออีก: %@ บาท"
+          }
+        }
+      }
+    },
+    "%@ THB / day · %lld days": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "วันละ %@ บาท · %lld วัน"
+          }
+        }
+      }
+    },
+    "Daily savings": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "บันทึกการออมรายวัน"
+          }
+        }
+      }
+    },
+    "Edit table": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "แก้ไขตาราง"
+          }
+        }
+      }
+    },
+    "Table options": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ตัวเลือกตาราง"
+          }
+        }
+      }
+    },
+    "Open table": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "เปิดตาราง"
+          }
+        }
+      }
     }
   },
   "version": "1.0"

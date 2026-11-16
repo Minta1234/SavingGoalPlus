@@ -1,22 +1,42 @@
 package com.minta1234.savingsgoal.ui.table
 
 import android.content.Context
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.minta1234.savingsgoal.R
 import com.minta1234.savingsgoal.data.SavingsTableEntry
 import com.minta1234.savingsgoal.data.SavingsTablePlan
+import com.minta1234.savingsgoal.ui.components.CircularGoalGauge
 import com.minta1234.savingsgoal.ui.components.FunctionMenu
+import com.minta1234.savingsgoal.ui.theme.ProgressAmber
+import com.minta1234.savingsgoal.ui.theme.ProgressCyan
+import com.minta1234.savingsgoal.ui.theme.ProgressEmerald
 import com.minta1234.savingsgoal.util.rememberFileExport
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -27,25 +47,24 @@ fun SavingsTableScreen(onBack: () -> Unit) {
     val legacyName = stringResource(R.string.table_title)
     val store = remember { SavingsTableStore(prefs) }
     var tables by remember { mutableStateOf(store.load(legacyName)) }
-    var selectedId by rememberSaveable { mutableStateOf(tables.firstOrNull()?.id) }
+    var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
     val selected = tables.firstOrNull { it.id == selectedId }
-    val plan = selected?.plan
-    val completed = selected?.completed.orEmpty()
-    var name by rememberSaveable { mutableStateOf(selected?.name ?: "") }
-    var daily by rememberSaveable { mutableStateOf(plan?.let { SavingsTablePlan.format(it.daily) } ?: "") }
-    var target by rememberSaveable { mutableStateOf(plan?.let { SavingsTablePlan.format(it.target) } ?: "") }
+    var showEditor by rememberSaveable { mutableStateOf(false) }
+    var editingId by rememberSaveable { mutableStateOf<String?>(null) }
+    var name by rememberSaveable { mutableStateOf("") }
+    var daily by rememberSaveable { mutableStateOf("") }
+    var target by rememberSaveable { mutableStateOf("") }
     var error by rememberSaveable { mutableStateOf(false) }
     var pending by remember { mutableStateOf<SavingsTableEntry?>(null) }
     var deleting by remember { mutableStateOf<SavingsTableEntry?>(null) }
     var message by remember { mutableStateOf("") }
-    var chooser by remember { mutableStateOf(false) }
-    fun select(table: SavingsTableEntry?) {
-        selectedId = table?.id
-        name = table?.name.orEmpty()
-        daily = table?.plan?.let { SavingsTablePlan.format(it.daily) }.orEmpty()
-        target = table?.plan?.let { SavingsTablePlan.format(it.target) }.orEmpty()
+    fun edit(entry: SavingsTableEntry?) {
+        editingId = entry?.id
+        name = entry?.name.orEmpty()
+        daily = entry?.plan?.let { SavingsTablePlan.format(it.daily) }.orEmpty()
+        target = entry?.plan?.let { SavingsTablePlan.format(it.target) }.orEmpty()
         error = false
-        message = ""
+        showEditor = true
     }
     fun persist(next: List<SavingsTableEntry>) {
         store.save(next)
@@ -53,92 +72,134 @@ fun SavingsTableScreen(onBack: () -> Unit) {
     }
     fun save(entry: SavingsTableEntry) {
         persist(if (tables.any { it.id == entry.id }) tables.map { if (it.id == entry.id) entry else it } else tables + entry)
-        select(entry)
+        if (editingId == null) selectedId = entry.id
+        showEditor = false
     }
+    BackHandler(enabled = selected != null && !showEditor) { selectedId = null; message = "" }
     val headings = listOf(R.string.table_day, R.string.table_daily, R.string.table_cumulative, R.string.table_remaining, R.string.table_done)
         .map { stringResource(it) }
-    val exportPlan = plan
-    val exportCompleted = completed
     val export = rememberFileExport("text/csv", "savings-table-${selected?.id ?: "new"}.csv", {
-        requireNotNull(exportPlan).csv(exportCompleted, headings)
+        requireNotNull(selected).let { it.plan.csv(it.completed, headings) }
     }, { message = it })
 
     Scaffold(topBar = {
-        TopAppBar(title = { Text(stringResource(R.string.table_title)) }, navigationIcon = {
-            FunctionMenu(onHome = onBack, onTable = {})
-        })
+        TopAppBar(
+            title = { Text(selected?.name ?: stringResource(R.string.table_title), fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+            navigationIcon = {
+                if (selected != null) IconButton(onClick = { selectedId = null; message = "" }) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.table_all))
+                } else FunctionMenu(onHome = onBack, onTable = {})
+            },
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+        )
+    }, floatingActionButton = {
+        if (selected == null) FloatingActionButton(onClick = { edit(null) }, containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary) {
+            Icon(Icons.Default.Add, contentDescription = stringResource(R.string.table_new))
+        }
     }) { padding ->
-        LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            item {
-                if (tables.isNotEmpty()) {
-                    Box {
-                        TextButton(onClick = { chooser = true }) {
-                            Text(selected?.name ?: stringResource(R.string.table_select))
+        // Keying the list gives each detail page a fresh scroll position.
+        key(selectedId) {
+            LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                if (selected == null) {
+                    if (tables.isEmpty()) {
+                        item {
+                            Column(Modifier.fillMaxWidth().padding(vertical = 64.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                                Icon(Icons.Default.TableChart, contentDescription = null, modifier = Modifier.size(80.dp), tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
+                                Spacer(Modifier.height(16.dp))
+                                Text(stringResource(R.string.table_empty), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.table_empty_hint), Modifier.padding(top = 8.dp), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
                         }
-                        DropdownMenu(expanded = chooser, onDismissRequest = { chooser = false }) {
-                            tables.forEach { table ->
-                                DropdownMenuItem(text = { Text(table.name) }, onClick = { select(table); chooser = false })
+                    } else {
+                        item {
+                            val saved = tables.sumOf { it.plan.saved(it.completed) }
+                            val total = tables.sumOf { it.plan.target }
+                            Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+                                Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text(stringResource(R.string.table_overview), style = MaterialTheme.typography.titleMedium)
+                                    Text("฿${SavingsTablePlan.format(saved)}", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+                                    Text(stringResource(R.string.table_total_target, SavingsTablePlan.format(total)))
+                                    Text(stringResource(R.string.table_count, tables.size), style = MaterialTheme.typography.labelLarge)
+                                }
+                            }
+                        }
+                        items(tables, key = { it.id }) { entry ->
+                            SavingsTableCard(entry, onOpen = { selectedId = entry.id; message = "" }, onEdit = { edit(entry) }, onDelete = { deleting = entry })
+                        }
+                    }
+                    item { Spacer(Modifier.height(72.dp)) }
+                } else {
+                    val active = selected.plan
+                    val completed = selected.completed
+                    val saved = active.saved(completed)
+                    val percent = (saved * 100 / active.target).toInt()
+                    item {
+                        Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
+                            Column(Modifier.fillMaxWidth().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                CircularGoalGauge(progressPercent = percent, subText = stringResource(R.string.table_saved_label))
+                                Text("฿${SavingsTablePlan.format(saved)}", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+                                Text(stringResource(R.string.table_total_target, SavingsTablePlan.format(active.target)), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(stringResource(R.string.table_remaining_value, SavingsTablePlan.format(active.target - saved)))
+                                Text(stringResource(R.string.table_schedule, SavingsTablePlan.format(active.daily), active.dayCount), style = MaterialTheme.typography.bodySmall)
+                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedButton(onClick = { edit(selected) }) { Text(stringResource(R.string.ui_edit)) }
+                                    Button(onClick = export) { Text(stringResource(R.string.table_export)) }
+                                }
+                                TextButton(onClick = { deleting = selected }) { Text(stringResource(R.string.table_delete), color = MaterialTheme.colorScheme.error) }
                             }
                         }
                     }
-                }
-                TextButton(onClick = { select(null) }) { Text(stringResource(R.string.table_new)) }
-                Text(stringResource(R.string.table_description))
-                OutlinedTextField(value = name, onValueChange = { name = it; error = false }, label = { Text(stringResource(R.string.table_name)) },
-                    singleLine = true, modifier = Modifier.fillMaxWidth())
-                OutlinedTextField(value = daily, onValueChange = { daily = it; error = false }, label = { Text(stringResource(R.string.table_daily)) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.fillMaxWidth())
-                OutlinedTextField(value = target, onValueChange = { target = it; error = false }, label = { Text(stringResource(R.string.table_target)) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true, modifier = Modifier.fillMaxWidth())
-                if (error) Text(stringResource(R.string.table_invalid), color = MaterialTheme.colorScheme.error)
-                Button(onClick = {
-                    val d = SavingsTablePlan.parseAmount(daily)
-                    val t = SavingsTablePlan.parseAmount(target)
-                    val next = if (d != null && t != null) runCatching { SavingsTablePlan(d, t) }.getOrNull() else null
-                    error = next == null || name.isBlank()
-                    if (!error && next != null) {
-                        val entry = selected?.withDetails(name, next) ?: SavingsTableEntry(name = name.trim(), plan = next)
-                        if (selected != null && next != plan && completed.isNotEmpty()) pending = entry
-                        else save(entry)
+                    item {
+                        Text(stringResource(R.string.table_independent), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (message.isNotEmpty()) Text(message)
+                        Text(stringResource(R.string.table_daily_log), Modifier.padding(top = 16.dp), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     }
-                }) { Text(stringResource(if (selected == null) R.string.table_create else R.string.table_save)) }
-                if (selected != null) {
-                    TextButton(onClick = { deleting = selected }) { Text(stringResource(R.string.table_delete), color = MaterialTheme.colorScheme.error) }
-                }
-            }
-            plan?.let { active ->
-                item {
-                    Text(stringResource(R.string.table_summary, active.dayCount, SavingsTablePlan.format(active.saved(completed)), SavingsTablePlan.format(active.target)))
-                    Text(stringResource(R.string.table_independent), style = MaterialTheme.typography.bodySmall)
-                    TextButton(onClick = export) { Text(stringResource(R.string.table_export)) }
-                    if (message.isNotEmpty()) Text(message)
-                }
-                item {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(stringResource(R.string.table_day), Modifier.weight(0.6f))
-                        Text(stringResource(R.string.table_daily), Modifier.weight(1f))
-                        Text(stringResource(R.string.table_cumulative), Modifier.weight(1f))
-                        Text(stringResource(R.string.table_done), Modifier.width(48.dp))
-                    }
-                    HorizontalDivider()
-                }
-                items((1..active.dayCount).toList(), key = { it }) { day ->
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(day.toString(), Modifier.weight(0.6f))
-                        Text(SavingsTablePlan.format(active.amount(day)), Modifier.weight(1f))
-                        Text(SavingsTablePlan.format(active.cumulative(day)), Modifier.weight(1f))
-                        Checkbox(checked = day in completed, onCheckedChange = { checked ->
-                            tables.firstOrNull { it.id == selectedId }?.let { entry ->
-                                val updated = entry.withDay(day, checked)
-                                persist(tables.map { if (it.id == updated.id) updated else it })
+                    items((1..active.dayCount).toList(), key = { it }) { day ->
+                        Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = if (day in completed) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f) else MaterialTheme.colorScheme.surface)) {
+                            Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text("${stringResource(R.string.table_day)} $day", fontWeight = FontWeight.SemiBold)
+                                    Text("฿${SavingsTablePlan.format(active.amount(day))}", style = MaterialTheme.typography.titleMedium)
+                                    Text("${stringResource(R.string.table_cumulative)}: ฿${SavingsTablePlan.format(active.cumulative(day))}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                Checkbox(checked = day in completed, onCheckedChange = { checked ->
+                                    tables.firstOrNull { it.id == selectedId }?.let { entry ->
+                                        val updated = entry.withDay(day, checked)
+                                        persist(tables.map { if (it.id == updated.id) updated else it })
+                                    }
+                                })
                             }
-                        })
+                        }
                     }
-                    HorizontalDivider()
                 }
             }
         }
     }
+    if (showEditor) AlertDialog(onDismissRequest = { showEditor = false },
+        title = { Text(stringResource(if (editingId == null) R.string.table_new else R.string.table_edit)) },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(stringResource(R.string.table_description))
+                OutlinedTextField(value = name, onValueChange = { name = it; error = false }, label = { Text(stringResource(R.string.table_name)) }, singleLine = true)
+                OutlinedTextField(value = daily, onValueChange = { daily = it; error = false }, label = { Text(stringResource(R.string.table_daily)) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
+                OutlinedTextField(value = target, onValueChange = { target = it; error = false }, label = { Text(stringResource(R.string.table_target)) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), singleLine = true)
+                if (error) Text(stringResource(R.string.table_invalid), color = MaterialTheme.colorScheme.error)
+            }
+        },
+        confirmButton = { TextButton(onClick = {
+            val d = SavingsTablePlan.parseAmount(daily)
+            val t = SavingsTablePlan.parseAmount(target)
+            val next = if (d != null && t != null) runCatching { SavingsTablePlan(d, t) }.getOrNull() else null
+            error = next == null || name.isBlank()
+            if (!error && next != null) {
+                val existing = tables.firstOrNull { it.id == editingId }
+                val entry = existing?.withDetails(name, next) ?: SavingsTableEntry(name = name.trim(), plan = next)
+                if (existing != null && next != existing.plan && existing.completed.isNotEmpty()) pending = entry
+                else save(entry)
+            }
+        }) { Text(stringResource(R.string.table_save)) } },
+        dismissButton = { TextButton(onClick = { showEditor = false }) { Text(stringResource(R.string.ui_cancel)) } })
     if (pending != null) AlertDialog(onDismissRequest = { pending = null },
         title = { Text(stringResource(R.string.table_replace)) }, text = { Text(stringResource(R.string.table_replace_warning)) },
         confirmButton = { TextButton(onClick = { pending?.let { save(it) }; pending = null }) { Text(stringResource(R.string.table_save)) } },
@@ -146,10 +207,44 @@ fun SavingsTableScreen(onBack: () -> Unit) {
     if (deleting != null) AlertDialog(onDismissRequest = { deleting = null },
         title = { Text(stringResource(R.string.table_delete)) }, text = { Text(stringResource(R.string.table_delete_warning, deleting?.name.orEmpty())) },
         confirmButton = { TextButton(onClick = {
-            val remaining = tables.filterNot { it.id == deleting?.id }
-            persist(remaining)
-            select(remaining.firstOrNull())
+            persist(tables.filterNot { it.id == deleting?.id })
+            if (selectedId == deleting?.id) selectedId = null
             deleting = null
         }) { Text(stringResource(R.string.table_delete)) } },
         dismissButton = { TextButton(onClick = { deleting = null }) { Text(stringResource(R.string.ui_cancel)) } })
+}
+
+@Composable
+private fun SavingsTableCard(entry: SavingsTableEntry, onOpen: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit) {
+    val saved = entry.plan.saved(entry.completed)
+    val percent = (saved * 100 / entry.plan.target).toInt()
+    val color = when { percent <= 30 -> ProgressAmber; percent <= 60 -> ProgressCyan; else -> ProgressEmerald }
+    val progress by animateFloatAsState(targetValue = saved.toFloat() / entry.plan.target, label = "table_progress")
+    var menu by remember { mutableStateOf(false) }
+    Card(Modifier.fillMaxWidth().clickable(onClick = onOpen), shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(52.dp).clip(RoundedCornerShape(12.dp)).background(color.copy(alpha = 0.15f)), contentAlignment = Alignment.Center) {
+                    Text(entry.name.take(1).uppercase(), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = color)
+                }
+                Column(Modifier.weight(1f).padding(start = 14.dp)) {
+                    Text(entry.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(stringResource(R.string.table_schedule, SavingsTablePlan.format(entry.plan.daily), entry.plan.dayCount), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Box {
+                    IconButton(onClick = { menu = true }) { Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.ui_options)) }
+                    DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
+                        DropdownMenuItem(text = { Text(stringResource(R.string.ui_edit)) }, onClick = { menu = false; onEdit() })
+                        DropdownMenuItem(text = { Text(stringResource(R.string.table_delete), color = MaterialTheme.colorScheme.error) }, onClick = { menu = false; onDelete() })
+                    }
+                }
+            }
+            LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)), color = color, trackColor = MaterialTheme.colorScheme.surfaceVariant)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("฿${SavingsTablePlan.format(saved)} / ฿${SavingsTablePlan.format(entry.plan.target)}", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = color)
+                Text("$percent%", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = color)
+            }
+        }
+    }
 }

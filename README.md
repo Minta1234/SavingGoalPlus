@@ -184,12 +184,16 @@ Copyright (c) 2026 Minta1234
 ## Daily savings spreadsheet / ตารางออมเงิน Excel
 
 On Android and iOS, open the **☰ menu at the top left → Savings spreadsheet**
-(**ตารางออมเงิน Excel** in Thai). Use **Savings goals** in the same menu to return.
+(**ตารางออมเงิน Excel** in Thai). From a table’s details, tap the back arrow to return
+to the table list. Use **Savings goals** in the list’s menu to return to goals.
 
-- Tap **+ New table**, enter a name, daily amount and target in Thai baht, then create it.
-  You can keep multiple tables, including tables with identical amounts, and switch using
-  the table chooser. Each table has its own saved-day history and CSV export.
-- Use **Save table** to rename or edit the selected table. Renaming preserves progress;
+- Tap **+**, enter a name, daily amount and target in Thai baht, then save it.
+  You can keep multiple tables, including tables with identical amounts, and open any
+  table from its progress card. The dashboard shows total savings across all tables.
+  Each table has its own saved-day history and CSV export.
+- Use the card’s options menu or **Edit table** on its detail page to edit it.
+  The add/edit form opens in a dialog (Android) or sheet (iOS), matching the goals screen.
+  The detail page uses the same circular progress gauge as goals. Renaming preserves progress;
   changing its amounts asks before clearing its checks. Deleting a table also asks for
   confirmation and leaves other tables intact.
 - Existing single-table data is migrated automatically on the first visit. Deleting all

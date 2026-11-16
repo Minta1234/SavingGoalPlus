@@ -23,4 +23,15 @@
     <string name="table_save">Save table</string>
     <string name="table_delete">Delete table</string>
     <string name="table_delete_warning">Delete “%1$s” and its saved-day history? Other tables will be kept.</string>
+    <string name="table_all">All tables</string>
+    <string name="table_empty">No savings tables yet</string>
+    <string name="table_empty_hint">Tap + to create your first savings table.</string>
+    <string name="table_overview">Savings overview</string>
+    <string name="table_total_target">Target: %1$s THB</string>
+    <string name="table_count">%1$d tables</string>
+    <string name="table_saved_label">SAVED</string>
+    <string name="table_remaining_value">Remaining: %1$s THB</string>
+    <string name="table_schedule">%1$s THB / day · %2$d days</string>
+    <string name="table_daily_log">Daily savings</string>
+    <string name="table_edit">Edit table</string>
 </resources>

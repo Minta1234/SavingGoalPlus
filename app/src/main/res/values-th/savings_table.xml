@@ -23,4 +23,15 @@
     <string name="table_save">บันทึกตาราง</string>
     <string name="table_delete">ลบตาราง</string>
     <string name="table_delete_warning">ลบ “%1$s” และประวัติวันที่ออมแล้วหรือไม่? ตารางอื่นจะยังอยู่</string>
+    <string name="table_all">ตารางทั้งหมด</string>
+    <string name="table_empty">ยังไม่มีตารางออมเงิน</string>
+    <string name="table_empty_hint">กด + เพื่อสร้างตารางออมเงินแรกของคุณ</string>
+    <string name="table_overview">ภาพรวมการออม</string>
+    <string name="table_total_target">เป้าหมาย: %1$s บาท</string>
+    <string name="table_count">%1$d ตาราง</string>
+    <string name="table_saved_label">ออมแล้ว</string>
+    <string name="table_remaining_value">เหลืออีก: %1$s บาท</string>
+    <string name="table_schedule">วันละ %1$s บาท · %2$d วัน</string>
+    <string name="table_daily_log">บันทึกการออมรายวัน</string>
+    <string name="table_edit">แก้ไขตาราง</string>
 </resources>
