@@ -21,6 +21,11 @@ struct SavingsTablePlan: Codable, Equatable {
     func saved(_ completed: Set<Int>) -> Int64 {
         completed.filter { (1...dayCount).contains($0) }.reduce(0) { $0 + amount($1) }
     }
+    func progressFraction(_ saved: Int64) -> Double { Double(min(target, max(0, saved))) / Double(target) }
+    func progressLabel(_ saved: Int64) -> String {
+        let hundredths = (min(target, max(0, saved)) * 10_000 + target / 2) / target
+        return Self.format(hundredths) + "%"
+    }
     static func parse(_ text: String) -> Int64? {
         let input = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard input.range(of: "^[0-9]+(\\.[0-9]{1,2})?$", options: .regularExpression) != nil else { return nil }

@@ -35,4 +35,15 @@ class SavingsTablePlanTest {
         assertTrue(csv.startsWith("\uFEFF\"วันที่\""))
         assertTrue(csv.endsWith("1,0.30,0.30,0.20,0\r\n2,0.20,0.50,0.00,1\r\n"))
     }
+    @Test fun progressShowsHundredthsAndCapsAtOneHundred() {
+        val plan = SavingsTablePlan(4000, 6000000)
+        assertEquals("0.07%", plan.progressLabel(4000))
+        assertEquals(40.0 / 60000, plan.progressFraction(4000), 0.00000001)
+        assertEquals("0.00%", plan.progressLabel(0))
+        assertEquals("0.00%", plan.progressLabel(-1))
+        assertEquals("100.00%", plan.progressLabel(plan.target))
+        assertEquals("100.00%", plan.progressLabel(Long.MAX_VALUE))
+        assertEquals("0.13%", SavingsTablePlan(1, 800).progressLabel(1))
+        assertEquals("100.00%", SavingsTablePlan(SavingsTablePlan.MAX_AMOUNT, SavingsTablePlan.MAX_AMOUNT).progressLabel(SavingsTablePlan.MAX_AMOUNT))
+    }
 }

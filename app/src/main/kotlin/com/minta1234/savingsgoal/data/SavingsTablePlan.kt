@@ -22,6 +22,13 @@ data class SavingsTablePlan(val daily: Long, val target: Long) {
     }
     fun saved(completed: Set<Int>): Long = completed.filter { it in 1..dayCount }.sumOf(::amount)
 
+    fun progressFraction(saved: Long): Double = saved.coerceIn(0, target).toDouble() / target
+    fun progressLabel(saved: Long): String {
+        // Integer hundredths of a percent, rounded half up; amounts are bounded by MAX_AMOUNT.
+        val hundredths = (saved.coerceIn(0, target) * 10_000 + target / 2) / target
+        return "${format(hundredths)}%"
+    }
+
     /** UTF-8 BOM makes Thai column headings readable in Excel. Values are numeric cells. */
     fun csv(completed: Set<Int>, headings: List<String>): String = buildString {
         append('\uFEFF')

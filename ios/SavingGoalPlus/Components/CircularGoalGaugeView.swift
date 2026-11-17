@@ -7,19 +7,22 @@ public struct CircularGoalGaugeView: View {
     public let targetAmount: Double
     public var size: CGFloat = 220
     public var currencyOverride: String? = nil
+    public var progressLabel: String? = nil
 
     public init(
         progressFraction: Double,
         savedAmount: Double,
         targetAmount: Double,
         size: CGFloat = 220,
-        currencyOverride: String? = nil
+        currencyOverride: String? = nil,
+        progressLabel: String? = nil
     ) {
         self.progressFraction = min(1.0, max(0.0, progressFraction))
         self.savedAmount = savedAmount
         self.targetAmount = targetAmount
         self.size = size
         self.currencyOverride = currencyOverride
+        self.progressLabel = progressLabel
     }
 
     private var percentage: Int {
@@ -53,8 +56,8 @@ public struct CircularGoalGaugeView: View {
 
             // Inner Info
             VStack(spacing: 4) {
-                Text("\(percentage)%")
-                    .font(.system(size: size * 0.18, weight: .bold, design: .rounded))
+                Text(progressLabel ?? "\(percentage)%")
+                    .font(.system(size: size * (progressLabel == nil ? 0.18 : 0.14), weight: .bold, design: .rounded))
                     .foregroundColor(stageColor)
 
                 Text(SavingsCalculations.formatCurrency(savedAmount, currencySymbol: currencyOverride ?? currencySymbol))

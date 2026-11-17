@@ -147,7 +147,8 @@ fun SavingsTableScreen(onBack: () -> Unit) {
                     item(span = { GridItemSpan(maxLineSpan) }) {
                         Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
                             Column(Modifier.fillMaxWidth().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                CircularGoalGauge(progressPercent = percent, subText = stringResource(R.string.table_saved_label))
+                                CircularGoalGauge(progressPercent = percent, subText = stringResource(R.string.table_saved_label),
+                                    progressFraction = active.progressFraction(saved).toFloat(), progressLabel = active.progressLabel(saved))
                                 Text("฿${SavingsTablePlan.format(saved)}", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
                                 Text(stringResource(R.string.table_total_target, SavingsTablePlan.format(active.target)), color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 Text(stringResource(R.string.table_remaining_value, SavingsTablePlan.format(active.target - saved)))
@@ -161,10 +162,12 @@ fun SavingsTableScreen(onBack: () -> Unit) {
                         }
                     }
                     item(span = { GridItemSpan(maxLineSpan) }) {
-                        Text(stringResource(R.string.table_independent), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        if (message.isNotEmpty()) Text(message)
-                        Text(stringResource(R.string.table_daily_log), Modifier.padding(top = 16.dp), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Text(stringResource(R.string.table_grid_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(stringResource(R.string.table_independent), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            if (message.isNotEmpty()) Text(message)
+                            Text(stringResource(R.string.table_daily_log), Modifier.padding(top = 8.dp), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.table_grid_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
                     }
                     items((1..active.dayCount).toList(), key = { it }) { day ->
                         val checked = day in completed
@@ -240,7 +243,7 @@ private fun SavingsTableCard(entry: SavingsTableEntry, onOpen: () -> Unit, onEdi
     val saved = entry.plan.saved(entry.completed)
     val percent = (saved * 100 / entry.plan.target).toInt()
     val color = when { percent <= 30 -> ProgressAmber; percent <= 60 -> ProgressCyan; else -> ProgressEmerald }
-    val progress by animateFloatAsState(targetValue = saved.toFloat() / entry.plan.target, label = "table_progress")
+    val progress by animateFloatAsState(targetValue = entry.plan.progressFraction(saved).toFloat(), label = "table_progress")
     var menu by remember { mutableStateOf(false) }
     Card(Modifier.fillMaxWidth().clickable(onClick = onOpen), shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)) {
@@ -264,7 +267,7 @@ private fun SavingsTableCard(entry: SavingsTableEntry, onOpen: () -> Unit, onEdi
             LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)), color = color, trackColor = MaterialTheme.colorScheme.surfaceVariant)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                 Text("฿${SavingsTablePlan.format(saved)} / ฿${SavingsTablePlan.format(entry.plan.target)}", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = color)
-                Text("$percent%", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = color)
+                Text(entry.plan.progressLabel(saved), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold, color = color)
             }
         }
     }

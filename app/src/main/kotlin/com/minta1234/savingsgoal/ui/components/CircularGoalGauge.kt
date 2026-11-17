@@ -30,11 +30,14 @@ fun CircularGoalGauge(
     modifier: Modifier = Modifier,
     size: Dp = 190.dp,
     strokeWidth: Dp = 14.dp,
-    subText: String = "SAVED"
+    subText: String = "SAVED",
+    progressFraction: Float? = null,
+    progressLabel: String? = null
 ) {
     val clampedPercent = progressPercent.coerceIn(0, 100)
+    val fraction = progressFraction?.coerceIn(0f, 1f) ?: (clampedPercent / 100f)
     val animatedProgress by animateFloatAsState(
-        targetValue = clampedPercent / 100f,
+        targetValue = fraction,
         animationSpec = tween(durationMillis = 1000, easing = FastOutSlowInEasing),
         label = "gauge_progress"
     )
@@ -86,8 +89,8 @@ fun CircularGoalGauge(
 
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "$clampedPercent%",
-                fontSize = 34.sp,
+                text = progressLabel ?: "$clampedPercent%",
+                fontSize = if (progressLabel != null) 28.sp else 34.sp,
                 fontWeight = FontWeight.Bold,
                 color = progressColor
             )

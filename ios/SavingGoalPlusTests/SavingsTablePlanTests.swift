@@ -57,4 +57,16 @@ final class SavingsTablePlanTests: XCTestCase {
         let empty = try JSONDecoder().decode([SavingsTableEntry].self, from: JSONEncoder().encode([SavingsTableEntry]()))
         XCTAssertTrue(empty.isEmpty)
     }
+    func testProgressShowsHundredthsAndCapsAtOneHundred() throws {
+        let plan = try XCTUnwrap(SavingsTablePlan(daily: 4000, target: 6000000))
+        XCTAssertEqual(plan.progressLabel(4000), "0.07%")
+        XCTAssertEqual(plan.progressFraction(4000), 40.0 / 60000, accuracy: 0.00000001)
+        XCTAssertEqual(plan.progressLabel(-1), "0.00%")
+        XCTAssertEqual(plan.progressLabel(0), "0.00%")
+        XCTAssertEqual(plan.progressLabel(plan.target), "100.00%")
+        XCTAssertEqual(plan.progressLabel(Int64.max), "100.00%")
+        XCTAssertEqual(try XCTUnwrap(SavingsTablePlan(daily: 1, target: 800)).progressLabel(1), "0.13%")
+        let maximum = try XCTUnwrap(SavingsTablePlan(daily: SavingsTablePlan.maximumAmount, target: SavingsTablePlan.maximumAmount))
+        XCTAssertEqual(maximum.progressLabel(maximum.target), "100.00%")
+    }
 }

@@ -164,9 +164,9 @@ struct SavingsTableView: View {
     @ViewBuilder private func detail(_ table: SavingsTableEntry) -> some View {
         let saved = table.plan.saved(table.completed)
         VStack(spacing: 12) {
-            CircularGoalGaugeView(progressFraction: Double(saved) / Double(table.plan.target),
+            CircularGoalGaugeView(progressFraction: table.plan.progressFraction(saved),
                                   savedAmount: Double(saved) / 100, targetAmount: Double(table.plan.target) / 100,
-                                  size: 210, currencyOverride: "฿")
+                                  size: 210, currencyOverride: "฿", progressLabel: table.plan.progressLabel(saved))
             Text(String.localizedStringWithFormat(NSLocalizedString("Remaining: %@ THB", comment: "Remaining savings"), SavingsTablePlan.format(table.plan.target - saved)))
                 .font(.headline)
             Text(scheduleText(table.plan)).font(.subheadline).foregroundColor(.secondary)
@@ -297,13 +297,13 @@ private struct SavingsTableCardView: View {
                         .foregroundColor(.secondary).padding(8).accessibilityLabel("Table options")
                 }
             }
-            ProgressView(value: Double(saved), total: Double(entry.plan.target)).tint(color)
+            ProgressView(value: entry.plan.progressFraction(saved), total: 1).tint(color)
                 .animation(.easeInOut(duration: 0.4), value: saved)
             HStack {
                 Text("฿\(SavingsTablePlan.format(saved)) / ฿\(SavingsTablePlan.format(entry.plan.target))")
                     .font(.system(size: 15, weight: .bold, design: .rounded)).foregroundColor(color)
                 Spacer()
-                Text("\(percent)%").font(.system(size: 14, weight: .bold, design: .rounded)).foregroundColor(color)
+                Text(entry.plan.progressLabel(saved)).font(.system(size: 14, weight: .bold, design: .rounded)).foregroundColor(color)
             }
         }
         .padding(16).background(ColorTheme.cardBackground).cornerRadius(16)
