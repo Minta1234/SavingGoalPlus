@@ -22,6 +22,7 @@ struct SavingsTableView: View {
     @Environment(\.dismiss) private var dismiss
     @AppStorage("savings_spreadsheet") private var legacyStored = Data()
     @AppStorage("savings_spreadsheets_v2") private var stored = Data()
+    @ScaledMetric(relativeTo: .body) private var minimumCellWidth: CGFloat = 96
     @State private var selectedId: UUID?
     @State private var editingId: UUID?
     @State private var showEditor = false
@@ -184,23 +185,38 @@ struct SavingsTableView: View {
         Text("Check off each day after saving. This table is stored on this device, separately from goal transactions and JSON backups.")
             .font(.caption).foregroundColor(.secondary).frame(maxWidth: .infinity, alignment: .leading)
         Text("Daily savings").font(.headline).frame(maxWidth: .infinity, alignment: .leading).padding(.top, 8)
-        ForEach(1...table.plan.dayCount, id: \.self) { day in
-            Toggle(isOn: Binding(get: { table.completed.contains(day) }, set: { checked in
-                guard let current = tables.first(where: { $0.id == table.id }) else { return }
-                let updated = current.withDay(day, saved: checked)
-                persist(tables.map { $0.id == updated.id ? updated : $0 })
-            })) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Day \(day)").font(.headline)
-                    Text("฿\(SavingsTablePlan.format(table.plan.amount(day)))").font(.title3.bold())
-                    Text(String.localizedStringWithFormat(NSLocalizedString("Planned total: %@ THB", comment: "Savings table row"), SavingsTablePlan.format(table.plan.cumulative(day))))
-                        .font(.caption).foregroundColor(.secondary)
+        Text("Tap a cell to mark a day as saved. Tap again to undo.")
+            .font(.caption).foregroundColor(.secondary).frame(maxWidth: .infinity, alignment: .leading)
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: minimumCellWidth), spacing: 10)], spacing: 10) {
+            ForEach(1...table.plan.dayCount, id: \.self) { day in
+                let checked = table.completed.contains(day)
+                Button {
+                    guard let current = tables.first(where: { $0.id == table.id }) else { return }
+                    let updated = current.withDay(day, saved: !current.completed.contains(day))
+                    persist(tables.map { $0.id == updated.id ? updated : $0 })
+                } label: {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack(spacing: 4) {
+                            Text("Day \(day)").font(.caption2)
+                            Spacer(minLength: 0)
+                            Image(systemName: checked ? "checkmark.circle.fill" : "circle")
+                                .foregroundColor(checked ? ColorTheme.primaryEmerald : .secondary)
+                                .accessibilityHidden(true)
+                        }
+                        Text("฿\(SavingsTablePlan.format(table.plan.amount(day)))")
+                            .font(.subheadline.bold()).fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 0)
+                    }
+                    .padding(10).frame(maxWidth: .infinity, minHeight: 100, alignment: .topLeading)
+                    .background(checked ? ColorTheme.primaryEmerald.opacity(0.15) : ColorTheme.cardBackground)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(checked ? ColorTheme.primaryEmerald : Color.secondary.opacity(0.3), lineWidth: 1))
+                    .contentShape(RoundedRectangle(cornerRadius: 10))
                 }
+                .buttonStyle(.plain)
+                .accessibilityValue(checked ? Text("Saved") : Text("Not saved"))
+                .accessibilityHint("Tap to change saved status")
             }
-            .tint(ColorTheme.primaryEmerald)
-            .padding(16)
-            .background(table.completed.contains(day) ? ColorTheme.primaryEmerald.opacity(0.12) : ColorTheme.cardBackground)
-            .cornerRadius(16)
         }
     }
 

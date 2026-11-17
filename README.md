@@ -200,7 +200,10 @@ to the table list. Use **Savings goals** in the list’s menu to return to goals
   tables will not bring the old table back.
 - Amounts support two decimal places. Plans allow up to 10,000 days and
   999,999,999.99 baht per amount. The last installment is reduced to reach the target exactly.
-- Check off saved days to update the actual saved total. Changes are stored on the device.
+- The detail page displays days in an adaptive grid of bordered cells (multiple columns),
+  rather than a vertical list of daily cards. Each cell shows the day and amount. Tap it
+  to toggle its saved check and update the actual saved total. Cells adapt to screen
+  width and text size, and saved cells have both a checkmark and a highlighted border. Changes are stored on the device.
   Replacing a plan asks before clearing its checks.
 - **Export CSV for Excel** saves a UTF-8 CSV with Thai-compatible headings, daily amounts,
   planned cumulative totals, remaining amounts and saved flags (`1`/`0`). Open the CSV

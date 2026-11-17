@@ -6,14 +6,20 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.RadioButtonUnchecked
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.TableChart
@@ -24,6 +30,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -44,6 +53,7 @@ import com.minta1234.savingsgoal.util.rememberFileExport
 fun SavingsTableScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val prefs = remember { context.getSharedPreferences("savings_table", Context.MODE_PRIVATE) }
+    val minimumCellWidth = (96f * LocalDensity.current.fontScale.coerceAtLeast(1f)).dp
     val legacyName = stringResource(R.string.table_title)
     val store = remember { SavingsTableStore(prefs) }
     var tables by remember { mutableStateOf(store.load(legacyName)) }
@@ -100,10 +110,10 @@ fun SavingsTableScreen(onBack: () -> Unit) {
     }) { padding ->
         // Keying the list gives each detail page a fresh scroll position.
         key(selectedId) {
-            LazyColumn(Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            LazyVerticalGrid(columns = GridCells.Adaptive(minSize = minimumCellWidth), modifier = Modifier.fillMaxSize().padding(padding), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (selected == null) {
                     if (tables.isEmpty()) {
-                        item {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
                             Column(Modifier.fillMaxWidth().padding(vertical = 64.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(Icons.Default.TableChart, contentDescription = null, modifier = Modifier.size(80.dp), tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.4f))
                                 Spacer(Modifier.height(16.dp))
@@ -112,7 +122,7 @@ fun SavingsTableScreen(onBack: () -> Unit) {
                             }
                         }
                     } else {
-                        item {
+                        item(span = { GridItemSpan(maxLineSpan) }) {
                             val saved = tables.sumOf { it.plan.saved(it.completed) }
                             val total = tables.sumOf { it.plan.target }
                             Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
@@ -124,17 +134,17 @@ fun SavingsTableScreen(onBack: () -> Unit) {
                                 }
                             }
                         }
-                        items(tables, key = { it.id }) { entry ->
+                        items(tables, key = { it.id }, span = { GridItemSpan(maxLineSpan) }) { entry ->
                             SavingsTableCard(entry, onOpen = { selectedId = entry.id; message = "" }, onEdit = { edit(entry) }, onDelete = { deleting = entry })
                         }
                     }
-                    item { Spacer(Modifier.height(72.dp)) }
+                    item(span = { GridItemSpan(maxLineSpan) }) { Spacer(Modifier.height(72.dp)) }
                 } else {
                     val active = selected.plan
                     val completed = selected.completed
                     val saved = active.saved(completed)
                     val percent = (saved * 100 / active.target).toInt()
-                    item {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
                         Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
                             Column(Modifier.fillMaxWidth().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
                                 CircularGoalGauge(progressPercent = percent, subText = stringResource(R.string.table_saved_label))
@@ -150,25 +160,36 @@ fun SavingsTableScreen(onBack: () -> Unit) {
                             }
                         }
                     }
-                    item {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
                         Text(stringResource(R.string.table_independent), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         if (message.isNotEmpty()) Text(message)
                         Text(stringResource(R.string.table_daily_log), Modifier.padding(top = 16.dp), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Text(stringResource(R.string.table_grid_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     items((1..active.dayCount).toList(), key = { it }) { day ->
-                        Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = if (day in completed) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f) else MaterialTheme.colorScheme.surface)) {
-                            Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                    Text("${stringResource(R.string.table_day)} $day", fontWeight = FontWeight.SemiBold)
-                                    Text("฿${SavingsTablePlan.format(active.amount(day))}", style = MaterialTheme.typography.titleMedium)
-                                    Text("${stringResource(R.string.table_cumulative)}: ฿${SavingsTablePlan.format(active.cumulative(day))}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
-                                Checkbox(checked = day in completed, onCheckedChange = { checked ->
+                        val checked = day in completed
+                        Surface(
+                            modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}.toggleable(
+                                value = checked, role = Role.Checkbox,
+                                onValueChange = { savedDay ->
                                     tables.firstOrNull { it.id == selectedId }?.let { entry ->
-                                        val updated = entry.withDay(day, checked)
+                                        val updated = entry.withDay(day, savedDay)
                                         persist(tables.map { if (it.id == updated.id) updated else it })
                                     }
-                                })
+                                }
+                            ),
+                            shape = RoundedCornerShape(10.dp),
+                            color = if (checked) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+                            border = BorderStroke(1.dp, if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
+                        ) {
+                            Column(Modifier.heightIn(min = 100.dp).padding(10.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                                    Text("${stringResource(R.string.table_day)} $day", Modifier.weight(1f), style = MaterialTheme.typography.labelSmall)
+                                    Icon(if (checked) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
+                                        contentDescription = null, modifier = Modifier.size(18.dp),
+                                        tint = if (checked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                Text("฿${SavingsTablePlan.format(active.amount(day))}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                             }
                         }
                     }

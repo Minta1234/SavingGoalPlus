@@ -34,4 +34,5 @@
     <string name="table_schedule">วันละ %1$s บาท · %2$d วัน</string>
     <string name="table_daily_log">บันทึกการออมรายวัน</string>
     <string name="table_edit">แก้ไขตาราง</string>
+    <string name="table_grid_hint">กดช่องเพื่อทำเครื่องหมายว่าออมแล้ว กดอีกครั้งเพื่อยกเลิก</string>
 </resources>

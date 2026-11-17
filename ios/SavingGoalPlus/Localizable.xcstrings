@@ -6579,6 +6579,39 @@
           }
         }
       }
+    },
+    "Tap a cell to mark a day as saved. Tap again to undo.": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กดช่องเพื่อทำเครื่องหมายว่าออมแล้ว กดอีกครั้งเพื่อยกเลิก"
+          }
+        }
+      }
+    },
+    "Not saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ยังไม่ได้ออม"
+          }
+        }
+      }
+    },
+    "Tap to change saved status": {
+      "extractionState": "manual",
+      "localizations": {
+        "th": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "กดเพื่อเปลี่ยนสถานะการออม"
+          }
+        }
+      }
     }
   },
   "version": "1.0"
